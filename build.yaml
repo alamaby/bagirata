@@ -1,0 +1,17 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          # Generated unions get exhaustive `when`/`map` only — no `copyWith` on
+          # sealed members we don't need it on, keeps generated output lean.
+          map: true
+          when: true
+      json_serializable:
+        options:
+          explicit_to_json: true
+          field_rename: snake
+          include_if_null: false
+      riverpod_generator:
+        options:
+          provider_family_name_suffix: Family

@@ -110,6 +110,10 @@ coverage/
 # Symbols
 app.*.symbols
 
+# Local secrets (use .env.example as template)
+.env
+!.env.example
+
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
 !**/ios/**/default.mode2v3
