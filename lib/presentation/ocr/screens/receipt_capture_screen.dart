@@ -25,6 +25,11 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
   final List<XFile> _images = [];
   ReceiptPreviewMode _mode = ReceiptPreviewMode.carousel;
 
+  // Local "starting" flag supaya tombol langsung bereaksi saat di-tap.
+  // Tanpa ini ada delay terlihat: bytes loading + downscale (~ratusan ms)
+  // berjalan sebelum OcrNotifier sempat set state ke processing.
+  bool _starting = false;
+
   Future<void> _addImages() async {
     final picked = await _picker.pickMultiImage(imageQuality: 90);
     if (picked.isEmpty) return;
@@ -32,8 +37,13 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
   }
 
   Future<void> _process() async {
-    final bytes = await Future.wait(_images.map((f) => f.readAsBytes()));
-    await ref.read(ocrProvider.notifier).process(bytes);
+    setState(() => _starting = true);
+    try {
+      final bytes = await Future.wait(_images.map((f) => f.readAsBytes()));
+      await ref.read(ocrProvider.notifier).process(bytes);
+    } finally {
+      if (mounted) setState(() => _starting = false);
+    }
   }
 
   @override
@@ -50,6 +60,7 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
       }
     });
     final state = ref.watch(ocrProvider);
+    final busy = _starting || state is OcrProcessing;
     return AppScaffold(
       title: 'Scan receipt',
       actions: [
@@ -63,44 +74,81 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
                   : ReceiptPreviewMode.carousel),
         ),
       ],
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: ReceiptPreviewComponent(
-                  images: _images,
-                  mode: _mode,
-                  onRemove: (i) => setState(() => _images.removeAt(i)),
-                ),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            _StatusLabel(state: state),
-            SizedBox(height: 12.h),
-            Row(
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _addImages,
-                    icon: const Icon(Icons.add_photo_alternate),
-                    label: const Text('Add photos'),
+                  child: SingleChildScrollView(
+                    child: ReceiptPreviewComponent(
+                      images: _images,
+                      mode: _mode,
+                      onRemove: (i) => setState(() => _images.removeAt(i)),
+                    ),
                   ),
                 ),
-                SizedBox(width: 8.w),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _images.isEmpty || state is OcrProcessing
-                        ? null
-                        : _process,
-                    icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Scan'),
-                  ),
+                SizedBox(height: 12.h),
+                _StatusLabel(state: state, starting: _starting),
+                SizedBox(height: 12.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: busy ? null : _addImages,
+                        icon: const Icon(Icons.add_photo_alternate),
+                        label: const Text('Add photos'),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: _images.isEmpty || busy ? null : _process,
+                        icon: busy
+                            ? SizedBox(
+                                width: 16.w,
+                                height: 16.w,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.auto_awesome),
+                        label: Text(busy ? 'Scanning…' : 'Scan'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
+          if (busy) const _ScanningOverlay(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScanningOverlay extends StatelessWidget {
+  const _ScanningOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: ColoredBox(
+        color: Colors.black54,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              SizedBox(height: 12.h),
+              Text(
+                'AI sedang membaca struk…',
+                style: TextStyle(color: Colors.white, fontSize: 14.sp),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -108,18 +156,22 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
 }
 
 class _StatusLabel extends StatelessWidget {
-  const _StatusLabel({required this.state});
+  const _StatusLabel({required this.state, required this.starting});
   final OcrState state;
+  final bool starting;
 
   @override
   Widget build(BuildContext context) {
-    final text = switch (state) {
-      OcrIdle() => 'Add photos and tap Scan',
-      OcrProcessing(:final imageCount) => 'Scanning $imageCount image(s)…',
-      OcrSuccess(:final result) =>
-        '${result.items.length} items detected via ${result.providerUsed}',
-      OcrFailure(:final failure) => 'Failed: $failure',
-    };
+    final text = starting && state is! OcrProcessing
+        ? 'Memproses gambar…'
+        : switch (state) {
+            OcrIdle() => 'Add photos and tap Scan',
+            OcrProcessing(:final imageCount) =>
+              'Scanning $imageCount image(s)…',
+            OcrSuccess(:final result) =>
+              '${result.items.length} items detected via ${result.providerUsed}',
+            OcrFailure(:final failure) => 'Failed: $failure',
+          };
     return Text(text, style: TextStyle(fontSize: 13.sp));
   }
 }

@@ -122,6 +122,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
       totalAmount: _computedTotal,
       tax: _tax,
       service: _service,
+      receiptDate: widget.ocr.receiptDate,
       createdAt: DateTime.now().toUtc(),
     );
     final billRes = await repo.createBill(bill);
@@ -178,6 +179,23 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
+            if (widget.ocr.receiptDate != null) ...[
+              SizedBox(height: 8.h),
+              Row(
+                children: [
+                  Icon(Icons.event, size: 16.r,
+                      color: Theme.of(context).colorScheme.outline),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'Tanggal struk: ${DateFormat.yMMMMd().format(widget.ocr.receiptDate!)}',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (lowConfidence) ...[
               SizedBox(height: 12.h),
               _ConfidenceChip(confidence: widget.ocr.confidence),

@@ -13,9 +13,10 @@ abstract class BillDto with _$BillDto {
     required String id,
     required String title,
     @JsonKey(name: 'total_amount') required double totalAmount,
-    @Default(0) double tax,
-    @Default(0) double service,
+    @JsonKey(name: 'tax_amount') @Default(0) double tax,
+    @JsonKey(name: 'service_charge') @Default(0) double service,
     @JsonKey(name: 'is_settled') @Default(false) bool isSettled,
+    @JsonKey(name: 'receipt_date') DateTime? receiptDate,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _BillDto;
 
@@ -28,6 +29,7 @@ abstract class BillDto with _$BillDto {
         tax: b.tax,
         service: b.service,
         isSettled: b.isSettled,
+        receiptDate: b.receiptDate,
         createdAt: b.createdAt,
       );
 
@@ -38,6 +40,7 @@ abstract class BillDto with _$BillDto {
         tax: tax,
         service: service,
         isSettled: isSettled,
+        receiptDate: receiptDate,
         createdAt: createdAt,
       );
 }

@@ -18,5 +18,15 @@ Future<void> main() async {
     anonKey: Env.supabaseAnonKey,
   );
 
+  // Pastikan user selalu punya session — RLS policies bergantung pada
+  // auth.uid(). Tanpa ini, insert ke `bills` ditolak (42501) karena
+  // `owner_id DEFAULT auth.uid()` jadi NULL untuk request unauthenticated.
+  // Anonymous sign-in harus diaktifkan di Supabase Dashboard:
+  // Authentication → Providers → Anonymous sign-ins.
+  final auth = Supabase.instance.client.auth;
+  if (auth.currentUser == null) {
+    await auth.signInAnonymously();
+  }
+
   runApp(const ProviderScope(child: BagiStrukApp()));
 }

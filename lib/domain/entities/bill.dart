@@ -11,6 +11,7 @@ abstract class Bill with _$Bill {
     @Default(0) double tax,
     @Default(0) double service,
     @Default(false) bool isSettled,
+    DateTime? receiptDate,
     required DateTime createdAt,
   }) = _Bill;
 }
