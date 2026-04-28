@@ -1,6 +1,6 @@
 # BagiStruk — Dokumentasi Teknis
 
-Status: **OCR pipeline live end-to-end** (Flutter → Edge Function → LLM via tabel → response terstruktur). Persist hasil scan ke `bills` belum diimplementasi.
+Status: **End-to-end live** — capture → OCR (Flutter → Edge Function → LLM) → Review & Edit screen → persist ke `bills` + `items`. Auto anonymous sign-in saat startup; rate limit insert per user di level DB.
 
 ---
 
@@ -53,6 +53,14 @@ Tabel inti aplikasi:
 Follow-up migration:
 - `items.qty INTEGER → NUMERIC(10,3)` — supaya item per-Kg/per-volume (mis. `qty=0.58`) bisa disimpan akurat. Sinkron dengan `Item.qty: double` di domain.
 - `llm_configs` & `llm_logs` `ENABLE ROW LEVEL SECURITY`. **Tanpa policy** — sengaja, karena hanya service-role (Edge Function) yang berhak akses. Anon/authenticated key tidak boleh `SELECT api_key`.
+
+### `20260428120000_bills_receipt_date.sql`
+- `bills` tambah kolom `receipt_date DATE` (nullable) — tanggal yang tertera di struk hasil OCR. Berbeda dari `created_at` (waktu user input). NULL kalau tidak terdeteksi.
+
+### `20260428130000_bills_insert_rate_limit.sql`
+- Trigger `BEFORE INSERT` pada `bills` dengan limit **30/jam** dan **200/hari** per `owner_id`. Lampaui → `RAISE EXCEPTION` (P0001). `service_role` di-bypass untuk admin/seed.
+- Index `(owner_id, created_at DESC)` supaya count-window cepat saat tabel besar.
+- Lapis pertahanan terhadap abuse anonymous sign-in (anti-bloat MAU). Bukan pengganti captcha — captcha mencegah pembuatan akun bot, rate limit mencegah satu akun dispamming.
 
 ---
 
@@ -127,40 +135,52 @@ Aturan eksplisit: gabung duplikat by name (sum qty), `price` per-unit, qty boleh
 
 ## 4. Pipeline Flutter
 
-### Layer flow untuk OCR
+### End-to-end flow
 
 ```
 ImagePicker.pickMultiImage()
    │  XFile[]
    ▼
-[receipt_capture_screen.dart]   → bytes per file
+[receipt_capture_screen.dart]
+   │  - tombol Scan: _starting flag flip sinkron → button langsung disabled+spinner
+   │  - overlay full-screen "AI sedang membaca struk…" selama processing
+   │  - ref.listen(ocrProvider) → push BillReviewScreen saat OcrSuccess
    │
    ▼
 [OcrNotifier].process(images, hint)             // presentation/ocr/providers/ocr_notifier.dart
    │  state: idle → processing(count) → success(OcrResult) | failure(Failure)
    ▼
-[OcrRepositoryImpl].processReceipt              // data/repositories/ocr_repository_impl.dart
-   │  Result<OcrResult, Failure>
+[OcrRepositoryImpl] → [OCRService]              // downscale + invoke Edge Function
+   │  ImageCodec.downscaleToBase64 (max 1600px, JPEG q85) — paralel
+   │  supabaseClient.functions.invoke('process-receipt', body)
    ▼
-[OCRService].processReceipt                     // data/services/ocr_service.dart
-   │  guardAsync wraps:
-   │    1. ImageCodec.downscaleToBase64 (max 1600px, JPEG q85) — paralel per image
-   │    2. OcrRequestDto({ images[], hint }).toJson()
-   │    3. supabaseClient.functions.invoke('process-receipt', body)
-   │    4. OcrResponseDto.fromJson(response).toEntity()
+SupabaseClient.functions.invoke()  →  Edge Function (section 3)
+   │  OcrResponseDto.fromJson() → OcrResult entity
    ▼
-SupabaseClient.functions.invoke()  →  Edge Function (section 3 di atas)
+[bill_review_screen.dart]                       // presentation/bills/screens/
+   │  - Title prefilled dari ocr.merchant
+   │  - Confidence chip kalau ocr.confidence < 0.8
+   │  - Receipt date row kalau ocr.receiptDate != null (read-only)
+   │  - Items list editable (name, qty: double, price)
+   │  - Subtotal recompute realtime
+   │  - Tax & Service: TextField numeric, prefilled dari detected_*, hint manual entry kalau null
+   │  - Mismatch banner kalau |computedTotal − detectedTotal| > 1.0
+   │  - Save → IBillRepository.createBill + upsertItems
+   ▼
+Supabase PostgREST (tabel bills + items)
+   │  Trigger BEFORE INSERT bills_insert_rate_limit (30/hr, 200/day) gate
+   │  RLS: bills.owner_id = auth.uid()
 ```
 
 ### Type stack
 
 | Layer | OCR types |
 |---|---|
-| domain/entities | `OcrLineItem(name, price, qty: double)`, `OcrResult(items, detectedTotal, detectedTax, detectedService, merchant, receiptDate, confidence, providerUsed)` |
-| data/dtos | `OcrLineItemDto`, `OcrRequestDto`, `OcrResponseDto` (freezed + json_serializable, `field_rename: snake`) |
+| domain/entities | `OcrLineItem(name, price, qty: double)`, `OcrResult(items, detectedTotal, detectedTax, detectedService, merchant, receiptDate, confidence, providerUsed)`, `Bill(..., receiptDate?: DateTime, createdAt: DateTime)`, `Item(..., qty: double)` |
+| data/dtos | `OcrLineItemDto`, `OcrRequestDto`, `OcrResponseDto` (freezed + json_serializable, `field_rename: snake`); `BillDto` map ke `tax_amount` / `service_charge` / `receipt_date` lewat `@JsonKey`; `ItemDto.qty: double` |
 | data/services | `OCRService` — single responsibility client untuk Edge Function |
-| data/repositories | `OcrRepositoryImpl` — `Result<T, Failure>` translation |
-| presentation | `OcrNotifier` (StateNotifier), `OcrState` sealed (idle/processing/success/failure) |
+| data/repositories | `OcrRepositoryImpl`, `BillRepositoryImpl` — `Result<T, Failure>` translation |
+| presentation | `OcrNotifier` (StateNotifier), `OcrState` sealed (idle/processing/success/failure); `BillReviewScreen` ConsumerStatefulWidget (form editable + save) |
 
 ### Error handling
 
@@ -247,8 +267,11 @@ Pakai:
 
 ## 8. Auth & Multi-Device
 
-- `AuthRemoteDataSource` mendukung **anonymous sign-in** + **promote to email** (`supabase.auth.signInAnonymously()` lalu `updateUser({ email })`). User bisa langsung pakai app, baru daftar saat butuh sync.
-- RLS di `bills`/`items`/`participants`/`item_assignments` semua filter by `auth.uid()` lewat `bills.owner_id`. Anonymous user dapat UID stabil yang persist di device.
+- **Auto anonymous sign-in di startup** ([lib/main.dart](lib/main.dart)): setelah `Supabase.initialize()`, kalau `auth.currentUser == null` → `signInAnonymously()`. Wajib supaya RLS `auth.uid() = owner_id` lulus. Tanpa ini insert ke `bills` ditolak dengan error 42501.
+- **Anonymous sign-in harus di-enable** di Supabase Dashboard → Authentication → Providers. Tanpa enable, sign-in di startup gagal dan app tidak bisa save bill.
+- Captcha untuk anonymous sign-in **tidak diaktifkan saat ini** (development phase). Lapis pertahanan: rate-limit trigger di tabel `bills` (lihat migrasi `20260428130000`). Sebelum public release rekomendasi: enable hCaptcha/Turnstile di Supabase, atau migrate ke Google sign-in (lebih aman jangka panjang karena bill perlu identitas stabil).
+- `AuthRemoteDataSource` mendukung **promote to email** (`updateUser({ email })`) — supaya user yang awalnya anonim bisa daftar tanpa kehilangan bill (Supabase preserve `auth.uid()` saat linking).
+- RLS di `bills`/`items`/`participants`/`item_assignments` semua filter by `auth.uid()` lewat `bills.owner_id`. Anonymous user dapat UID stabil yang persist di device sampai logout/clear-data.
 
 ---
 
@@ -274,9 +297,11 @@ Kalau provider baru sudah OpenAI-compatible (misal Groq, Together, DeepSeek): cu
 
 ## 10. Known Limitations & Next Steps
 
-- **UI hasil scan belum ada** — `OcrState.success(result)` baru ditampilkan minimal di [receipt_capture_screen.dart](lib/presentation/ocr/screens/receipt_capture_screen.dart). Belum ada form preview/edit/save ke `bills`.
+- **Captcha belum dipasang** — anonymous sign-in tanpa bot protection. Rate limit di `bills` adalah lapis defensif, bukan substitut. Sebelum public release: enable hCaptcha/Turnstile atau migrate ke Google sign-in.
 - **`bills.owner_id DEFAULT auth.uid()`** — bagus untuk anonymous flow, tapi belum ada path untuk berbagi bill ke participant lain (mereka belum punya akses RLS).
 - **`participants` tidak punya `user_id` kolom** — split bill saat ini owner-centric. Belum ada notifikasi/share-link.
+- **Bill detail / edit ulang** — setelah save, belum ada screen untuk edit bill yang sudah tersimpan. Bill list hanya read-only `Card`.
+- **Bill review tidak bisa balik ke capture screen** — `context.goNamed(Routes.billListName)` setelah save lompat langsung ke list. User yang batal review harus tap back-arrow manual; data scan tidak diingat.
 - **`smoketest.sh`** menyimpan response ke `/tmp/sr_response.json` — Windows Git Bash mengarahkan ke path Cygwin-style; bisa di-improve pakai `mktemp`.
 - **Edge Function tidak rate-limit di sisi sendiri** — bergantung pada Supabase project quota. Untuk produksi pertimbangkan circuit breaker / cooldown di tabel `llm_configs` (mis. kolom `cooldown_until`).
 - **Cleanup task** — automation untuk audit `llm_logs` mingguan (error rate spike, key rotation reminder) belum dipasang. Bisa di-`/schedule` jadi cron agent.
@@ -287,13 +312,18 @@ Kalau provider baru sudah OpenAI-compatible (misal Groq, Together, DeepSeek): cu
 
 | Path | Peran |
 |---|---|
-| [lib/main.dart](lib/main.dart) | Entry point, dotenv load, Supabase init |
+| [lib/main.dart](lib/main.dart) | Entry point, dotenv load, Supabase init, **auto anonymous sign-in** |
 | [lib/core/config/env.dart](lib/core/config/env.dart) | Typed accessor `Env.supabaseUrl`, dst |
+| [lib/core/config/app_constants.dart](lib/core/config/app_constants.dart) | `ocrLowConfidenceThreshold`, `billTotalMismatchTolerance`, `ocrMaxImageEdgePx`, dll |
 | [lib/core/network/supabase_client_provider.dart](lib/core/network/supabase_client_provider.dart) | Riverpod provider untuk SupabaseClient |
+| [lib/core/router/app_router.dart](lib/core/router/app_router.dart) | go_router config: list, capture, **review** |
 | [lib/data/services/ocr_service.dart](lib/data/services/ocr_service.dart) | Klien Edge Function (downscale + invoke) |
+| [lib/data/dtos/bill_dto.dart](lib/data/dtos/bill_dto.dart) | Mapping ke kolom DB (`tax_amount`, `service_charge`, `receipt_date`) |
+| [lib/presentation/ocr/screens/receipt_capture_screen.dart](lib/presentation/ocr/screens/receipt_capture_screen.dart) | Capture + scanning overlay + auto-navigate ke review |
 | [lib/presentation/ocr/providers/ocr_notifier.dart](lib/presentation/ocr/providers/ocr_notifier.dart) | State machine OCR |
+| [lib/presentation/bills/screens/bill_review_screen.dart](lib/presentation/bills/screens/bill_review_screen.dart) | **Form review/edit + save bill** |
 | [lib/domain/services/bill_calculator.dart](lib/domain/services/bill_calculator.dart) | Pure logic distribusi tax/service per participant |
 | [supabase/functions/process-receipt/index.ts](supabase/functions/process-receipt/index.ts) | Edge Function utama |
-| [supabase/migrations/](supabase/migrations/) | Postgres schema + RLS |
+| [supabase/migrations/](supabase/migrations/) | Postgres schema + RLS + rate limit trigger |
 | [.env.example](.env.example) | Template env client (anon key only) |
 | [smoketest.sh](smoketest.sh) | Test E2E Edge Function dari CLI |
