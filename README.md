@@ -4,9 +4,9 @@ Aplikasi Flutter untuk split-bill berbasis OCR struk: foto struk → ekstrak ite
 
 ## Stack
 
-- **Flutter 3.11+** — Riverpod 3 (codegen), Freezed 3, go_router 14, supabase_flutter 2, flutter_screenutil
+- **Flutter 3.11+** — Riverpod 3 (codegen), Freezed 3, go_router 14, supabase_flutter 2, flutter_screenutil, flutter_animate, lottie
 - **Supabase** — Postgres + RLS, Auth (anonymous + email promotion), Edge Functions (Deno)
-- **LLM** — multi-provider via tabel `llm_configs` (priority-ordered failover, no client-side keys)
+- **LLM** — multi-provider via tabel `llm_configs` (priority-ordered failover, no client-side keys, no redeploy to rotate)
 
 ## Setup
 
@@ -20,6 +20,10 @@ Aplikasi Flutter untuk split-bill berbasis OCR struk: foto struk → ekstrak ite
    supabase db push
    ```
 3. **LLM provider** — INSERT minimal satu baris ke `llm_configs` (lihat [PROJECT_SUMMARY.md §5](PROJECT_SUMMARY.md)).
+   ```sql
+   INSERT INTO llm_configs (provider_name, api_key, base_url, model_name, priority, is_active)
+   VALUES ('gemini', '<API_KEY>', 'https://generativelanguage.googleapis.com', 'gemini-2.0-flash', 1, true);
+   ```
 4. **Edge Function**
    ```bash
    supabase functions deploy process-receipt

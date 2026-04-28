@@ -6,7 +6,55 @@ Status: **End-to-end live** — capture → OCR (Flutter → Edge Function → L
 
 ## 1. Arsitektur
 
-Clean Architecture tiga lapis dengan Riverpod sebagai DI seam:
+### Diagram
+
+```mermaid
+flowchart TD
+    subgraph Mobile["📱 Flutter App"]
+        UI["ReceiptCaptureScreen\n(flutter_animate · lottie · screenutil)"]
+        Notifier["OcrNotifier\n(Riverpod StateNotifier)"]
+        OCRSvc["OCRService\n(downscale → base64)"]
+        BillReview["BillReviewScreen\n(edit items · save)"]
+    end
+
+    subgraph Supabase["☁️ Supabase"]
+        Auth["Auth\n(anonymous + email)"]
+        EF["Edge Function\nprocess-receipt\n(Deno)"]
+        PG["Postgres\nbills · items · participants\nassignments · profiles"]
+        LlmCfg[("llm_configs\npriority · api_key\nbase_url · model_name")]
+        LlmLog[("llm_logs\ntelemetry per attempt")]
+    end
+
+    subgraph LLM["🤖 LLM Providers"]
+        Gemini["Gemini\n(Google AI)"]
+        OR["OpenRouter\n(multi-model)"]
+        NIM["NvidiaNIM\n(optional)"]
+    end
+
+    UI -->|"XFile[] → Uint8List[]"| Notifier
+    Notifier -->|"process(images)"| OCRSvc
+    OCRSvc -->|"POST /functions/v1/process-receipt\nimages: base64[]"| EF
+    OCRSvc -->|"sign-in anon"| Auth
+
+    EF -->|"SELECT is_active=true\nORDER BY priority"| LlmCfg
+    EF -->|"INSERT fire-and-forget"| LlmLog
+
+    EF -->|"priority 1\napi_key + model_name dari DB"| Gemini
+    EF -->|"priority 2 (failover)"| OR
+    EF -->|"priority 3 (failover)"| NIM
+
+    Gemini -->|"OcrPayload JSON"| EF
+    OR -->|"OcrPayload JSON"| EF
+    NIM -->|"OcrPayload JSON"| EF
+
+    EF -->|"items · confidence · provider_used"| OCRSvc
+    OCRSvc -->|"OcrResult entity"| Notifier
+    Notifier -->|"OcrSuccess → navigate"| BillReview
+    BillReview -->|"createBill + upsertItems"| PG
+    Auth -->|"RLS auth.uid()"| PG
+```
+
+### Prosa
 
 ```
 presentation/  →  domain/  ←  data/
@@ -60,7 +108,6 @@ Follow-up migration:
 ### `20260428130000_bills_insert_rate_limit.sql`
 - Trigger `BEFORE INSERT` pada `bills` dengan limit **30/jam** dan **200/hari** per `owner_id`. Lampaui → `RAISE EXCEPTION` (P0001). `service_role` di-bypass untuk admin/seed.
 - Index `(owner_id, created_at DESC)` supaya count-window cepat saat tabel besar.
-- Lapis pertahanan terhadap abuse anonymous sign-in (anti-bloat MAU). Bukan pengganti captcha — captcha mencegah pembuatan akun bot, rate limit mencegah satu akun dispamming.
 
 ---
 
@@ -84,52 +131,44 @@ Follow-up migration:
   merchant: string | null,
   receipt_date: string | null,   // ISO 8601
   confidence: number,            // 0..1
-  provider_used: string }        // "Gemini" | "OpenRouter" | "NvidiaNIM"
+  provider_used: string }        // nilai dari llm_configs.provider_name
 
 // Response 4xx/5xx
 { error: 'invalid_json' | 'images_required' | 'method_not_allowed' |
-         'no_provider_configured' | 'llm_configs_query_failed' |
-         'all_providers_failed' | 'unknown_provider',
-  detail?: string }
+         'no_active_provider' | 'llm_configs_load_failed' |
+         'all_providers_failed' | 'supabase_env_missing',
+  attempts?: [{ provider, status, message }] }  // saat all_providers_failed
 ```
 
 ### Lifecycle per request
 
 1. **CORS preflight** — `OPTIONS` → 204.
 2. **Validate body** — `images: string[]` non-empty, semua string. Else 400.
-3. **Query `llm_configs`** — `is_active=true ORDER BY priority ASC`. Tabel kosong / error → 500 `no_provider_configured` (fail keras, by design).
-4. **Loop failover** — untuk tiap row:
-   - `t0 = performance.now()`.
-   - `dispatch(cfg)` switch by `provider_name.toLowerCase()`:
-     - `gemini` → `callGemini(api_key, model_name ?? 'gemini-2.5-flash')` — Google REST API native.
-     - `openrouter` → `callOpenAICompatible(base_url ?? 'https://openrouter.ai/api/v1', api_key, model_name ?? 'google/gemini-2.5-flash')`.
-     - `nvidianim` → `callOpenAICompatible(base_url ?? 'https://integrate.api.nvidia.com/v1', api_key, model_name ?? 'meta/llama-3.2-90b-vision-instruct')`.
-     - default → `ProviderError('unknown provider', 400)`.
-   - **Fire-and-forget** insert ke `llm_logs` (image_count, hint, response/error, latency, status_code).
-   - Sukses → break loop.
+3. **Init service-role client** — `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` (auto-injected oleh Supabase, tidak perlu set manual).
+4. **Query `llm_configs`** — `is_active=true ORDER BY priority ASC`. Error / kosong → 500 `no_active_provider`.
+5. **Loop failover** — untuk tiap row:
+   - Dispatch ke `callProvider(cfg)` by `cfg.provider_name.toLowerCase()`:
+     - `gemini` → Gemini REST native (`POST /v1beta/models/{model}:generateContent`).
+     - `openrouter` → OpenAI-compatible (`POST {base_url}/chat/completions`).
+     - `nvidianim` → placeholder `not_implemented`.
+     - unknown → `ProviderError('unsupported_provider', 400)`.
+   - `model_name` & `api_key` **selalu dari DB** — tidak ada default hardcoded.
+   - **Fire-and-forget** INSERT ke `llm_logs` (image_count, model, latency_ms, status_code, error/summary).
+   - Sukses → return 200.
    - Gagal **retryable** (`429 / 5xx / 408`) → lanjut row berikutnya.
-   - Gagal **non-retryable** (4xx selain di atas, schema mismatch) → break dengan error.
-5. **No payload** → 502 `all_providers_failed` dengan `detail` dari error terakhir.
-6. **Sukses** → 200 dengan `provider_used` = `cfg.provider_name` (case as-stored).
+   - Gagal **non-retryable** (4xx selain di atas) → break.
+6. **No payload** → 502 `all_providers_failed` dengan array `attempts` berisi detail tiap provider yang dicoba.
 
-### Provider client
+### URL builder per provider
 
-- **Gemini** ([callGemini](supabase/functions/process-receipt/index.ts:96-128)): `POST /v1beta/models/${model}:generateContent` dengan `inline_data` per gambar. `generationConfig.responseMimeType = "application/json"`. Timeout 20s.
-- **OpenAI-compatible** ([callOpenAICompatible](supabase/functions/process-receipt/index.ts:130-167)): `POST ${baseUrl}/chat/completions` dengan `messages[].content[]` array (text + `image_url` data URI). `response_format: { type: "json_object" }`. Timeout 25s. Bekerja apa adanya untuk OpenRouter, NvidiaNIM, dan provider OpenAI-compat lainnya.
+| Provider | `base_url` di DB | URL final yang dibangun |
+|---|---|---|
+| Gemini | `https://generativelanguage.googleapis.com` (host-only) | `…/v1beta/models/{model}:generateContent?key={api_key}` |
+| Gemini | `https://generativelanguage.googleapis.com/v1beta` | `…/models/{model}:generateContent?key={api_key}` |
+| OpenRouter | `https://openrouter.ai/api/v1` | `…/chat/completions` |
+| OpenRouter | `https://openrouter.ai/api/v1/chat/completions` | dipakai apa adanya |
 
-### System prompt
-
-Single fixed prompt ([SYSTEM_PROMPT](supabase/functions/process-receipt/index.ts:24-44)) yang menginstruksi LLM mengeluarkan JSON ketat:
-```
-{ "items":[{"name","price","qty"}], "detected_total"|null, "detected_tax"|null,
-  "detected_service"|null, "merchant"|null, "receipt_date"|null /* ISO 8601 */,
-  "confidence" }
-```
-Aturan eksplisit: gabung duplikat by name (sum qty), `price` per-unit, qty boleh pecahan untuk barang berat/volume, multi-foto = potongan dari struk yang sama (di-merge), currency apa adanya tanpa konversi.
-
-### Schema validation
-
-`isOcrPayload()` ([index.ts:69-83](supabase/functions/process-receipt/index.ts:69-83)) — type-guard runtime sebelum response dikirim balik ke klien. LLM yang melanggar shape → `ProviderError('schema mismatch', 422)` → mungkin trigger failover ke provider berikutnya.
+Builder bersifat defensive — menerima semua konvensi di atas tanpa double-append.
 
 ---
 
@@ -142,8 +181,11 @@ ImagePicker.pickMultiImage()
    │  XFile[]
    ▼
 [receipt_capture_screen.dart]
-   │  - tombol Scan: _starting flag flip sinkron → button langsung disabled+spinner
-   │  - overlay full-screen "AI sedang membaca struk…" selama processing
+   │  - Empty state: ilustrasi placeholder + copy motivasional (fade-in)
+   │  - Image preview: Card M3, border hijau accent (colorScheme.primary), radius 20
+   │  - Tombol Scan: fade-in + slide-up via flutter_animate saat gambar tersedia
+   │  - Overlay scanning: Lottie (assets/lottie/scanning.json) di dalam card area
+   │  - Status text: shimmer saat processing (flutter_animate)
    │  - ref.listen(ocrProvider) → push BillReviewScreen saat OcrSuccess
    │
    ▼
@@ -154,16 +196,15 @@ ImagePicker.pickMultiImage()
    │  ImageCodec.downscaleToBase64 (max 1600px, JPEG q85) — paralel
    │  supabaseClient.functions.invoke('process-receipt', body)
    ▼
-SupabaseClient.functions.invoke()  →  Edge Function (section 3)
+Supabase Edge Function (Section 3)
    │  OcrResponseDto.fromJson() → OcrResult entity
    ▼
-[bill_review_screen.dart]                       // presentation/bills/screens/
+[bill_review_screen.dart]
    │  - Title prefilled dari ocr.merchant
    │  - Confidence chip kalau ocr.confidence < 0.8
    │  - Receipt date row kalau ocr.receiptDate != null (read-only)
    │  - Items list editable (name, qty: double, price)
-   │  - Subtotal recompute realtime
-   │  - Tax & Service: TextField numeric, prefilled dari detected_*, hint manual entry kalau null
+   │  - Tax & Service: TextField numeric, prefilled dari detected_*
    │  - Mismatch banner kalau |computedTotal − detectedTotal| > 1.0
    │  - Save → IBillRepository.createBill + upsertItems
    ▼
@@ -172,45 +213,38 @@ Supabase PostgREST (tabel bills + items)
    │  RLS: bills.owner_id = auth.uid()
 ```
 
-### Type stack
+### UI dependencies (scan screen)
 
-| Layer | OCR types |
+| Package | Dipakai untuk |
 |---|---|
-| domain/entities | `OcrLineItem(name, price, qty: double)`, `OcrResult(items, detectedTotal, detectedTax, detectedService, merchant, receiptDate, confidence, providerUsed)`, `Bill(..., receiptDate?: DateTime, createdAt: DateTime)`, `Item(..., qty: double)` |
-| data/dtos | `OcrLineItemDto`, `OcrRequestDto`, `OcrResponseDto` (freezed + json_serializable, `field_rename: snake`); `BillDto` map ke `tax_amount` / `service_charge` / `receipt_date` lewat `@JsonKey`; `ItemDto.qty: double` |
-| data/services | `OCRService` — single responsibility client untuk Edge Function |
-| data/repositories | `OcrRepositoryImpl`, `BillRepositoryImpl` — `Result<T, Failure>` translation |
-| presentation | `OcrNotifier` (StateNotifier), `OcrState` sealed (idle/processing/success/failure); `BillReviewScreen` ConsumerStatefulWidget (form editable + save) |
-
-### Error handling
-
-- **`Failure`** sealed class di `core/error/failure.dart`: `NetworkFailure`, `ServerFailure`, `ParsingFailure`, `AuthFailure`, `UnknownFailure`.
-- **`guardAsync()`** di `core/error/exception_mapper.dart` membungkus call ke datasource/service — translate exception framework (PostgrestException, AuthException, FormatException, dll) ke `Failure` variant.
-- **`Result<T>`** discriminated union — pattern matching exhaustive di UI layer.
+| `flutter_animate` | fade-in/slide-up tombol Scan, shimmer status text, fade-in empty state |
+| `lottie` | animasi scanning di atas gambar (path: `assets/lottie/scanning.json`) |
+| `flutter_screenutil` | semua dimensi `.w/.h/.r/.sp` — baseline iPhone 12 (390×844) |
 
 ---
 
 ## 5. Konfigurasi LLM (`llm_configs`)
 
-Setiap baris = satu opsi provider. Dipakai by priority asc.
+Setiap baris = satu opsi provider. Dipakai by priority asc. **`model_name` wajib diisi** — edge function tidak punya default.
 
 ```sql
 INSERT INTO llm_configs(provider_name, api_key, base_url, model_name, priority, is_active) VALUES
 -- Gemini sebagai primary (priority 1)
-('Gemini',    'AIza...',          NULL,                                'gemini-2.5-flash',                1, TRUE),
+('gemini',     'AIza...',   'https://generativelanguage.googleapis.com', 'gemini-2.0-flash',          1, TRUE),
 -- OpenRouter sebagai backup (priority 2)
-('OpenRouter','sk-or-...',        NULL,                                'google/gemini-2.5-flash',         2, TRUE),
--- NvidiaNIM sebagai second backup (priority 3)
-('NvidiaNIM', 'nvapi-...',        'https://integrate.api.nvidia.com/v1', 'meta/llama-3.2-90b-vision-instruct', 3, TRUE);
+('openrouter', 'sk-or-...', 'https://openrouter.ai/api/v1',             'google/gemini-2.0-flash-exp:free', 2, TRUE);
 ```
 
 **Aturan operasional:**
-- `is_active=false` → row dilewati.
-- Kosongkan `base_url` untuk pakai default (lihat dispatcher di Section 3).
-- Kosongkan `model_name` hanya kalau Anda yakin default Edge Function masih hidup. Lebih aman selalu eksplisit.
-- Untuk rotasi key: cukup `UPDATE llm_configs SET api_key='...' WHERE id=...`. Tidak perlu redeploy / restart.
+- `is_active=false` → row dilewati tanpa perlu dihapus.
+- `model_name` wajib eksplisit — jika NULL/empty, attempt dicatat ke `llm_logs` sebagai `config_invalid` lalu lanjut ke priority berikutnya.
+- Rotasi key: `UPDATE llm_configs SET api_key='...' WHERE id=...`. Tidak perlu redeploy.
+- Rotasi model: `UPDATE llm_configs SET model_name='...' WHERE id=...`. Berlaku di-request berikutnya.
+- `base_url`:
+  - Gemini: `https://generativelanguage.googleapis.com` (host-only) — edge function append `/v1beta/models/...` secara otomatis.
+  - OpenRouter: `https://openrouter.ai/api/v1` (tanpa `/chat/completions`) — edge function append endpoint.
 
-**Verifikasi model valid sebelum INSERT:**
+**Verifikasi model Gemini valid:**
 ```bash
 curl "https://generativelanguage.googleapis.com/v1beta/models?key=$KEY" \
   | jq -r '.models[] | select(.supportedGenerationMethods[]? == "generateContent") | .name'
@@ -220,18 +254,19 @@ curl "https://generativelanguage.googleapis.com/v1beta/models?key=$KEY" \
 
 ## 6. Telemetry (`llm_logs`)
 
-Insert fire-and-forget per percobaan provider:
+Insert fire-and-forget per attempt (sukses & gagal):
 
 ```sql
-INSERT INTO llm_logs(bill_id, provider, request_payload, response_payload, latency_ms, status_code) VALUES
-(NULL, 'Gemini', '{"image_count":1,"hint":null}', '<full payload OR {"error":"..."}>', 1234, 200);
+-- Contoh row gagal
+SELECT provider, status_code, latency_ms, response_payload
+FROM llm_logs ORDER BY created_at DESC LIMIT 5;
 ```
 
-- `bill_id NULL` saat OCR (scan terjadi sebelum bill dibuat). Future: link saat user save bill.
-- `request_payload` **tidak menyimpan base64** — terlalu besar dan tidak ada nilai diagnostik. Hanya `{ image_count, hint }`.
-- `status_code = 200` kalau sukses, else status dari `ProviderError` (atau 502 untuk error tak terduga).
+- `bill_id NULL` saat OCR (scan terjadi sebelum bill dibuat).
+- `request_payload` tidak menyimpan base64 — hanya `{ model, image_count, hint }`.
+- `response_payload` saat sukses: `{ items_count, confidence }`. Saat gagal: `{ error: "..." }`.
 
-**Query monitoring umum:**
+**Query monitoring:**
 ```sql
 -- Error rate per provider 24 jam terakhir
 SELECT provider,
@@ -246,65 +281,52 @@ ORDER BY provider;
 
 ---
 
-## 7. Smoke test (`smoketest.sh`)
+## 7. Cara Menambah Provider Baru
 
-Bash script untuk verifikasi pipeline tanpa membuka app.
-
-- Baca `SUPABASE_URL` + `SUPABASE_ANON_KEY` dari `.env.local` (atau `.env`).
-- Tahan **CRLF** (file di-edit di Windows), tanda kutip, dan whitespace.
-- Validasi bentuk JWT sebelum POST (catch corruption awal).
-- Build payload `{"images":[<b64>]}` murni shell (base64 alphabet aman tanpa escape JSON, tidak butuh Python/jq).
-- Print HTTP code + response body (pretty via `jq` kalau ada).
-- Exit 0 hanya kalau HTTP 200.
-
-Pakai:
-```bash
-./smoketest.sh                      # default photo_2026-04-28_08-41-22.jpg
-./smoketest.sh path/to/other.jpg
+### Provider OpenAI-compatible (Groq, Together, DeepSeek, dll)
+Cukup INSERT baris baru — tidak perlu code change:
+```sql
+INSERT INTO llm_configs(provider_name, api_key, base_url, model_name, priority, is_active)
+VALUES ('groq', 'gsk_...', 'https://api.groq.com/openai/v1', 'llama-3.3-70b-versatile', 3, TRUE);
 ```
+Lalu tambah `case "groq": return await callOpenRouter(cfg, images, hint);` di dispatcher (atau buat fungsi shared `callOpenAICompatible`).
+
+### Provider dengan wire format khas (Anthropic, dll)
+1. Tambah `case "anthropic"` di dispatcher (`index.ts`).
+2. Tulis fungsi `callAnthropic(cfg, images, hint)` dengan header `x-api-key` + `anthropic-version`.
+3. INSERT baris ke `llm_configs`.
+4. Deploy: `supabase functions deploy process-receipt`.
 
 ---
 
 ## 8. Auth & Multi-Device
 
-- **Auto anonymous sign-in di startup** ([lib/main.dart](lib/main.dart)): setelah `Supabase.initialize()`, kalau `auth.currentUser == null` → `signInAnonymously()`. Wajib supaya RLS `auth.uid() = owner_id` lulus. Tanpa ini insert ke `bills` ditolak dengan error 42501.
-- **Anonymous sign-in harus di-enable** di Supabase Dashboard → Authentication → Providers. Tanpa enable, sign-in di startup gagal dan app tidak bisa save bill.
-- Captcha untuk anonymous sign-in **tidak diaktifkan saat ini** (development phase). Lapis pertahanan: rate-limit trigger di tabel `bills` (lihat migrasi `20260428130000`). Sebelum public release rekomendasi: enable hCaptcha/Turnstile di Supabase, atau migrate ke Google sign-in (lebih aman jangka panjang karena bill perlu identitas stabil).
-- `AuthRemoteDataSource` mendukung **promote to email** (`updateUser({ email })`) — supaya user yang awalnya anonim bisa daftar tanpa kehilangan bill (Supabase preserve `auth.uid()` saat linking).
-- RLS di `bills`/`items`/`participants`/`item_assignments` semua filter by `auth.uid()` lewat `bills.owner_id`. Anonymous user dapat UID stabil yang persist di device sampai logout/clear-data.
+- **Auto anonymous sign-in di startup** ([lib/main.dart](lib/main.dart)): setelah `Supabase.initialize()`, kalau `auth.currentUser == null` → `signInAnonymously()`. Wajib supaya RLS `auth.uid() = owner_id` lulus.
+- **Anonymous sign-in harus di-enable** di Supabase Dashboard → Authentication → Providers.
+- `AuthRemoteDataSource` mendukung **promote to email** — user anonim bisa daftar tanpa kehilangan bill (Supabase preserve `auth.uid()` saat linking).
+- RLS di semua tabel filter by `auth.uid()` lewat `bills.owner_id`.
 
 ---
 
-## 9. Cara Menambah Provider Baru
+## 9. Smoke test (`smoketest.sh`)
 
-Misal mau tambah Anthropic Claude:
+```bash
+./smoketest.sh                      # default photo_2026-04-28_08-41-22.jpg
+./smoketest.sh path/to/other.jpg
+```
 
-1. **Tambah branch di dispatcher** ([index.ts:170-194](supabase/functions/process-receipt/index.ts:170-194)):
-   ```ts
-   case "anthropic": {
-     const baseUrl = cfg.base_url ?? "https://api.anthropic.com/v1";
-     const model = cfg.model_name ?? "claude-haiku-4-5";
-     return await callAnthropic(baseUrl, cfg.api_key, model, images, hint);
-   }
-   ```
-   Anthropic punya wire format khas (header `x-api-key` + `anthropic-version`, struktur `messages[].content[].source.data` untuk image base64), jadi butuh fungsi `callAnthropic` baru — bukan `callOpenAICompatible`.
-2. **Insert baris**: `INSERT INTO llm_configs(provider_name, api_key, model_name, priority) VALUES ('Anthropic', '...', 'claude-haiku-4-5', 4);`
-3. **Deploy**: `supabase functions deploy process-receipt`.
-
-Kalau provider baru sudah OpenAI-compatible (misal Groq, Together, DeepSeek): cukup `INSERT` dengan `base_url` provider tersebut — tidak perlu code change.
+Baca `SUPABASE_URL` + `SUPABASE_ANON_KEY` dari `.env`. Exit 0 hanya kalau HTTP 200.
 
 ---
 
 ## 10. Known Limitations & Next Steps
 
-- **Captcha belum dipasang** — anonymous sign-in tanpa bot protection. Rate limit di `bills` adalah lapis defensif, bukan substitut. Sebelum public release: enable hCaptcha/Turnstile atau migrate ke Google sign-in.
-- **`bills.owner_id DEFAULT auth.uid()`** — bagus untuk anonymous flow, tapi belum ada path untuk berbagi bill ke participant lain (mereka belum punya akses RLS).
-- **`participants` tidak punya `user_id` kolom** — split bill saat ini owner-centric. Belum ada notifikasi/share-link.
-- **Bill detail / edit ulang** — setelah save, belum ada screen untuk edit bill yang sudah tersimpan. Bill list hanya read-only `Card`.
-- **Bill review tidak bisa balik ke capture screen** — `context.goNamed(Routes.billListName)` setelah save lompat langsung ke list. User yang batal review harus tap back-arrow manual; data scan tidak diingat.
-- **`smoketest.sh`** menyimpan response ke `/tmp/sr_response.json` — Windows Git Bash mengarahkan ke path Cygwin-style; bisa di-improve pakai `mktemp`.
-- **Edge Function tidak rate-limit di sisi sendiri** — bergantung pada Supabase project quota. Untuk produksi pertimbangkan circuit breaker / cooldown di tabel `llm_configs` (mis. kolom `cooldown_until`).
-- **Cleanup task** — automation untuk audit `llm_logs` mingguan (error rate spike, key rotation reminder) belum dipasang. Bisa di-`/schedule` jadi cron agent.
+- **Captcha belum dipasang** — anonymous sign-in tanpa bot protection. Rate limit di `bills` adalah lapis defensif, bukan substitut.
+- **`participants` tidak punya `user_id` kolom** — split bill saat ini owner-centric. Belum ada share-link ke participant.
+- **Bill detail / edit ulang** — setelah save, belum ada screen untuk edit bill yang sudah tersimpan.
+- **Lottie asset** di `assets/lottie/scanning.json` masih placeholder — ganti dengan animasi final sebelum rilis.
+- **Edge Function tidak rate-limit di sisi sendiri** — bergantung Supabase project quota. Pertimbangkan kolom `cooldown_until` di `llm_configs` untuk circuit breaker.
+- **`llm_logs` audit mingguan** belum otomatis — bisa di-`/schedule` jadi cron agent.
 
 ---
 
@@ -312,18 +334,19 @@ Kalau provider baru sudah OpenAI-compatible (misal Groq, Together, DeepSeek): cu
 
 | Path | Peran |
 |---|---|
-| [lib/main.dart](lib/main.dart) | Entry point, dotenv load, Supabase init, **auto anonymous sign-in** |
+| [lib/main.dart](lib/main.dart) | Entry point, dotenv load, Supabase init, auto anonymous sign-in |
 | [lib/core/config/env.dart](lib/core/config/env.dart) | Typed accessor `Env.supabaseUrl`, dst |
 | [lib/core/config/app_constants.dart](lib/core/config/app_constants.dart) | `ocrLowConfidenceThreshold`, `billTotalMismatchTolerance`, `ocrMaxImageEdgePx`, dll |
-| [lib/core/network/supabase_client_provider.dart](lib/core/network/supabase_client_provider.dart) | Riverpod provider untuk SupabaseClient |
-| [lib/core/router/app_router.dart](lib/core/router/app_router.dart) | go_router config: list, capture, **review** |
+| [lib/core/theme/app_theme.dart](lib/core/theme/app_theme.dart) | Material 3, seed color `Color(0xFF2E7D5B)` (receipt-paper green) |
+| [lib/core/router/app_router.dart](lib/core/router/app_router.dart) | go_router: list → capture → review |
 | [lib/data/services/ocr_service.dart](lib/data/services/ocr_service.dart) | Klien Edge Function (downscale + invoke) |
-| [lib/data/dtos/bill_dto.dart](lib/data/dtos/bill_dto.dart) | Mapping ke kolom DB (`tax_amount`, `service_charge`, `receipt_date`) |
-| [lib/presentation/ocr/screens/receipt_capture_screen.dart](lib/presentation/ocr/screens/receipt_capture_screen.dart) | Capture + scanning overlay + auto-navigate ke review |
-| [lib/presentation/ocr/providers/ocr_notifier.dart](lib/presentation/ocr/providers/ocr_notifier.dart) | State machine OCR |
-| [lib/presentation/bills/screens/bill_review_screen.dart](lib/presentation/bills/screens/bill_review_screen.dart) | **Form review/edit + save bill** |
+| [lib/presentation/ocr/screens/receipt_capture_screen.dart](lib/presentation/ocr/screens/receipt_capture_screen.dart) | Capture UI: empty state, card preview, Lottie overlay, shimmer, animasi tombol |
+| [lib/presentation/ocr/widgets/receipt_preview_component.dart](lib/presentation/ocr/widgets/receipt_preview_component.dart) | Card gambar M3 (border hijau, radius 20), floating remove button |
+| [lib/presentation/ocr/providers/ocr_notifier.dart](lib/presentation/ocr/providers/ocr_notifier.dart) | State machine OCR (idle/processing/success/failure) |
+| [lib/presentation/bills/screens/bill_review_screen.dart](lib/presentation/bills/screens/bill_review_screen.dart) | Form review/edit + save bill |
 | [lib/domain/services/bill_calculator.dart](lib/domain/services/bill_calculator.dart) | Pure logic distribusi tax/service per participant |
-| [supabase/functions/process-receipt/index.ts](supabase/functions/process-receipt/index.ts) | Edge Function utama |
+| [supabase/functions/process-receipt/index.ts](supabase/functions/process-receipt/index.ts) | Edge Function: DB-driven provider rotation + telemetry |
 | [supabase/migrations/](supabase/migrations/) | Postgres schema + RLS + rate limit trigger |
+| [assets/lottie/scanning.json](assets/lottie/scanning.json) | Animasi scanning (ganti dengan Lottie final sebelum rilis) |
 | [.env.example](.env.example) | Template env client (anon key only) |
 | [smoketest.sh](smoketest.sh) | Test E2E Edge Function dari CLI |

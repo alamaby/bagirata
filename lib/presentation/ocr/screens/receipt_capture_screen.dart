@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -61,6 +62,7 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
     });
     final state = ref.watch(ocrProvider);
     final busy = _starting || state is OcrProcessing;
+    final scanActive = _images.isNotEmpty && !busy;
     return AppScaffold(
       title: 'Scan receipt',
       actions: [
@@ -74,81 +76,63 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
                   : ReceiptPreviewMode.carousel),
         ),
       ],
-      body: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Column(
+      body: Padding(
+        padding: EdgeInsets.all(16.w),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: ReceiptPreviewComponent(
+                  images: _images,
+                  mode: _mode,
+                  busy: busy,
+                  onRemove: (i) => setState(() => _images.removeAt(i)),
+                ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            _StatusLabel(state: state, starting: _starting),
+            SizedBox(height: 12.h),
+            Row(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: ReceiptPreviewComponent(
-                      images: _images,
-                      mode: _mode,
-                      onRemove: (i) => setState(() => _images.removeAt(i)),
-                    ),
+                  child: OutlinedButton.icon(
+                    onPressed: busy ? null : _addImages,
+                    icon: const Icon(Icons.add_photo_alternate),
+                    label: const Text('Add photos'),
                   ),
                 ),
-                SizedBox(height: 12.h),
-                _StatusLabel(state: state, starting: _starting),
-                SizedBox(height: 12.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: busy ? null : _addImages,
-                        icon: const Icon(Icons.add_photo_alternate),
-                        label: const Text('Add photos'),
-                      ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: _images.isEmpty || busy ? null : _process,
-                        icon: busy
-                            ? SizedBox(
-                                width: 16.w,
-                                height: 16.w,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.auto_awesome),
-                        label: Text(busy ? 'Scanning…' : 'Scan'),
-                      ),
-                    ),
-                  ],
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: FilledButton.icon(
+                      key: ValueKey<bool>(scanActive),
+                      onPressed: scanActive ? _process : null,
+                      icon: busy
+                          ? SizedBox(
+                              width: 16.w,
+                              height: 16.w,
+                              child: const CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.auto_awesome),
+                      label: Text(busy ? 'Scanning…' : 'Scan'),
+                    )
+                        .animate(target: scanActive ? 1 : 0)
+                        .fadeIn(duration: 300.ms)
+                        .slideY(
+                          begin: 0.3,
+                          end: 0,
+                          duration: 300.ms,
+                          curve: Curves.easeOut,
+                        ),
+                  ),
                 ),
               ],
             ),
-          ),
-          if (busy) const _ScanningOverlay(),
-        ],
-      ),
-    );
-  }
-}
-
-class _ScanningOverlay extends StatelessWidget {
-  const _ScanningOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: ColoredBox(
-        color: Colors.black54,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              SizedBox(height: 12.h),
-              Text(
-                'AI sedang membaca struk…',
-                style: TextStyle(color: Colors.white, fontSize: 14.sp),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
@@ -162,6 +146,8 @@ class _StatusLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isProcessing = starting || state is OcrProcessing;
     final text = starting && state is! OcrProcessing
         ? 'Memproses gambar…'
         : switch (state) {
@@ -172,7 +158,20 @@ class _StatusLabel extends StatelessWidget {
               '${result.items.length} items detected via ${result.providerUsed}',
             OcrFailure(:final failure) => 'Failed: $failure',
           };
-    return Text(text, style: TextStyle(fontSize: 13.sp));
+    final label = Text(
+      text,
+      style: TextStyle(
+        fontSize: 13.sp,
+        color: scheme.onSurfaceVariant,
+        fontWeight: isProcessing ? FontWeight.w600 : FontWeight.w400,
+      ),
+    );
+    if (!isProcessing) return label;
+    return label
+        .animate(onPlay: (c) => c.repeat())
+        .shimmer(
+          duration: 1200.ms,
+          color: scheme.primary,
+        );
   }
 }
-
