@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/router/routes.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../providers/ocr_notifier.dart';
 import '../widgets/receipt_preview_component.dart';
@@ -36,6 +38,17 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<OcrState>(ocrProvider, (prev, next) {
+      if (next is OcrSuccess && prev is! OcrSuccess) {
+        ref.read(ocrProvider.notifier).reset();
+        context.pushNamed(Routes.billReviewName, extra: next.result);
+      }
+      if (next is OcrFailure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal scan: ${next.failure}')),
+        );
+      }
+    });
     final state = ref.watch(ocrProvider);
     return AppScaffold(
       title: 'Scan receipt',

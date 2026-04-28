@@ -12,7 +12,7 @@ abstract class OcrLineItemDto with _$OcrLineItemDto {
   const factory OcrLineItemDto({
     required String name,
     required double price,
-    @Default(1) int qty,
+    @Default(1.0) double qty,
   }) = _OcrLineItemDto;
 
   factory OcrLineItemDto.fromJson(Map<String, dynamic> json) =>

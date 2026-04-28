@@ -6,4 +6,7 @@ class Routes {
 
   static const String capture = '/capture';
   static const String captureName = 'capture';
+
+  static const String billReview = '/review';
+  static const String billReviewName = 'bill-review';
 }

@@ -14,7 +14,7 @@ abstract class ItemDto with _$ItemDto {
     @JsonKey(name: 'bill_id') required String billId,
     required String name,
     required double price,
-    @Default(1) int qty,
+    @Default(1.0) double qty,
   }) = _ItemDto;
 
   factory ItemDto.fromJson(Map<String, dynamic> json) => _$ItemDtoFromJson(json);

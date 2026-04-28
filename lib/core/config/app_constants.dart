@@ -17,4 +17,13 @@ class AppConstants {
 
   /// Default share weight when a participant claims one item alone.
   static const double defaultShareWeight = 1.0;
+
+  /// Confidence di bawah ini → tampilkan chip peringatan ke user supaya
+  /// double-check angka secara manual.
+  static const double ocrLowConfidenceThreshold = 0.8;
+
+  /// Selisih maksimum antara total hitungan client vs `detected_total` LLM
+  /// sebelum menampilkan banner mismatch. 1.0 menyerap rounding kecil
+  /// (LLM kadang bulatkan ke ratusan).
+  static const double billTotalMismatchTolerance = 1.0;
 }

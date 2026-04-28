@@ -10,7 +10,7 @@ _OcrLineItemDto _$OcrLineItemDtoFromJson(Map<String, dynamic> json) =>
     _OcrLineItemDto(
       name: json['name'] as String,
       price: (json['price'] as num).toDouble(),
-      qty: (json['qty'] as num?)?.toInt() ?? 1,
+      qty: (json['qty'] as num?)?.toDouble() ?? 1.0,
     );
 
 Map<String, dynamic> _$OcrLineItemDtoToJson(_OcrLineItemDto instance) =>

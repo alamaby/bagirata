@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OcrLineItem {
 
- String get name; double get price; int get qty;
+ String get name; double get price; double get qty;
 /// Create a copy of OcrLineItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -45,7 +45,7 @@ abstract mixin class $OcrLineItemCopyWith<$Res>  {
   factory $OcrLineItemCopyWith(OcrLineItem value, $Res Function(OcrLineItem) _then) = _$OcrLineItemCopyWithImpl;
 @useResult
 $Res call({
- String name, double price, int qty
+ String name, double price, double qty
 });
 
 
@@ -67,7 +67,7 @@ class _$OcrLineItemCopyWithImpl<$Res>
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,qty: null == qty ? _self.qty : qty // ignore: cast_nullable_to_non_nullable
-as int,
+as double,
   ));
 }
 
@@ -152,7 +152,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  double price,  int qty)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  double price,  double qty)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OcrLineItem() when $default != null:
 return $default(_that.name,_that.price,_that.qty);case _:
@@ -173,7 +173,7 @@ return $default(_that.name,_that.price,_that.qty);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  double price,  int qty)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  double price,  double qty)  $default,) {final _that = this;
 switch (_that) {
 case _OcrLineItem():
 return $default(_that.name,_that.price,_that.qty);case _:
@@ -193,7 +193,7 @@ return $default(_that.name,_that.price,_that.qty);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  double price,  int qty)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  double price,  double qty)?  $default,) {final _that = this;
 switch (_that) {
 case _OcrLineItem() when $default != null:
 return $default(_that.name,_that.price,_that.qty);case _:
@@ -208,12 +208,12 @@ return $default(_that.name,_that.price,_that.qty);case _:
 
 
 class _OcrLineItem implements OcrLineItem {
-  const _OcrLineItem({required this.name, required this.price, this.qty = 1});
+  const _OcrLineItem({required this.name, required this.price, this.qty = 1.0});
   
 
 @override final  String name;
 @override final  double price;
-@override@JsonKey() final  int qty;
+@override@JsonKey() final  double qty;
 
 /// Create a copy of OcrLineItem
 /// with the given fields replaced by the non-null parameter values.
@@ -245,7 +245,7 @@ abstract mixin class _$OcrLineItemCopyWith<$Res> implements $OcrLineItemCopyWith
   factory _$OcrLineItemCopyWith(_OcrLineItem value, $Res Function(_OcrLineItem) _then) = __$OcrLineItemCopyWithImpl;
 @override @useResult
 $Res call({
- String name, double price, int qty
+ String name, double price, double qty
 });
 
 
@@ -267,7 +267,7 @@ class __$OcrLineItemCopyWithImpl<$Res>
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,qty: null == qty ? _self.qty : qty // ignore: cast_nullable_to_non_nullable
-as int,
+as double,
   ));
 }
 

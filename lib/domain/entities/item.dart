@@ -11,7 +11,7 @@ abstract class Item with _$Item {
     required String billId,
     required String name,
     required double price,
-    @Default(1) int qty,
+    @Default(1.0) double qty,
   }) = _Item;
 
   double get subtotal => price * qty;

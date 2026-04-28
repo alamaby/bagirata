@@ -11,7 +11,7 @@ _ItemDto _$ItemDtoFromJson(Map<String, dynamic> json) => _ItemDto(
   billId: json['bill_id'] as String,
   name: json['name'] as String,
   price: (json['price'] as num).toDouble(),
-  qty: (json['qty'] as num?)?.toInt() ?? 1,
+  qty: (json['qty'] as num?)?.toDouble() ?? 1.0,
 );
 
 Map<String, dynamic> _$ItemDtoToJson(_ItemDto instance) => <String, dynamic>{

@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Item {
 
- String get id; String get billId; String get name; double get price; int get qty;
+ String get id; String get billId; String get name; double get price; double get qty;
 /// Create a copy of Item
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -45,7 +45,7 @@ abstract mixin class $ItemCopyWith<$Res>  {
   factory $ItemCopyWith(Item value, $Res Function(Item) _then) = _$ItemCopyWithImpl;
 @useResult
 $Res call({
- String id, String billId, String name, double price, int qty
+ String id, String billId, String name, double price, double qty
 });
 
 
@@ -69,7 +69,7 @@ as String,billId: null == billId ? _self.billId : billId // ignore: cast_nullabl
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,qty: null == qty ? _self.qty : qty // ignore: cast_nullable_to_non_nullable
-as int,
+as double,
   ));
 }
 
@@ -154,7 +154,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String billId,  String name,  double price,  int qty)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String billId,  String name,  double price,  double qty)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Item() when $default != null:
 return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
@@ -175,7 +175,7 @@ return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String billId,  String name,  double price,  int qty)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String billId,  String name,  double price,  double qty)  $default,) {final _that = this;
 switch (_that) {
 case _Item():
 return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
@@ -195,7 +195,7 @@ return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String billId,  String name,  double price,  int qty)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String billId,  String name,  double price,  double qty)?  $default,) {final _that = this;
 switch (_that) {
 case _Item() when $default != null:
 return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
@@ -210,14 +210,14 @@ return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
 
 
 class _Item extends Item {
-  const _Item({required this.id, required this.billId, required this.name, required this.price, this.qty = 1}): super._();
+  const _Item({required this.id, required this.billId, required this.name, required this.price, this.qty = 1.0}): super._();
   
 
 @override final  String id;
 @override final  String billId;
 @override final  String name;
 @override final  double price;
-@override@JsonKey() final  int qty;
+@override@JsonKey() final  double qty;
 
 /// Create a copy of Item
 /// with the given fields replaced by the non-null parameter values.
@@ -249,7 +249,7 @@ abstract mixin class _$ItemCopyWith<$Res> implements $ItemCopyWith<$Res> {
   factory _$ItemCopyWith(_Item value, $Res Function(_Item) _then) = __$ItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String billId, String name, double price, int qty
+ String id, String billId, String name, double price, double qty
 });
 
 
@@ -273,7 +273,7 @@ as String,billId: null == billId ? _self.billId : billId // ignore: cast_nullabl
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,qty: null == qty ? _self.qty : qty // ignore: cast_nullable_to_non_nullable
-as int,
+as double,
   ));
 }
 

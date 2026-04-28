@@ -7,7 +7,7 @@ abstract class OcrLineItem with _$OcrLineItem {
   const factory OcrLineItem({
     required String name,
     required double price,
-    @Default(1) int qty,
+    @Default(1.0) double qty,
   }) = _OcrLineItem;
 }
 

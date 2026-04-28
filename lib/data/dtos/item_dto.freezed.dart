@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ItemDto {
 
- String get id;@JsonKey(name: 'bill_id') String get billId; String get name; double get price; int get qty;
+ String get id;@JsonKey(name: 'bill_id') String get billId; String get name; double get price; double get qty;
 /// Create a copy of ItemDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $ItemDtoCopyWith<$Res>  {
   factory $ItemDtoCopyWith(ItemDto value, $Res Function(ItemDto) _then) = _$ItemDtoCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'bill_id') String billId, String name, double price, int qty
+ String id,@JsonKey(name: 'bill_id') String billId, String name, double price, double qty
 });
 
 
@@ -72,7 +72,7 @@ as String,billId: null == billId ? _self.billId : billId // ignore: cast_nullabl
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,qty: null == qty ? _self.qty : qty // ignore: cast_nullable_to_non_nullable
-as int,
+as double,
   ));
 }
 
@@ -157,7 +157,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'bill_id')  String billId,  String name,  double price,  int qty)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'bill_id')  String billId,  String name,  double price,  double qty)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ItemDto() when $default != null:
 return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
@@ -178,7 +178,7 @@ return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'bill_id')  String billId,  String name,  double price,  int qty)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'bill_id')  String billId,  String name,  double price,  double qty)  $default,) {final _that = this;
 switch (_that) {
 case _ItemDto():
 return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
@@ -198,7 +198,7 @@ return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'bill_id')  String billId,  String name,  double price,  int qty)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'bill_id')  String billId,  String name,  double price,  double qty)?  $default,) {final _that = this;
 switch (_that) {
 case _ItemDto() when $default != null:
 return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
@@ -213,14 +213,14 @@ return $default(_that.id,_that.billId,_that.name,_that.price,_that.qty);case _:
 @JsonSerializable()
 
 class _ItemDto extends ItemDto {
-  const _ItemDto({required this.id, @JsonKey(name: 'bill_id') required this.billId, required this.name, required this.price, this.qty = 1}): super._();
+  const _ItemDto({required this.id, @JsonKey(name: 'bill_id') required this.billId, required this.name, required this.price, this.qty = 1.0}): super._();
   factory _ItemDto.fromJson(Map<String, dynamic> json) => _$ItemDtoFromJson(json);
 
 @override final  String id;
 @override@JsonKey(name: 'bill_id') final  String billId;
 @override final  String name;
 @override final  double price;
-@override@JsonKey() final  int qty;
+@override@JsonKey() final  double qty;
 
 /// Create a copy of ItemDto
 /// with the given fields replaced by the non-null parameter values.
@@ -255,7 +255,7 @@ abstract mixin class _$ItemDtoCopyWith<$Res> implements $ItemDtoCopyWith<$Res> {
   factory _$ItemDtoCopyWith(_ItemDto value, $Res Function(_ItemDto) _then) = __$ItemDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'bill_id') String billId, String name, double price, int qty
+ String id,@JsonKey(name: 'bill_id') String billId, String name, double price, double qty
 });
 
 
@@ -279,7 +279,7 @@ as String,billId: null == billId ? _self.billId : billId // ignore: cast_nullabl
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,price: null == price ? _self.price : price // ignore: cast_nullable_to_non_nullable
 as double,qty: null == qty ? _self.qty : qty // ignore: cast_nullable_to_non_nullable
-as int,
+as double,
   ));
 }
 
