@@ -33,5 +33,8 @@ abstract interface class IAuthRepository {
   /// UI placeholder. Real OAuth flow is out of scope for this iteration.
   Future<Result<void>> signInWithGoogle();
 
+  /// Resends the verification email after [signUp] / [linkEmail].
+  Future<Result<void>> resendEmailChange({required String email});
+
   Future<Result<void>> signOut();
 }

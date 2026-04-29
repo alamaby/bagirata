@@ -60,5 +60,10 @@ class AuthRemoteDataSource {
     }
   }
 
+  /// Resends the email-change confirmation. Used after [signUp] / [linkEmail]
+  /// when the user wants another copy of the verification link.
+  Future<void> resendEmailChange({required String email}) =>
+      _auth.resend(type: OtpType.emailChange, email: email);
+
   Future<void> signOut() => _auth.signOut();
 }

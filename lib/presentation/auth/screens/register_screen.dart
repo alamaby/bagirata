@@ -44,13 +44,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _loading = false);
     switch (res) {
       case Success():
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Akun berhasil dibuat. Selamat datang!'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        context.go(Routes.dashboard);
+        final email = Uri.encodeQueryComponent(_email.text.trim());
+        context.go('${Routes.verifyEmail}?email=$email');
       case ResultFailure(:final failure):
         _showError(friendlyAuthMessage(failure));
     }
@@ -95,7 +90,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Daftar'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Kembali ke Scan',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(Routes.scan);
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => context.go(Routes.scan),
+            child: const Text('Lewati'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Form(
           key: _formKey,

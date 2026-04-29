@@ -46,7 +46,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = false);
     switch (res) {
       case Success():
-        context.go(Routes.dashboard);
+        context.go(Routes.history);
       case ResultFailure(:final failure):
         _showError(friendlyAuthMessage(failure));
     }

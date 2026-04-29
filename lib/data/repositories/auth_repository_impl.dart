@@ -42,5 +42,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       const Result.failure(Failure.auth('Google sign-in coming soon'));
 
   @override
+  Future<Result<void>> resendEmailChange({required String email}) =>
+      guardAsync(() => _ds.resendEmailChange(email: email));
+
+  @override
   Future<Result<void>> signOut() => guardAsync(_ds.signOut);
 }

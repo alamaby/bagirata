@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/format/app_format.dart';
+import '../../../core/router/routes.dart';
+import '../../../domain/entities/auth_snapshot.dart';
 import '../../../domain/entities/item.dart';
 import '../../../domain/entities/participant.dart';
+import '../../auth/providers/auth_providers.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../providers/split_notifier.dart';
 import '../widgets/participant_avatar.dart';
@@ -21,13 +26,39 @@ class BillSplitScreen extends ConsumerWidget {
 
   final String billId;
 
+  void _exit(BuildContext context, WidgetRef ref) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    final snap = switch (ref.read(authStateProvider)) {
+      AsyncData<AuthSnapshot>(:final value) => value,
+      _ => null,
+    };
+    final isSignedIn = snap?.userId != null && !(snap?.isAnonymous ?? true);
+    context.go(isSignedIn ? Routes.history : Routes.scan);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(splitFamily(billId));
-    final currency = NumberFormat.simpleCurrency();
+    final currency = AppFormat.currency();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Split bill')),
+      appBar: AppBar(
+        title: const Text('Split bill'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Kembali',
+          onPressed: () => _exit(context, ref),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => _exit(context, ref),
+            child: const Text('Selesai'),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: async.when(
           loading: () => const LoadingView(message: 'Loading…'),

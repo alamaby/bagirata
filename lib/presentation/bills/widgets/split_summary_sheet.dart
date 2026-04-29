@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/format/app_format.dart';
 import '../../../domain/entities/participant.dart';
 import '../providers/split_notifier.dart';
 import 'participant_avatar.dart';
@@ -30,7 +31,7 @@ class SplitSummarySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currency = NumberFormat.simpleCurrency();
+    final currency = AppFormat.currency();
     final totals = state.calculateTotals();
     final byId = {for (final t in totals) t.participantId: t};
 

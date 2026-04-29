@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/env.dart';
+import 'core/format/app_format.dart';
 
 /// Entry point.
 ///
@@ -25,6 +28,11 @@ Future<void> main() async {
 }
 
 Future<String?> _bootstrap() async {
+  // Default ke Indonesian — currency Rupiah, tanggal Indonesia. Inisialisasi
+  // date symbols sekali di awal supaya DateFormat('id_ID') tidak throw.
+  Intl.defaultLocale = AppFormat.locale;
+  await initializeDateFormatting(AppFormat.locale);
+
   try {
     await dotenv.load(fileName: '.env').timeout(const Duration(seconds: 5));
   } catch (e) {

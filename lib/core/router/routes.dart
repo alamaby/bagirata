@@ -1,8 +1,11 @@
 class Routes {
   const Routes._();
 
-  static const String billList = '/';
-  static const String billListName = 'bill-list';
+  static const String scan = '/scan';
+  static const String scanName = 'scan';
+
+  static const String history = '/history';
+  static const String historyName = 'history';
 
   static const String capture = '/capture';
   static const String captureName = 'capture';
@@ -19,6 +22,6 @@ class Routes {
   static const String register = '/register';
   static const String registerName = 'register';
 
-  static const String dashboard = '/dashboard';
-  static const String dashboardName = 'dashboard';
+  static const String verifyEmail = '/verify-email';
+  static const String verifyEmailName = 'verify-email';
 }

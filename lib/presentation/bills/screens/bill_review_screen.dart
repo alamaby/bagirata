@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/app_constants.dart';
+import '../../../core/format/app_format.dart';
 import '../../../core/router/routes.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../shared/widgets/app_scaffold.dart';
@@ -94,7 +95,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
     final state = ref.watch(billReviewFamily(widget.ocr));
     _syncItemControllers(state);
 
-    final currency = NumberFormat.simpleCurrency();
+    final currency = AppFormat.currency();
     final lowConfidence =
         state.confidence < AppConstants.ocrLowConfidenceThreshold;
 
@@ -309,7 +310,7 @@ class _Header extends StatelessWidget {
                       size: 14.r, color: scheme.outline),
                   SizedBox(width: 6.w),
                   Text(
-                    DateFormat.yMMMMd().format(receiptDate!),
+                    AppFormat.longDate().format(receiptDate!),
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: scheme.outline,
