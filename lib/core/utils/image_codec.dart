@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:isolate';
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 
 import '../config/app_constants.dart';
@@ -15,15 +14,18 @@ import '../config/app_constants.dart';
 /// Why off-isolate: `img.decodeImage`/`copyResize`/`encodeJpg` are pure-Dart
 /// synchronous CPU work — running them on the main isolate blocks the UI for
 /// 800-1500ms per receipt, which delays the scanning animation by several
-/// frames. We dispatch through `Isolate.run` so the main thread stays free to
-/// paint the loading overlay the instant the user taps Scan.
+/// frames. We dispatch through `compute` so the main thread stays free to
+/// paint the loading overlay the instant the user taps Scan. On Flutter Web,
+/// `compute` falls back to running synchronously on the main thread because
+/// `dart:isolate` is unavailable — acceptable trade-off; the UI briefly
+/// stutters but scanning still works.
 class ImageCodec {
   const ImageCodec._();
 
   /// Decodes [bytes], rescales so the long edge ≤ [AppConstants.ocrMaxImageEdgePx],
   /// re-encodes as JPEG q85, and returns base64 (no `data:` prefix).
   static Future<String> downscaleToBase64(Uint8List bytes) {
-    return Isolate.run(() => _downscaleToBase64Sync(bytes));
+    return compute(_downscaleToBase64Sync, bytes);
   }
 }
 

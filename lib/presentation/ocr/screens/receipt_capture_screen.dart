@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/router/routes.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../providers/ocr_notifier.dart';
+import '../utils/ocr_messages.dart';
 import '../widgets/receipt_preview_component.dart';
 
 /// Placeholder capture flow — wires together image_picker, the preview
@@ -60,9 +61,33 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
         context.pushNamed(Routes.billReviewName, extra: next.result);
       }
       if (next is OcrFailure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal scan: ${next.failure}')),
-        );
+        final msg = friendlyOcrMessage(next.failure);
+        final scheme = Theme.of(context).colorScheme;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              backgroundColor: scheme.errorContainer,
+              behavior: SnackBarBehavior.floating,
+              content: Row(
+                children: [
+                  Icon(Icons.error_outline,
+                      color: scheme.onErrorContainer, size: 20.r),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      msg.title,
+                      style: TextStyle(
+                        color: scheme.onErrorContainer,
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
       }
     });
     final state = ref.watch(ocrProvider);
@@ -96,7 +121,13 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
               ),
             ),
             SizedBox(height: 12.h),
-            _StatusLabel(state: state, starting: _starting),
+            if (state is OcrFailure)
+              _ErrorCard(
+                message: friendlyOcrMessage(state.failure),
+                onDismiss: () => ref.read(ocrProvider.notifier).reset(),
+              )
+            else
+              _StatusLabel(state: state, starting: _starting),
             SizedBox(height: 12.h),
             Row(
               children: [
@@ -161,7 +192,7 @@ class _StatusLabel extends StatelessWidget {
               'Scanning $imageCount image(s)…',
             OcrSuccess(:final result) =>
               '${result.items.length} items detected via ${result.providerUsed}',
-            OcrFailure(:final failure) => 'Failed: $failure',
+            OcrFailure() => '',
           };
     final label = Text(
       text,
@@ -178,5 +209,77 @@ class _StatusLabel extends StatelessWidget {
           duration: 1200.ms,
           color: scheme.primary,
         );
+  }
+}
+
+class _ErrorCard extends StatelessWidget {
+  const _ErrorCard({required this.message, required this.onDismiss});
+
+  final OcrMessage message;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: EdgeInsets.all(14.w),
+      decoration: BoxDecoration(
+        color: scheme.errorContainer.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(
+          color: scheme.error.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(8.w),
+            decoration: BoxDecoration(
+              color: scheme.error.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.cloud_off_rounded,
+              color: scheme.onErrorContainer,
+              size: 20.r,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message.title,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onErrorContainer,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  message.body,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    height: 1.4,
+                    color: scheme.onErrorContainer.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 4.w),
+          IconButton(
+            tooltip: 'Tutup',
+            visualDensity: VisualDensity.compact,
+            iconSize: 18.r,
+            onPressed: onDismiss,
+            icon: Icon(Icons.close, color: scheme.onErrorContainer),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 200.ms).slideY(begin: 0.1, end: 0);
   }
 }

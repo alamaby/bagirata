@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/router/routes.dart';
+import '../../../data/providers.dart';
+import '../../../domain/entities/auth_snapshot.dart';
+import '../../auth/providers/auth_providers.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../providers/bill_list_notifier.dart';
@@ -15,10 +18,46 @@ class BillListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bills = ref.watch(billListProvider);
+    final auth = switch (ref.watch(authStateProvider)) {
+      AsyncData<AuthSnapshot>(:final value) => value,
+      _ => null,
+    };
+    final isSignedIn = auth?.userId != null && !(auth?.isAnonymous ?? true);
     final currency = NumberFormat.simpleCurrency();
 
     return AppScaffold(
       title: 'BagiStruk',
+      actions: [
+        IconButton(
+          tooltip: 'Dashboard',
+          icon: const Icon(Icons.dashboard_outlined),
+          onPressed: () => context.push(Routes.dashboard),
+        ),
+        if (isSignedIn)
+          IconButton(
+            tooltip: 'Sign out',
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final repo = ref.read(authRepositoryProvider);
+              await repo.signOut();
+              await repo.signInAnonymously();
+              if (!context.mounted) return;
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Kamu sudah keluar.'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          )
+        else
+          IconButton(
+            tooltip: 'Login',
+            icon: const Icon(Icons.login),
+            onPressed: () => context.push(Routes.login),
+          ),
+      ],
       body: bills.when(
         loading: () => const LoadingView(message: 'Loading bills…'),
         error: (e, _) => Center(
