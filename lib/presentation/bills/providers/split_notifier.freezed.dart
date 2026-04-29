@@ -585,4 +585,285 @@ $BillCopyWith<$Res> get bill {
 }
 }
 
+/// @nodoc
+mixin _$ParticipantItemShare {
+
+ Item get item; int get sharedWith; double get share;
+/// Create a copy of ParticipantItemShare
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ParticipantItemShareCopyWith<ParticipantItemShare> get copyWith => _$ParticipantItemShareCopyWithImpl<ParticipantItemShare>(this as ParticipantItemShare, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParticipantItemShare&&(identical(other.item, item) || other.item == item)&&(identical(other.sharedWith, sharedWith) || other.sharedWith == sharedWith)&&(identical(other.share, share) || other.share == share));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,item,sharedWith,share);
+
+@override
+String toString() {
+  return 'ParticipantItemShare(item: $item, sharedWith: $sharedWith, share: $share)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ParticipantItemShareCopyWith<$Res>  {
+  factory $ParticipantItemShareCopyWith(ParticipantItemShare value, $Res Function(ParticipantItemShare) _then) = _$ParticipantItemShareCopyWithImpl;
+@useResult
+$Res call({
+ Item item, int sharedWith, double share
+});
+
+
+$ItemCopyWith<$Res> get item;
+
+}
+/// @nodoc
+class _$ParticipantItemShareCopyWithImpl<$Res>
+    implements $ParticipantItemShareCopyWith<$Res> {
+  _$ParticipantItemShareCopyWithImpl(this._self, this._then);
+
+  final ParticipantItemShare _self;
+  final $Res Function(ParticipantItemShare) _then;
+
+/// Create a copy of ParticipantItemShare
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? item = null,Object? sharedWith = null,Object? share = null,}) {
+  return _then(_self.copyWith(
+item: null == item ? _self.item : item // ignore: cast_nullable_to_non_nullable
+as Item,sharedWith: null == sharedWith ? _self.sharedWith : sharedWith // ignore: cast_nullable_to_non_nullable
+as int,share: null == share ? _self.share : share // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+/// Create a copy of ParticipantItemShare
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ItemCopyWith<$Res> get item {
+  
+  return $ItemCopyWith<$Res>(_self.item, (value) {
+    return _then(_self.copyWith(item: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [ParticipantItemShare].
+extension ParticipantItemSharePatterns on ParticipantItemShare {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ParticipantItemShare value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ParticipantItemShare() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ParticipantItemShare value)  $default,){
+final _that = this;
+switch (_that) {
+case _ParticipantItemShare():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ParticipantItemShare value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ParticipantItemShare() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Item item,  int sharedWith,  double share)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ParticipantItemShare() when $default != null:
+return $default(_that.item,_that.sharedWith,_that.share);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Item item,  int sharedWith,  double share)  $default,) {final _that = this;
+switch (_that) {
+case _ParticipantItemShare():
+return $default(_that.item,_that.sharedWith,_that.share);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Item item,  int sharedWith,  double share)?  $default,) {final _that = this;
+switch (_that) {
+case _ParticipantItemShare() when $default != null:
+return $default(_that.item,_that.sharedWith,_that.share);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _ParticipantItemShare implements ParticipantItemShare {
+  const _ParticipantItemShare({required this.item, required this.sharedWith, required this.share});
+  
+
+@override final  Item item;
+@override final  int sharedWith;
+@override final  double share;
+
+/// Create a copy of ParticipantItemShare
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ParticipantItemShareCopyWith<_ParticipantItemShare> get copyWith => __$ParticipantItemShareCopyWithImpl<_ParticipantItemShare>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParticipantItemShare&&(identical(other.item, item) || other.item == item)&&(identical(other.sharedWith, sharedWith) || other.sharedWith == sharedWith)&&(identical(other.share, share) || other.share == share));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,item,sharedWith,share);
+
+@override
+String toString() {
+  return 'ParticipantItemShare(item: $item, sharedWith: $sharedWith, share: $share)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ParticipantItemShareCopyWith<$Res> implements $ParticipantItemShareCopyWith<$Res> {
+  factory _$ParticipantItemShareCopyWith(_ParticipantItemShare value, $Res Function(_ParticipantItemShare) _then) = __$ParticipantItemShareCopyWithImpl;
+@override @useResult
+$Res call({
+ Item item, int sharedWith, double share
+});
+
+
+@override $ItemCopyWith<$Res> get item;
+
+}
+/// @nodoc
+class __$ParticipantItemShareCopyWithImpl<$Res>
+    implements _$ParticipantItemShareCopyWith<$Res> {
+  __$ParticipantItemShareCopyWithImpl(this._self, this._then);
+
+  final _ParticipantItemShare _self;
+  final $Res Function(_ParticipantItemShare) _then;
+
+/// Create a copy of ParticipantItemShare
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? item = null,Object? sharedWith = null,Object? share = null,}) {
+  return _then(_ParticipantItemShare(
+item: null == item ? _self.item : item // ignore: cast_nullable_to_non_nullable
+as Item,sharedWith: null == sharedWith ? _self.sharedWith : sharedWith // ignore: cast_nullable_to_non_nullable
+as int,share: null == share ? _self.share : share // ignore: cast_nullable_to_non_nullable
+as double,
+  ));
+}
+
+/// Create a copy of ParticipantItemShare
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ItemCopyWith<$Res> get item {
+  
+  return $ItemCopyWith<$Res>(_self.item, (value) {
+    return _then(_self.copyWith(item: value));
+  });
+}
+}
+
 // dart format on

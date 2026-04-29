@@ -50,12 +50,36 @@ abstract class SplitState with _$SplitState {
     return sum;
   }
 
+  /// Items a given participant is on, with the per-share subtotal already
+  /// divided when the item has multiple assignees.
+  List<ParticipantItemShare> itemsForParticipant(String participantId) {
+    final out = <ParticipantItemShare>[];
+    for (final it in items) {
+      final assignees =
+          assignments.where((a) => a.itemId == it.id).toList(growable: false);
+      if (assignees.isEmpty) continue;
+      if (!assignees.any((a) => a.participantId == participantId)) continue;
+      final share = (it.price * it.qty) / assignees.length;
+      out.add(ParticipantItemShare(
+        item: it,
+        sharedWith: assignees.length,
+        share: share,
+      ));
+    }
+    return out;
+  }
+
   /// Proportional share: tax & service split based on each participant's
   /// share of the items' subtotal. Items with multiple assignees split the
   /// item subtotal evenly (50:50 for two, etc.).
+  ///
+  /// Rounding: each per-participant total is rounded to whole units (rupiah);
+  /// any drift caused by rounding is absorbed by the last participant so the
+  /// sum of participant totals exactly matches [Bill.totalAmount] when every
+  /// item is assigned.
   List<ParticipantTotal> calculateTotals() {
     final totalSubtotal = itemsSubtotal;
-    final result = <ParticipantTotal>[];
+    final raw = <_RawTotal>[];
     for (final p in participants) {
       var pSub = 0.0;
       for (final it in items) {
@@ -67,20 +91,65 @@ abstract class SplitState with _$SplitState {
         }
       }
       final share = totalSubtotal == 0 ? 0.0 : pSub / totalSubtotal;
-      final pTax = bill.tax * share;
-      final pService = bill.service * share;
-      result.add(
-        ParticipantTotal(
-          participantId: p.id,
-          subtotal: pSub,
-          tax: pTax,
-          service: pService,
-          total: pSub + pTax + pService,
-        ),
-      );
+      raw.add(_RawTotal(
+        participantId: p.id,
+        subtotal: pSub,
+        tax: bill.tax * share,
+        service: bill.service * share,
+      ));
     }
+
+    final result = raw
+        .map((r) => ParticipantTotal(
+              participantId: r.participantId,
+              subtotal: _round(r.subtotal),
+              tax: _round(r.tax),
+              service: _round(r.service),
+              total: _round(r.subtotal + r.tax + r.service),
+            ))
+        .toList();
+
+    // Absorb rounding drift on the last assigned participant so the sum of
+    // displayed totals matches the bill total exactly.
+    if (result.isNotEmpty && unassignedSubtotal <= 0.0001) {
+      final summed = result.fold<double>(0, (s, r) => s + r.total);
+      final drift = _round(bill.totalAmount) - summed;
+      if (drift != 0) {
+        for (var i = result.length - 1; i >= 0; i--) {
+          if (result[i].total > 0) {
+            result[i] = result[i].copyWith(total: result[i].total + drift);
+            break;
+          }
+        }
+      }
+    }
+
     return result;
   }
+
+  static double _round(double v) => v.roundToDouble();
+}
+
+class _RawTotal {
+  _RawTotal({
+    required this.participantId,
+    required this.subtotal,
+    required this.tax,
+    required this.service,
+  });
+  final String participantId;
+  final double subtotal;
+  final double tax;
+  final double service;
+}
+
+@freezed
+abstract class ParticipantItemShare with _$ParticipantItemShare {
+  const factory ParticipantItemShare({
+    required Item item,
+    required int sharedWith,
+    required double share,
+  }) = _ParticipantItemShare;
 }
 
 /// Stateful controller for the split screen. Loads the bill graph from the

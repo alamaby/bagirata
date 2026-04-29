@@ -1,4 +1,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for Supabase auth + REST in release builds. The debug
+         manifest declares INTERNET for tooling; without it here the release
+         APK silently fails network requests and main() hangs at
+         signInAnonymously, leaving the user stuck on the Flutter splash. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <!-- Receipt capture via image_picker. CAMERA is required to launch the
+         camera intent; READ_MEDIA_IMAGES covers gallery picking on Android
+         13+ (replaces the legacy READ_EXTERNAL_STORAGE). -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
     <application
         android:label="bagistruk"
         android:name="${applicationName}"

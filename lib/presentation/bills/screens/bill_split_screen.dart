@@ -9,6 +9,7 @@ import '../../../domain/entities/participant.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../providers/split_notifier.dart';
 import '../widgets/participant_avatar.dart';
+import '../widgets/split_summary_sheet.dart';
 
 /// Item-splitting screen.
 ///
@@ -146,6 +147,12 @@ class _SplitBody extends ConsumerWidget {
                     );
                   },
                 ),
+        ),
+        _SummaryButton(
+          visible: state.unassignedSubtotal <= 0.0001 &&
+              state.participants.isNotEmpty &&
+              state.items.isNotEmpty,
+          onTap: () => SplitSummarySheet.show(context, state),
         ),
         _ParticipantBar(
           participants: state.participants,
@@ -394,60 +401,78 @@ class _ParticipantBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 96.h,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            itemCount: participants.length + 1,
-            separatorBuilder: (_, _) => SizedBox(width: 12.w),
-            itemBuilder: (context, i) {
-              if (i == participants.length) {
-                return _AddButton(onTap: onAdd);
-              }
-              final p = participants[i];
-              final active = p.id == selectedId;
-              final avatar = ParticipantAvatar(
-                id: p.id,
-                name: p.name,
-                size: 52,
-                active: active,
-                onTap: () => onSelect(p.id),
-              );
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  active
-                      ? avatar
-                          .animate(
-                            key: ValueKey('avatar-${p.id}-active'),
-                            onPlay: (c) => c.repeat(reverse: true),
-                          )
-                          .scaleXY(
-                            begin: 1.0,
-                            end: 1.06,
-                            duration: 700.ms,
-                            curve: Curves.easeInOut,
-                          )
-                      : avatar
-                          .animate(key: ValueKey('avatar-${p.id}-idle'))
-                          .fadeIn(duration: 200.ms),
-                  SizedBox(height: 4.h),
-                  SizedBox(
-                    width: 60.w,
-                    child: Text(
-                      p.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+          height: 108.h,
+          child: Row(
+            children: [
+              // Scrollable participants area — takes whatever space is left
+              // after the pinned add button so it never pushes the button off
+              // screen, regardless of participant count.
+              Expanded(
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.fromLTRB(16.w, 8.h, 8.w, 8.h),
+                  itemCount: participants.length,
+                  separatorBuilder: (_, _) => SizedBox(width: 12.w),
+                  itemBuilder: (context, i) {
+                    final p = participants[i];
+                    final active = p.id == selectedId;
+                    final avatar = ParticipantAvatar(
+                      id: p.id,
+                      name: p.name,
+                      size: 52,
+                      active: active,
+                      onTap: () => onSelect(p.id),
+                    );
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        active
+                            ? avatar
+                                .animate(
+                                  key: ValueKey('avatar-${p.id}-active'),
+                                  onPlay: (c) => c.repeat(reverse: true),
+                                )
+                                .scaleXY(
+                                  begin: 1.0,
+                                  end: 1.06,
+                                  duration: 700.ms,
+                                  curve: Curves.easeInOut,
+                                )
+                            : avatar
+                                .animate(key: ValueKey('avatar-${p.id}-idle'))
+                                .fadeIn(duration: 200.ms),
+                        SizedBox(height: 4.h),
+                        SizedBox(
+                          width: 60.w,
+                          child: Text(
+                            p.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              fontWeight:
+                                  active ? FontWeight.w700 : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              // Pinned divider + add button — always visible at the right
+              // edge no matter how many participants exist.
+              Container(
+                width: 1,
+                height: 64.h,
+                color: scheme.outlineVariant,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                child: _AddButton(onTap: onAdd),
+              ),
+            ],
           ),
         ),
       ),
@@ -492,6 +517,48 @@ class _AddButton extends StatelessWidget {
           style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w500),
         ),
       ],
+    );
+  }
+}
+
+/// Sticky CTA above the participant bar. Animates in only when every item is
+/// assigned (`unassignedSubtotal == 0`). Hidden state collapses to zero height
+/// so the bar below sits flush against the items list.
+class _SummaryButton extends StatelessWidget {
+  const _SummaryButton({required this.visible, required this.onTap});
+
+  final bool visible;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 8.h),
+      child: SizedBox(
+        width: double.infinity,
+        height: 48.h,
+        child: FilledButton.icon(
+          onPressed: onTap,
+          icon: const Icon(Icons.receipt_long),
+          label: const Text('Lihat Rincian'),
+          style: FilledButton.styleFrom(
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            textStyle: TextStyle(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      )
+          .animate()
+          .fadeIn(duration: 220.ms)
+          .slideY(begin: 0.4, end: 0, curve: Curves.easeOutCubic),
     );
   }
 }

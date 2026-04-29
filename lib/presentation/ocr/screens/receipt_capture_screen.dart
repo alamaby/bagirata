@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -39,6 +40,10 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
 
   Future<void> _process() async {
     setState(() => _starting = true);
+    // Tunggu satu frame paint dulu — tanpa ini, await pertama langsung
+    // melanjutkan ke file IO + isolate dispatch sebelum engine sempat render
+    // overlay loading, jadi user melihat tombol "membeku" beberapa ratus ms.
+    await SchedulerBinding.instance.endOfFrame;
     try {
       final bytes = await Future.wait(_images.map((f) => f.readAsBytes()));
       await ref.read(ocrProvider.notifier).process(bytes);
