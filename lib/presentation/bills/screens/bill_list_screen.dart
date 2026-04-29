@@ -58,7 +58,11 @@ class BillListScreen extends ConsumerWidget {
                       subtitle: Text(currency.format(bill.totalAmount)),
                       trailing: bill.isSettled
                           ? const Icon(Icons.check_circle, color: Colors.green)
-                          : null,
+                          : const Icon(Icons.chevron_right),
+                      onTap: () => context.pushNamed(
+                        Routes.billSplitName,
+                        pathParameters: {'billId': bill.id},
+                      ),
                     ),
                   );
                 },

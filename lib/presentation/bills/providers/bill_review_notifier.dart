@@ -127,14 +127,19 @@ class BillReviewNotifier extends _$BillReviewNotifier {
     );
   }
 
-  /// Persists the bill + items via repository. Returns the stringified failure
-  /// for the widget to surface in a SnackBar; null on success.
-  Future<String?> save() async {
-    if (state.title.trim().isEmpty) return 'Judul tidak boleh kosong';
-    if (state.items.isEmpty) return 'Tambahkan minimal satu item';
+  /// Persists the bill + items via repository. Returns the saved bill id on
+  /// success so the caller can navigate to the split screen, or `SaveError`
+  /// with a human-readable message on failure.
+  Future<SaveResult> save() async {
+    if (state.title.trim().isEmpty) {
+      return const SaveError('Judul tidak boleh kosong');
+    }
+    if (state.items.isEmpty) {
+      return const SaveError('Tambahkan minimal satu item');
+    }
     for (final it in state.items) {
       if (it.name.trim().isEmpty || it.price <= 0 || it.qty <= 0) {
-        return 'Periksa nama, harga, dan qty setiap item';
+        return const SaveError('Periksa nama, harga, dan qty setiap item');
       }
     }
 
@@ -154,7 +159,7 @@ class BillReviewNotifier extends _$BillReviewNotifier {
     final billRes = await repo.createBill(bill);
     if (billRes is ResultFailure<Bill>) {
       state = state.copyWith(saving: false);
-      return 'Gagal simpan bill: ${_msg(billRes.failure)}';
+      return SaveError('Gagal simpan bill: ${_msg(billRes.failure)}');
     }
 
     final items = state.items
@@ -171,12 +176,26 @@ class BillReviewNotifier extends _$BillReviewNotifier {
     final itemsRes = await repo.upsertItems(items);
     if (itemsRes is ResultFailure<List<Item>>) {
       state = state.copyWith(saving: false);
-      return 'Bill tersimpan tapi item gagal: ${_msg(itemsRes.failure)}';
+      return SaveError('Bill tersimpan tapi item gagal: ${_msg(itemsRes.failure)}');
     }
 
     state = state.copyWith(saving: false);
-    return null;
+    return SaveSuccess(billId);
   }
 
   static String _msg(Failure f) => f.toString();
+}
+
+sealed class SaveResult {
+  const SaveResult();
+}
+
+class SaveSuccess extends SaveResult {
+  const SaveSuccess(this.billId);
+  final String billId;
+}
+
+class SaveError extends SaveResult {
+  const SaveError(this.message);
+  final String message;
 }

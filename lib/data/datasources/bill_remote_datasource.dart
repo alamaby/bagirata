@@ -14,7 +14,7 @@ class BillRemoteDataSource {
   static const _bills = 'bills';
   static const _items = 'items';
   static const _participants = 'participants';
-  static const _assignments = 'assignments';
+  static const _assignments = 'item_assignments';
 
   Future<List<BillDto>> listBills() async {
     final rows = await _client

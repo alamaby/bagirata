@@ -9,4 +9,7 @@ class Routes {
 
   static const String billReview = '/review';
   static const String billReviewName = 'bill-review';
+
+  static const String billSplit = '/split/:billId';
+  static const String billSplitName = 'bill-split';
 }

@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/ocr_result.dart';
 import '../../presentation/bills/screens/bill_list_screen.dart';
 import '../../presentation/bills/screens/bill_review_screen.dart';
+import '../../presentation/bills/screens/bill_split_screen.dart';
 import '../../presentation/ocr/screens/receipt_capture_screen.dart';
 import 'routes.dart';
 
@@ -29,6 +30,12 @@ GoRouter appRouter(Ref ref) {
         name: Routes.billReviewName,
         builder: (context, state) =>
             BillReviewScreen(ocr: state.extra! as OcrResult),
+      ),
+      GoRoute(
+        path: Routes.billSplit,
+        name: Routes.billSplitName,
+        builder: (context, state) =>
+            BillSplitScreen(billId: state.pathParameters['billId']!),
       ),
     ],
   );

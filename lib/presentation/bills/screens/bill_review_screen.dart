@@ -75,13 +75,18 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
   }
 
   Future<void> _onSave() async {
-    final err = await _notifier.save();
+    final result = await _notifier.save();
     if (!mounted) return;
-    if (err != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
-      return;
+    switch (result) {
+      case SaveError(:final message):
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      case SaveSuccess(:final billId):
+        context.goNamed(
+          Routes.billSplitName,
+          pathParameters: {'billId': billId},
+        );
     }
-    context.goNamed(Routes.billListName);
   }
 
   @override
