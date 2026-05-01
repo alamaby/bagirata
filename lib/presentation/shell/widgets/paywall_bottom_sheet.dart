@@ -4,17 +4,22 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/routes.dart';
 
-Future<void> showPaywallSheet(BuildContext context) {
+/// [from] — optional path to return to after the user successfully signs in
+/// from this sheet. When omitted, login lands on `/history` (legacy default
+/// for the Riwayat paywall flow).
+Future<void> showPaywallSheet(BuildContext context, {String? from}) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (sheetCtx) => const _PaywallSheet(),
+    builder: (sheetCtx) => _PaywallSheet(from: from),
   );
 }
 
 class _PaywallSheet extends StatelessWidget {
-  const _PaywallSheet();
+  const _PaywallSheet({this.from});
+
+  final String? from;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +69,9 @@ class _PaywallSheet extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                context.push(Routes.register);
+                final fromQ =
+                    from != null ? '?from=${Uri.encodeComponent(from!)}' : '';
+                context.push('${Routes.register}$fromQ');
               },
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 4.h),
@@ -78,7 +85,10 @@ class _PaywallSheet extends StatelessWidget {
             OutlinedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                context.push('${Routes.login}?reason=save_history');
+                final fromQ = from != null
+                    ? '&from=${Uri.encodeComponent(from!)}'
+                    : '';
+                context.push('${Routes.login}?reason=save_history$fromQ');
               },
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 4.h),

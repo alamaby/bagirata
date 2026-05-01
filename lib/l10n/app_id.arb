@@ -1,0 +1,57 @@
+{
+  "@@locale": "id",
+
+  "settingsTitle": "Profil & Pengaturan",
+  "settingsTab": "Pengaturan",
+  "scanTab": "Pindai",
+  "historyTab": "Riwayat",
+
+  "scanScreenTitle": "Pindai Struk",
+  "scanAddPhotos": "Tambah Foto",
+  "scanAction": "Pindai",
+  "scanInProgress": "Memindai…",
+
+  "retry": "Coba Lagi",
+
+  "accountSection": "Akun",
+  "preferencesSection": "Preferensi",
+
+  "displayNameFallback": "Pengguna BagiStruk",
+  "guestAccount": "Akun Tamu",
+
+  "changeName": "Ubah Nama",
+  "changeNameSheetTitle": "Ubah Nama Tampilan",
+  "changeNameHint": "Nama tampilan",
+  "saveAction": "Simpan",
+  "cancelAction": "Batal",
+
+  "resetPassword": "Reset Password",
+  "resetPasswordConfirmTitle": "Kirim email reset password?",
+  "resetPasswordConfirmBody": "Kami akan mengirim tautan reset password ke {email}.",
+  "@resetPasswordConfirmBody": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordSent": "Email reset password telah dikirim.",
+
+  "currencyLabel": "Mata Uang Default",
+  "languageLabel": "Bahasa",
+  "themeLabel": "Tema Tampilan",
+
+  "themeLight": "Terang",
+  "themeDark": "Gelap",
+  "themeSystem": "Ikuti Sistem",
+
+  "languageIndonesian": "Bahasa Indonesia",
+  "languageEnglish": "English",
+
+  "logout": "Logout",
+  "registerPermanent": "Daftar Akun Permanen",
+  "confirmLogoutTitle": "Keluar dari akun?",
+  "confirmLogoutBody": "Anda akan keluar dan kembali sebagai pengguna tamu.",
+
+  "errorGeneric": "Terjadi kesalahan. Coba lagi.",
+  "loading": "Memuat...",
+
+  "noSessionMessage": "Daftar atau masuk untuk mengakses pengaturan.",
+  "registerOrLogin": "Daftar / Masuk"
+}

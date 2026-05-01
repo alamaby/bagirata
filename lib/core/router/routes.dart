@@ -7,6 +7,9 @@ class Routes {
   static const String history = '/history';
   static const String historyName = 'history';
 
+  static const String settings = '/settings';
+  static const String settingsName = 'settings';
+
   static const String capture = '/capture';
   static const String captureName = 'capture';
 

@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
+import '../../../l10n/generated/app_l10n.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../providers/ocr_notifier.dart';
 import '../utils/ocr_messages.dart';
@@ -105,8 +106,9 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
     final state = ref.watch(ocrProvider);
     final busy = _starting || state is OcrProcessing;
     final scanActive = _images.isNotEmpty && !busy;
+    final l10n = AppL10n.of(context);
     return AppScaffold(
-      title: 'Scan receipt',
+      title: l10n.scanScreenTitle,
       actions: [
         IconButton(
           icon: Icon(_mode == ReceiptPreviewMode.carousel
@@ -147,7 +149,7 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
                   child: OutlinedButton.icon(
                     onPressed: busy ? null : _addImages,
                     icon: const Icon(Icons.add_photo_alternate),
-                    label: const Text('Add photos'),
+                    label: Text(l10n.scanAddPhotos),
                   ),
                 ),
                 SizedBox(width: 8.w),
@@ -166,7 +168,7 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
                               ),
                             )
                           : const Icon(Icons.auto_awesome),
-                      label: Text(busy ? 'Scanning…' : 'Scan'),
+                      label: Text(busy ? l10n.scanInProgress : l10n.scanAction),
                     )
                         .animate(target: scanActive ? 1 : 0)
                         .fadeIn(duration: 300.ms)

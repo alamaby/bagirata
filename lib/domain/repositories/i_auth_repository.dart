@@ -41,4 +41,7 @@ abstract interface class IAuthRepository {
   Future<Result<void>> resendEmailChange({required String email});
 
   Future<Result<void>> signOut();
+
+  /// Sends a password-reset email to [email].
+  Future<Result<void>> resetPasswordForEmail(String email);
 }

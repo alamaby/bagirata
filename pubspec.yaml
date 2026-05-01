@@ -63,6 +63,7 @@ dev_dependencies:
   # code generation or `flutter analyze`.
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - .env

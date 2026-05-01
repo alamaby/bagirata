@@ -76,4 +76,10 @@ class AuthRemoteDataSource {
       _auth.resend(type: OtpType.emailChange, email: email);
 
   Future<void> signOut() => _auth.signOut();
+
+  /// Triggers a password reset email for [email]. The link in the email opens
+  /// the Supabase recovery flow; the app's router catches `type=recovery`
+  /// fragments and lands the user on a real route.
+  Future<void> resetPasswordForEmail(String email) =>
+      _auth.resetPasswordForEmail(email);
 }

@@ -1,0 +1,57 @@
+{
+  "@@locale": "en",
+
+  "settingsTitle": "Profile & Settings",
+  "settingsTab": "Settings",
+  "scanTab": "Scan",
+  "historyTab": "History",
+
+  "scanScreenTitle": "Scan Receipt",
+  "scanAddPhotos": "Add Photos",
+  "scanAction": "Scan",
+  "scanInProgress": "Scanning…",
+
+  "retry": "Retry",
+
+  "accountSection": "Account",
+  "preferencesSection": "Preferences",
+
+  "displayNameFallback": "BagiStruk User",
+  "guestAccount": "Guest Account",
+
+  "changeName": "Change Name",
+  "changeNameSheetTitle": "Change Display Name",
+  "changeNameHint": "Display name",
+  "saveAction": "Save",
+  "cancelAction": "Cancel",
+
+  "resetPassword": "Reset Password",
+  "resetPasswordConfirmTitle": "Send password reset email?",
+  "resetPasswordConfirmBody": "We will send a password reset link to {email}.",
+  "@resetPasswordConfirmBody": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "resetPasswordSent": "Password reset email sent.",
+
+  "currencyLabel": "Default Currency",
+  "languageLabel": "Language",
+  "themeLabel": "Theme",
+
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "Follow System",
+
+  "languageIndonesian": "Bahasa Indonesia",
+  "languageEnglish": "English",
+
+  "logout": "Log Out",
+  "registerPermanent": "Create Permanent Account",
+  "confirmLogoutTitle": "Log out of your account?",
+  "confirmLogoutBody": "You will be logged out and returned as a guest user.",
+
+  "errorGeneric": "Something went wrong. Please try again.",
+  "loading": "Loading...",
+
+  "noSessionMessage": "Sign up or log in to access settings.",
+  "registerOrLogin": "Sign up / Log in"
+}

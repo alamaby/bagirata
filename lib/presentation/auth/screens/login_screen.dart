@@ -12,9 +12,15 @@ import '../widgets/auth_validators.dart';
 import '../widgets/google_sign_in_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key, this.reason});
+  const LoginScreen({super.key, this.reason, this.from});
 
   final String? reason;
+
+  /// Optional return path. When the screen is reached from a paywall sheet
+  /// (e.g. tapping the Settings tab while signed-out), the caller passes the
+  /// originating route here so a successful login lands the user back where
+  /// they were instead of the legacy default of `/history`.
+  final String? from;
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -46,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = false);
     switch (res) {
       case Success():
-        context.go(Routes.history);
+        context.go(widget.from ?? Routes.history);
       case ResultFailure(:final failure):
         _showError(friendlyAuthMessage(failure));
     }

@@ -229,3 +229,98 @@ final class AuthRepositoryProvider
 }
 
 String _$authRepositoryHash() => r'd9fdb1ac61b0d6fbd34b041d2c64cd0f0c7f6c0d';
+
+@ProviderFor(profileRemoteDataSource)
+const profileRemoteDataSourceProvider = ProfileRemoteDataSourceProvider._();
+
+final class ProfileRemoteDataSourceProvider
+    extends
+        $FunctionalProvider<
+          ProfileRemoteDataSource,
+          ProfileRemoteDataSource,
+          ProfileRemoteDataSource
+        >
+    with $Provider<ProfileRemoteDataSource> {
+  const ProfileRemoteDataSourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'profileRemoteDataSourceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$profileRemoteDataSourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<ProfileRemoteDataSource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ProfileRemoteDataSource create(Ref ref) {
+    return profileRemoteDataSource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ProfileRemoteDataSource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ProfileRemoteDataSource>(value),
+    );
+  }
+}
+
+String _$profileRemoteDataSourceHash() =>
+    r'ca4f9ff96dc67ce5cc890ee4af7a5532ceb3d3d1';
+
+@ProviderFor(profileRepository)
+const profileRepositoryProvider = ProfileRepositoryProvider._();
+
+final class ProfileRepositoryProvider
+    extends
+        $FunctionalProvider<
+          IProfileRepository,
+          IProfileRepository,
+          IProfileRepository
+        >
+    with $Provider<IProfileRepository> {
+  const ProfileRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'profileRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$profileRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<IProfileRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  IProfileRepository create(Ref ref) {
+    return profileRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(IProfileRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<IProfileRepository>(value),
+    );
+  }
+}
+
+String _$profileRepositoryHash() => r'4540dcf3060645d8150c54eaa2421425904c1f93';

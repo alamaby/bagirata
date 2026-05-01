@@ -13,6 +13,7 @@ import '../../presentation/bills/screens/bill_review_screen.dart';
 import '../../presentation/bills/screens/bill_split_screen.dart';
 import '../../presentation/history/screens/history_screen.dart';
 import '../../presentation/ocr/screens/receipt_capture_screen.dart';
+import '../../presentation/settings/screens/settings_screen.dart';
 import '../../presentation/shell/screens/main_shell_screen.dart';
 import 'routes.dart';
 
@@ -62,6 +63,11 @@ GoRouter appRouter(Ref ref) {
         return '${Routes.login}?reason=save_history';
       }
       if (onAuthScreen && isSignedIn) {
+        // Honor an explicit `from=<path>` (set by the paywall sheet so users
+        // who triggered login from e.g. the Settings tab return there instead
+        // of being bounced to /history).
+        final from = state.uri.queryParameters['from'];
+        if (from != null && from.isNotEmpty) return from;
         return Routes.history;
       }
       return null;
@@ -89,6 +95,15 @@ GoRouter appRouter(Ref ref) {
               ),
             ],
           ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.settings,
+                name: Routes.settingsName,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -112,8 +127,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.login,
         name: Routes.loginName,
-        builder: (context, state) =>
-            LoginScreen(reason: state.uri.queryParameters['reason']),
+        builder: (context, state) => LoginScreen(
+          reason: state.uri.queryParameters['reason'],
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: Routes.register,

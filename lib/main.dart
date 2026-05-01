@@ -31,7 +31,10 @@ Future<String?> _bootstrap() async {
   // Default ke Indonesian — currency Rupiah, tanggal Indonesia. Inisialisasi
   // date symbols sekali di awal supaya DateFormat('id_ID') tidak throw.
   Intl.defaultLocale = AppFormat.locale;
-  await initializeDateFormatting(AppFormat.locale);
+  // Load symbols for every locale we may switch to at runtime (id, en, plus
+  // the formatter locales used by CurrencyFormatter: en_US, ms_MY, en_AU,
+  // en_SG, ar_SA). Passing no argument loads all of them in one go.
+  await initializeDateFormatting();
 
   try {
     await dotenv.load(fileName: '.env').timeout(const Duration(seconds: 5));
