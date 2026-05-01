@@ -48,21 +48,12 @@ Future<String?> _bootstrap() async {
     return 'Gagal inisialisasi Supabase: $e';
   }
 
-  // RLS policies bergantung pada auth.uid() — tanpa session anonymous,
-  // insert ke `bills` ditolak (42501). Anonymous sign-in harus diaktifkan
-  // di Supabase Dashboard → Authentication → Providers → Anonymous sign-ins.
-  // Kalau langkah ini gagal di release (mis. Anonymous disabled atau jaringan
-  // mati), kita lanjut tanpa session: app tetap bisa dibuka, dan request yang
-  // butuh auth akan mengembalikan error yang terbaca user — jauh lebih baik
-  // daripada stuck di splash selamanya.
-  try {
-    final auth = Supabase.instance.client.auth;
-    if (auth.currentUser == null) {
-      await auth.signInAnonymously().timeout(const Duration(seconds: 10));
-    }
-  } catch (e) {
-    debugPrint('signInAnonymously failed: $e');
-  }
+  // Sengaja TIDAK eager-anonymous sign-in di sini. supabase_flutter sudah
+  // memulihkan session yang disimpan saat `Supabase.initialize()` selesai;
+  // memaksa `signInAnonymously()` lagi akan menimpa session login email
+  // yang baru di-restore (race condition). Anonymous sign-in dilakukan
+  // secara lazy — lihat `IAuthRepository.ensureSignedIn()` yang dipanggil
+  // sebelum aksi yang butuh `auth.uid()` (mis. proses OCR / simpan bill).
 
   return null;
 }

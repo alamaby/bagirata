@@ -33,6 +33,16 @@ class AuthRemoteDataSource {
     return user.id;
   }
 
+  /// Returns the current user id if a session exists, otherwise creates an
+  /// anonymous one. Idempotent — safe to call before any auth-gated action.
+  /// Used in lieu of an eager bootstrap sign-in so persisted sessions
+  /// (anonymous or email) are not overwritten on cold start.
+  Future<String> ensureSignedIn() async {
+    final existing = _auth.currentUser?.id;
+    if (existing != null) return existing;
+    return signInAnonymously();
+  }
+
   /// Promotes the current anon user. Supabase preserves `auth.uid()` when
   /// linking, so any rows owned by the anon user remain accessible after.
   Future<void> linkEmail({required String email, required String password}) async {

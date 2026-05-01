@@ -17,6 +17,10 @@ abstract interface class IAuthRepository {
 
   Future<Result<String>> signInAnonymously();
 
+  /// Returns the current user id, signing in anonymously only if there is no
+  /// session at all. Idempotent.
+  Future<Result<String>> ensureSignedIn();
+
   /// Promotes an anonymous account to a permanent identity (email/password)
   /// without changing `auth.uid()`, so existing rows keep their owner.
   Future<Result<void>> linkEmail({required String email, required String password});

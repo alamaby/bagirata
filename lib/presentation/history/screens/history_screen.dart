@@ -67,7 +67,7 @@ class HistoryScreen extends ConsumerWidget {
                                     color: Colors.green)
                                 : const Icon(Icons.chevron_right),
                             onTap: () => context.pushNamed(
-                              Routes.billSplitName,
+                              Routes.billDetailName,
                               pathParameters: {'billId': bill.id},
                             ),
                           ),

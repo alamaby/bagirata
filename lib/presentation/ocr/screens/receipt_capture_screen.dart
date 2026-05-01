@@ -6,7 +6,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
+import '../../../data/providers.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../providers/ocr_notifier.dart';
 import '../utils/ocr_messages.dart';
@@ -46,6 +48,16 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
     // overlay loading, jadi user melihat tombol "membeku" beberapa ratus ms.
     await SchedulerBinding.instance.endOfFrame;
     try {
+      // Lazy session bootstrap: pastikan ada `auth.uid()` sebelum OCR &
+      // insert bill. Idempotent — kalau session login email/anon sudah ada,
+      // tidak melakukan apa-apa.
+      final ensured = await ref.read(authRepositoryProvider).ensureSignedIn();
+      if (ensured is ResultFailure<String> && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal siapkan sesi: ${ensured.failure}')),
+        );
+        return;
+      }
       final bytes = await Future.wait(_images.map((f) => f.readAsBytes()));
       await ref.read(ocrProvider.notifier).process(bytes);
     } finally {

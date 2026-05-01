@@ -16,6 +16,9 @@ class Routes {
   static const String billSplit = '/split/:billId';
   static const String billSplitName = 'bill-split';
 
+  static const String billDetail = '/detail/:billId';
+  static const String billDetailName = 'bill-detail';
+
   static const String login = '/login';
   static const String loginName = 'login';
 

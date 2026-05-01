@@ -1,6 +1,6 @@
 # BagiStruk — Technical Documentation
 
-**Status: End-to-end live** — capture → OCR (Flutter → Edge Function → LLM) → Review & Edit → persist to `bills` + `items`. Auto anonymous sign-in on startup; per-user insert rate limit enforced at the database level.
+**Status: End-to-end live** — capture → OCR (Flutter → Edge Function → LLM) → Review & Edit → Split → **Settlement** (per-participant `is_paid` toggle, auto `bills.is_settled`). Lazy anonymous sign-in (only when an action needs `auth.uid()`) so persisted email sessions survive restart. Per-user insert rate limit enforced at the database level.
 
 ---
 
@@ -215,6 +215,17 @@ Supabase Edge Function (Section 3)
 Supabase PostgREST (tables: bills + items)
    │  BEFORE INSERT trigger: bills_insert_rate_limit (30/hr, 200/day)
    │  RLS: bills.owner_id = auth.uid()
+   ▼
+[bill_split_screen.dart]
+   │  - Add participants, assign items per person (avatar tap → item tap)
+   │  - Per-toggle persist via replaceAssignments
+   │  - "Selesai" → pushReplacement to bill detail screen
+   ▼
+[bill_detail_screen.dart]                         // settlement loop
+   │  - Header: merchant + receipt date (longDate id_ID) + total + settled badge
+   │  - Per-participant Switch toggles `participants.is_paid` (optimistic UI)
+   │  - On full settlement: auto-flip `bills.is_settled = true`
+   │  - Reverse-flip when any participant un-toggled
 ```
 
 ### UI Package Roles (Scan Screen)
@@ -307,9 +318,10 @@ Then add `case "groq": return await callOpenRouter(cfg, images, hint);` in the d
 
 ## 8. Auth & Multi-Device
 
-- **Auto anonymous sign-in at startup** ([lib/main.dart](lib/main.dart)): after `Supabase.initialize()`, if `auth.currentUser == null` → `signInAnonymously()`. Required so that `auth.uid() = owner_id` passes RLS on every insert.
-- **Anonymous sign-in must be enabled** in the Supabase Dashboard → Authentication → Providers.
-- `AuthRemoteDataSource` supports **promote to email** — an anonymous user can register without losing their bills (Supabase preserves `auth.uid()` when linking the identity).
+- **Lazy anonymous sign-in.** [lib/main.dart](lib/main.dart) no longer calls `signInAnonymously()` at startup — that previously raced with `Supabase.initialize()`'s session restoration and overwrote a freshly-restored email session. Instead, [`IAuthRepository.ensureSignedIn()`](lib/data/datasources/auth_remote_datasource.dart) is called from action sites that require `auth.uid()` (currently the OCR `_process()` in [receipt_capture_screen.dart](lib/presentation/ocr/screens/receipt_capture_screen.dart)). It's idempotent: returns the existing user id when a session already exists, anonymous-signs-in only when there is none.
+- **Session persistence is automatic** — `supabase_flutter` uses Hive/SharedPreferences locally, so previously-signed-in users (anonymous or email) stay signed-in across cold starts.
+- **Anonymous sign-in must be enabled** in the Supabase Dashboard → Authentication → Providers, otherwise `ensureSignedIn()` fails when there is no session.
+- `AuthRemoteDataSource` supports **promote to email** — an anonymous user can register without losing their bills (Supabase preserves `auth.uid()` when linking the identity). Logging into an existing account from an anonymous session calls the `migrate_anon_data` RPC to re-assign rows to the new uid.
 - RLS on all tables filters by `auth.uid()` via `bills.owner_id`.
 
 ---
@@ -329,7 +341,7 @@ Reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from `.env`. Exit 0 only on HTTP 20
 
 - **No CAPTCHA** — anonymous sign-in has no bot protection. The `bills` rate limit is a defensive layer, not a substitute.
 - **`participants` has no `user_id` column** — bill splitting is currently owner-centric. There is no share link to send a participant their portion.
-- **No bill edit screen** — after saving, there is no UI to reopen and edit a stored bill.
+- **No bill edit screen for items/totals** — the bill detail screen (settlement) lets the owner toggle payment status and auto-flip `is_settled`, but there's no UI to reopen and re-edit the items, tax, service, or merchant of a saved bill.
 - **Lottie asset** at `assets/lottie/scanning.json` is still a placeholder — replace with the final animation before release.
 - **Edge Function has no self-rate-limit** — relies on the Supabase project quota. Consider a `cooldown_until` column in `llm_configs` for a circuit-breaker pattern.
 - **Weekly `llm_logs` audit** is not automated — a candidate for a scheduled agent.
@@ -340,7 +352,7 @@ Reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from `.env`. Exit 0 only on HTTP 20
 
 | Path | Role |
 |---|---|
-| [lib/main.dart](lib/main.dart) | Entry point: dotenv load, Supabase init, auto anonymous sign-in |
+| [lib/main.dart](lib/main.dart) | Entry point: dotenv load, Supabase init (no eager anon — session restored from local storage; lazy anon via `ensureSignedIn`) |
 | [lib/core/config/env.dart](lib/core/config/env.dart) | Typed accessors: `Env.supabaseUrl`, etc. |
 | [lib/core/config/app_constants.dart](lib/core/config/app_constants.dart) | `ocrLowConfidenceThreshold`, `billTotalMismatchTolerance`, `ocrMaxImageEdgePx`, etc. |
 | [lib/core/theme/app_theme.dart](lib/core/theme/app_theme.dart) | Material 3, seed color `Color(0xFF2E7D5B)` (receipt-paper green) |
@@ -350,6 +362,10 @@ Reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from `.env`. Exit 0 only on HTTP 20
 | [lib/presentation/ocr/widgets/receipt_preview_component.dart](lib/presentation/ocr/widgets/receipt_preview_component.dart) | M3 image card (green border, radius 20), floating remove button |
 | [lib/presentation/ocr/providers/ocr_notifier.dart](lib/presentation/ocr/providers/ocr_notifier.dart) | OCR state machine (idle / processing / success / failure) |
 | [lib/presentation/bills/screens/bill_review_screen.dart](lib/presentation/bills/screens/bill_review_screen.dart) | Review/edit form + save bill |
+| [lib/presentation/bills/screens/bill_split_screen.dart](lib/presentation/bills/screens/bill_split_screen.dart) | Item-to-participant assignment with avatar selection + animated stack |
+| [lib/presentation/bills/providers/split_notifier.dart](lib/presentation/bills/providers/split_notifier.dart) | Split state machine; `replaceAssignments` per toggle, proportional totals |
+| [lib/presentation/bills/screens/bill_detail_screen.dart](lib/presentation/bills/screens/bill_detail_screen.dart) | Settlement loop: per-participant payment toggle + auto-settle bill |
+| [lib/presentation/bills/providers/bill_detail_notifier.dart](lib/presentation/bills/providers/bill_detail_notifier.dart) | `toggleParticipantPaymentStatus` with optimistic UI + auto-settle evaluation |
 | [lib/domain/services/bill_calculator.dart](lib/domain/services/bill_calculator.dart) | Pure logic for distributing tax/service per participant |
 | [supabase/functions/process-receipt/index.ts](supabase/functions/process-receipt/index.ts) | Edge Function: DB-driven provider rotation + telemetry |
 | [supabase/migrations/](supabase/migrations/) | Postgres schema, RLS, and rate-limit trigger |

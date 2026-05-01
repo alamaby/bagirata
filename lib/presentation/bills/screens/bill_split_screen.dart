@@ -39,6 +39,14 @@ class BillSplitScreen extends ConsumerWidget {
     context.go(isSignedIn ? Routes.history : Routes.scan);
   }
 
+  /// Done with splitting → land on the settlement screen for this bill.
+  void _finish(BuildContext context) {
+    context.pushReplacementNamed(
+      Routes.billDetailName,
+      pathParameters: {'billId': billId},
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(splitFamily(billId));
@@ -54,7 +62,7 @@ class BillSplitScreen extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => _exit(context, ref),
+            onPressed: () => _finish(context),
             child: const Text('Selesai'),
           ),
         ],

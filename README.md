@@ -9,7 +9,8 @@
 - **Receipt OCR** — Upload one or multiple receipt photos. Items, prices, quantities, merchant name, and receipt date are extracted automatically via a multi-provider LLM pipeline (Gemini, OpenRouter, NvidiaNIM with priority-ordered failover).
 - **Review & Edit** — Every extracted item is editable before saving: name, quantity (supports decimals for weight/volume), and price. Tax and service amounts are pre-filled from the receipt and can be adjusted.
 - **Bill Splitting** — Assign items to participants. Tax and service are distributed proportionally based on each participant's subtotal share.
-- **Anonymous-first Auth** — The app signs in anonymously on first launch. Users can promote to a full email account without losing their bill history.
+- **Settlement Loop** — After splitting, a dedicated detail screen tracks per-participant payment status with optimistic toggles. When everyone has paid, the bill is auto-marked settled.
+- **Anonymous-first Auth** — Sessions persist across restarts (supabase_flutter local storage). Anonymous sign-in is created lazily on the first action that requires `auth.uid()` (e.g. tapping Scan), so a previously-restored email session is never overwritten. Users can promote an anonymous account to a full email account without losing their bill history.
 - **Offline-safe keys** — All LLM API keys are stored server-side in Supabase. No keys are bundled in the app or exposed to the client.
 - **Rate-limited inserts** — Database-level trigger enforces 30 bills/hour and 200 bills/day per user to prevent abuse.
 
@@ -93,14 +94,15 @@ flutter run
 
 ## How to Use
 
-1. **Open the app** — you are signed in anonymously automatically.
+1. **Open the app** — your previous session is restored if you have one; otherwise you stay signed-out until your first action.
 2. **Tap the camera button** on the home screen to pick one or more receipt photos from your gallery.
-3. **Tap Scan** — the app sends the images to the OCR pipeline and shows a scanning animation while processing.
+3. **Tap Scan** — an anonymous session is created on the fly if needed, then images are sent to the OCR pipeline.
 4. **Review the results** — check extracted items, adjust quantities or prices if needed, and set tax/service amounts.
 5. **Add participants** — enter the names of people splitting the bill.
 6. **Assign items** — mark which items each participant ordered.
 7. **Save** — totals per participant (including their share of tax/service) are calculated and stored.
-8. *(Optional)* **Create an account** — tap your profile to promote your anonymous session to a full email account and keep all your bills.
+8. **Track settlement** — on the bill detail screen, toggle each participant's payment status. The bill auto-marks as settled when all participants are paid.
+9. *(Optional)* **Create an account** — tap your profile to promote your anonymous session to a full email account and keep all your bills.
 
 ---
 

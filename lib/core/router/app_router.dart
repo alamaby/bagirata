@@ -8,6 +8,7 @@ import '../../presentation/auth/providers/auth_providers.dart';
 import '../../presentation/auth/screens/login_screen.dart';
 import '../../presentation/auth/screens/register_screen.dart';
 import '../../presentation/auth/screens/verify_email_screen.dart';
+import '../../presentation/bills/screens/bill_detail_screen.dart';
 import '../../presentation/bills/screens/bill_review_screen.dart';
 import '../../presentation/bills/screens/bill_split_screen.dart';
 import '../../presentation/history/screens/history_screen.dart';
@@ -101,6 +102,12 @@ GoRouter appRouter(Ref ref) {
         name: Routes.billSplitName,
         builder: (context, state) =>
             BillSplitScreen(billId: state.pathParameters['billId']!),
+      ),
+      GoRoute(
+        path: Routes.billDetail,
+        name: Routes.billDetailName,
+        builder: (context, state) =>
+            BillDetailScreen(billId: state.pathParameters['billId']!),
       ),
       GoRoute(
         path: Routes.login,

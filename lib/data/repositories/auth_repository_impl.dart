@@ -26,6 +26,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       guardAsync(_ds.signInAnonymously);
 
   @override
+  Future<Result<String>> ensureSignedIn() => guardAsync(_ds.ensureSignedIn);
+
+  @override
   Future<Result<void>> linkEmail({required String email, required String password}) =>
       guardAsync(() => _ds.linkEmail(email: email, password: password));
 
