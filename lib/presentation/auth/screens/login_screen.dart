@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
+import '../../../l10n/generated/app_l10n.dart';
 import '../utils/auth_messages.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_validators.dart';
@@ -94,6 +95,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
     final showSaveBanner = widget.reason == 'save_history';
 
@@ -122,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         SizedBox(width: 12.w),
                         Expanded(
                           child: Text(
-                            'Daftar untuk menyimpan riwayat tagihanmu',
+                            l10n.loginSaveBanner,
                             style: TextStyle(
                               fontSize: 13.sp,
                               fontWeight: FontWeight.w600,
@@ -137,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
                 SizedBox(height: 16.h),
                 Text(
-                  'Selamat datang kembali',
+                  l10n.loginWelcomeBack,
                   style: TextStyle(
                     fontSize: 26.sp,
                     fontWeight: FontWeight.w700,
@@ -146,7 +148,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Masuk untuk melanjutkan ke BagiStruk.',
+                  l10n.loginSubtitle,
                   style: TextStyle(fontSize: 14.sp, color: scheme.onSurfaceVariant),
                 ),
                 SizedBox(height: 32.h),
@@ -154,7 +156,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _email,
                   label: 'Email',
                   icon: Icons.email_outlined,
-                  hint: 'kamu@email.com',
+                  hint: l10n.loginEmailHint,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: validateEmail,
@@ -184,7 +186,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         )
                       : Text(
-                          'Masuk',
+                          l10n.loginButton,
                           style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                         ),
                 ),
@@ -195,7 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: Text(
-                        'atau',
+                        l10n.loginOr,
                         style: TextStyle(fontSize: 12.sp, color: scheme.onSurfaceVariant),
                       ),
                     ),
@@ -212,13 +214,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Belum punya akun? ',
+                      l10n.loginNoAccount,
                       style: TextStyle(fontSize: 13.sp, color: scheme.onSurfaceVariant),
                     ),
                     GestureDetector(
                       onTap: _loading ? null : () => context.go(Routes.register),
                       child: Text(
-                        'Daftar',
+                        l10n.loginRegisterLink,
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w700,

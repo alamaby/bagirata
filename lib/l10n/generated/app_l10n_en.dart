@@ -124,4 +124,124 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get registerOrLogin => 'Sign up / Log in';
+
+  @override
+  String get loginWelcomeBack => 'Welcome back';
+
+  @override
+  String get loginSubtitle => 'Sign in to continue to BagiStruk.';
+
+  @override
+  String get loginSaveBanner => 'Sign up to save your bill history';
+
+  @override
+  String get loginButton => 'Sign In';
+
+  @override
+  String get loginOr => 'or';
+
+  @override
+  String get loginEmailHint => 'you@email.com';
+
+  @override
+  String get loginNoAccount => 'Don\'t have an account? ';
+
+  @override
+  String get loginRegisterLink => 'Sign Up';
+
+  @override
+  String get registerTitle => 'Sign Up';
+
+  @override
+  String get registerBackToScanTooltip => 'Back to Scan';
+
+  @override
+  String get registerSkip => 'Skip';
+
+  @override
+  String get registerHeading => 'Create a new account';
+
+  @override
+  String get registerSubtitle => 'Save your bill history across all devices.';
+
+  @override
+  String get registerPasswordHint => 'At least 6 characters';
+
+  @override
+  String get registerHaveAccount => 'Already have an account? ';
+
+  @override
+  String get registerLoginLink => 'Log In';
+
+  @override
+  String get verifyEmailTitle => 'Verify email';
+
+  @override
+  String get verifyEmailBackTooltip => 'Back';
+
+  @override
+  String get verifyEmailHeading => 'Check your email';
+
+  @override
+  String get verifyEmailBodyPrefix => 'We sent a confirmation link to ';
+
+  @override
+  String get verifyEmailBodySuffix =>
+      '. Click that link to activate your account — until then you cannot sign in from other devices.';
+
+  @override
+  String get verifyEmailAutonav =>
+      'After confirmation, you\'ll be automatically navigated to History.';
+
+  @override
+  String get verifyEmailResend => 'Resend email';
+
+  @override
+  String get verifyEmailResending => 'Sending…';
+
+  @override
+  String get verifyEmailResent => 'Verification email has been resent.';
+
+  @override
+  String get verifyEmailUseDifferent => 'Use a different email';
+
+  @override
+  String get historySignOutTooltip => 'Sign Out';
+
+  @override
+  String get historySignedOut => 'You have been signed out.';
+
+  @override
+  String get historyLoadingMessage => 'Loading history…';
+
+  @override
+  String get historyTotalBills => 'Total bills';
+
+  @override
+  String get historyOutstanding => 'Outstanding';
+
+  @override
+  String get historyEmptyMessage =>
+      'No saved bills yet.\nStart scanning a receipt from the Scan tab.';
+
+  @override
+  String get splitSummaryTitle => 'Summary per Person';
+
+  @override
+  String get splitSummaryNoItems => 'No items selected.';
+
+  @override
+  String get splitSummarySubtotal => 'Subtotal';
+
+  @override
+  String get splitSummaryTax => 'Tax (proportional)';
+
+  @override
+  String get splitSummaryService => 'Service (proportional)';
+
+  @override
+  String get splitSummaryShareWhatsapp => 'Share to WhatsApp';
+
+  @override
+  String get splitWhatsappFailed => 'Could not open WhatsApp';
 }

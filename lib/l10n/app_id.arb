@@ -53,5 +53,49 @@
   "loading": "Memuat...",
 
   "noSessionMessage": "Daftar atau masuk untuk mengakses pengaturan.",
-  "registerOrLogin": "Daftar / Masuk"
+  "registerOrLogin": "Daftar / Masuk",
+
+  "loginWelcomeBack": "Selamat datang kembali",
+  "loginSubtitle": "Masuk untuk melanjutkan ke BagiStruk.",
+  "loginSaveBanner": "Daftar untuk menyimpan riwayat tagihanmu",
+  "loginButton": "Masuk",
+  "loginOr": "atau",
+  "loginEmailHint": "kamu@email.com",
+  "loginNoAccount": "Belum punya akun? ",
+  "loginRegisterLink": "Daftar",
+
+  "registerTitle": "Daftar",
+  "registerBackToScanTooltip": "Kembali ke Scan",
+  "registerSkip": "Lewati",
+  "registerHeading": "Buat akun baru",
+  "registerSubtitle": "Simpan riwayat tagihanmu di semua perangkat.",
+  "registerPasswordHint": "Minimal 6 karakter",
+  "registerHaveAccount": "Sudah punya akun? ",
+  "registerLoginLink": "Login",
+
+  "verifyEmailTitle": "Verifikasi email",
+  "verifyEmailBackTooltip": "Kembali",
+  "verifyEmailHeading": "Cek email kamu",
+  "verifyEmailBodyPrefix": "Kami sudah mengirim link konfirmasi ke ",
+  "verifyEmailBodySuffix": ". Klik link itu untuk mengaktifkan akunmu — sampai itu kamu belum bisa login dari perangkat lain.",
+  "verifyEmailAutonav": "Setelah konfirmasi, kamu otomatis dipindahkan ke Riwayat.",
+  "verifyEmailResend": "Kirim ulang email",
+  "verifyEmailResending": "Mengirim…",
+  "verifyEmailResent": "Email verifikasi sudah dikirim ulang.",
+  "verifyEmailUseDifferent": "Pakai email lain",
+
+  "historySignOutTooltip": "Keluar",
+  "historySignedOut": "Kamu sudah keluar.",
+  "historyLoadingMessage": "Memuat riwayat…",
+  "historyTotalBills": "Total bill",
+  "historyOutstanding": "Piutang outstanding",
+  "historyEmptyMessage": "Belum ada bill tersimpan.\nMulai scan struk dari tab Scan.",
+
+  "splitSummaryTitle": "Rincian per Orang",
+  "splitSummaryNoItems": "Belum ambil item.",
+  "splitSummarySubtotal": "Subtotal",
+  "splitSummaryTax": "Pajak (proporsional)",
+  "splitSummaryService": "Service (proporsional)",
+  "splitSummaryShareWhatsapp": "Bagikan ke WhatsApp",
+  "splitWhatsappFailed": "Tidak bisa buka WhatsApp"
 }

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
+import '../../../l10n/generated/app_l10n.dart';
 import '../utils/auth_messages.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/auth_validators.dart';
@@ -87,14 +88,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar'),
+        title: Text(l10n.registerTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Kembali ke Scan',
+          tooltip: l10n.registerBackToScanTooltip,
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -106,7 +108,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         actions: [
           TextButton(
             onPressed: () => context.go(Routes.scan),
-            child: const Text('Lewati'),
+            child: Text(l10n.registerSkip),
           ),
         ],
       ),
@@ -119,7 +121,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 SizedBox(height: 16.h),
                 Text(
-                  'Buat akun baru',
+                  l10n.registerHeading,
                   style: TextStyle(
                     fontSize: 26.sp,
                     fontWeight: FontWeight.w700,
@@ -128,7 +130,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  'Simpan riwayat tagihanmu di semua perangkat.',
+                  l10n.registerSubtitle,
                   style: TextStyle(fontSize: 14.sp, color: scheme.onSurfaceVariant),
                 ),
                 SizedBox(height: 32.h),
@@ -136,7 +138,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _email,
                   label: 'Email',
                   icon: Icons.email_outlined,
-                  hint: 'kamu@email.com',
+                  hint: l10n.loginEmailHint,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: validateEmail,
@@ -147,7 +149,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _password,
                   label: 'Password',
                   icon: Icons.lock_outline,
-                  hint: 'Minimal 6 karakter',
+                  hint: l10n.registerPasswordHint,
                   obscure: true,
                   textInputAction: TextInputAction.done,
                   validator: validatePassword,
@@ -167,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                         )
                       : Text(
-                          'Daftar',
+                          l10n.registerTitle,
                           style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
                         ),
                 ),
@@ -178,7 +180,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12.w),
                       child: Text(
-                        'atau',
+                        l10n.loginOr,
                         style: TextStyle(fontSize: 12.sp, color: scheme.onSurfaceVariant),
                       ),
                     ),
@@ -195,13 +197,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Sudah punya akun? ',
+                      l10n.registerHaveAccount,
                       style: TextStyle(fontSize: 13.sp, color: scheme.onSurfaceVariant),
                     ),
                     GestureDetector(
                       onTap: _loading ? null : () => context.go(Routes.login),
                       child: Text(
-                        'Login',
+                        l10n.registerLoginLink,
                         style: TextStyle(
                           fontSize: 13.sp,
                           fontWeight: FontWeight.w700,

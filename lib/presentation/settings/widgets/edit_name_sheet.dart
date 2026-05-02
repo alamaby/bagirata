@@ -57,19 +57,22 @@ class _EditNameSheetState extends State<_EditNameSheet> {
             onSubmitted: (v) => Navigator.of(context).pop(v),
           ),
           SizedBox(height: 16.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.cancelAction),
-              ),
-              SizedBox(width: 8.w),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(_ctrl.text),
-                child: Text(l10n.saveAction),
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.cancelAction),
+                ),
+                SizedBox(width: 8.w),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(_ctrl.text),
+                  child: Text(l10n.saveAction),
+                ),
+              ],
+            ),
           ),
         ],
       ),

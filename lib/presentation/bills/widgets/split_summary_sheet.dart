@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/format/app_format.dart';
 import '../../../domain/entities/participant.dart';
+import '../../../l10n/generated/app_l10n.dart';
 import '../providers/split_notifier.dart';
 import 'participant_avatar.dart';
 
@@ -31,6 +32,7 @@ class SplitSummarySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final currency = AppFormat.currency();
     final totals = state.calculateTotals();
     final byId = {for (final t in totals) t.participantId: t};
@@ -46,7 +48,7 @@ class SplitSummarySheet extends StatelessWidget {
           controller: scrollCtrl,
           children: [
             Text(
-              'Rincian per Orang',
+              l10n.splitSummaryTitle,
               style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700),
             ),
             SizedBox(height: 4.h),
@@ -65,6 +67,7 @@ class SplitSummarySheet extends StatelessWidget {
                 total: byId[p.id]!,
                 bill: state,
                 currency: currency,
+                l10n: l10n,
               ),
           ],
         ),
@@ -80,6 +83,7 @@ class _ParticipantSummaryCard extends StatelessWidget {
     required this.total,
     required this.bill,
     required this.currency,
+    required this.l10n,
   });
 
   final Participant participant;
@@ -87,6 +91,7 @@ class _ParticipantSummaryCard extends StatelessWidget {
   final ParticipantTotal total;
   final SplitState bill;
   final NumberFormat currency;
+  final AppL10n l10n;
 
   String _buildShareText() {
     final buf = StringBuffer();
@@ -120,7 +125,7 @@ class _ParticipantSummaryCard extends StatelessWidget {
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak bisa buka WhatsApp')),
+        SnackBar(content: Text(l10n.splitWhatsappFailed)),
       );
     }
   }
@@ -171,7 +176,7 @@ class _ParticipantSummaryCard extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(vertical: 4.h),
               child: Text(
-                'Belum ambil item.',
+                l10n.splitSummaryNoItems,
                 style: TextStyle(fontSize: 13.sp, color: scheme.outline),
               ),
             )
@@ -213,17 +218,17 @@ class _ParticipantSummaryCard extends StatelessWidget {
             Divider(height: 1, color: scheme.outlineVariant),
             SizedBox(height: 8.h),
             _SummaryLine(
-              label: 'Subtotal',
+              label: l10n.splitSummarySubtotal,
               value: currency.format(total.subtotal),
             ),
             if (total.tax > 0)
               _SummaryLine(
-                label: 'Pajak (proporsional)',
+                label: l10n.splitSummaryTax,
                 value: currency.format(total.tax),
               ),
             if (total.service > 0)
               _SummaryLine(
-                label: 'Service (proporsional)',
+                label: l10n.splitSummaryService,
                 value: currency.format(total.service),
               ),
           ],
@@ -233,7 +238,7 @@ class _ParticipantSummaryCard extends StatelessWidget {
             child: FilledButton.tonalIcon(
               onPressed: () => _shareWhatsapp(context),
               icon: const Icon(Icons.share),
-              label: const Text('Bagikan ke WhatsApp'),
+              label: Text(l10n.splitSummaryShareWhatsapp),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF25D366).withValues(alpha: 0.15),
                 foregroundColor: const Color(0xFF128C7E),

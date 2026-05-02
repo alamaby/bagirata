@@ -53,5 +53,49 @@
   "loading": "Loading...",
 
   "noSessionMessage": "Sign up or log in to access settings.",
-  "registerOrLogin": "Sign up / Log in"
+  "registerOrLogin": "Sign up / Log in",
+
+  "loginWelcomeBack": "Welcome back",
+  "loginSubtitle": "Sign in to continue to BagiStruk.",
+  "loginSaveBanner": "Sign up to save your bill history",
+  "loginButton": "Sign In",
+  "loginOr": "or",
+  "loginEmailHint": "you@email.com",
+  "loginNoAccount": "Don't have an account? ",
+  "loginRegisterLink": "Sign Up",
+
+  "registerTitle": "Sign Up",
+  "registerBackToScanTooltip": "Back to Scan",
+  "registerSkip": "Skip",
+  "registerHeading": "Create a new account",
+  "registerSubtitle": "Save your bill history across all devices.",
+  "registerPasswordHint": "At least 6 characters",
+  "registerHaveAccount": "Already have an account? ",
+  "registerLoginLink": "Log In",
+
+  "verifyEmailTitle": "Verify email",
+  "verifyEmailBackTooltip": "Back",
+  "verifyEmailHeading": "Check your email",
+  "verifyEmailBodyPrefix": "We sent a confirmation link to ",
+  "verifyEmailBodySuffix": ". Click that link to activate your account — until then you cannot sign in from other devices.",
+  "verifyEmailAutonav": "After confirmation, you'll be automatically navigated to History.",
+  "verifyEmailResend": "Resend email",
+  "verifyEmailResending": "Sending…",
+  "verifyEmailResent": "Verification email has been resent.",
+  "verifyEmailUseDifferent": "Use a different email",
+
+  "historySignOutTooltip": "Sign Out",
+  "historySignedOut": "You have been signed out.",
+  "historyLoadingMessage": "Loading history…",
+  "historyTotalBills": "Total bills",
+  "historyOutstanding": "Outstanding",
+  "historyEmptyMessage": "No saved bills yet.\nStart scanning a receipt from the Scan tab.",
+
+  "splitSummaryTitle": "Summary per Person",
+  "splitSummaryNoItems": "No items selected.",
+  "splitSummarySubtotal": "Subtotal",
+  "splitSummaryTax": "Tax (proportional)",
+  "splitSummaryService": "Service (proportional)",
+  "splitSummaryShareWhatsapp": "Share to WhatsApp",
+  "splitWhatsappFailed": "Could not open WhatsApp"
 }

@@ -11,6 +11,9 @@
 - **Bill Splitting** — Assign items to participants. Tax and service are distributed proportionally based on each participant's subtotal share.
 - **Settlement Loop** — After splitting, a dedicated detail screen tracks per-participant payment status with optimistic toggles. When everyone has paid, the bill is auto-marked settled.
 - **Anonymous-first Auth** — Sessions persist across restarts (supabase_flutter local storage). Anonymous sign-in is created lazily on the first action that requires `auth.uid()` (e.g. tapping Scan), so a previously-restored email session is never overwritten. Users can promote an anonymous account to a full email account without losing their bill history.
+- **Profile & Settings** — Change display name, default currency, app language, and theme (light / dark / system) from the dedicated Settings tab. Persisted per user account in the `profiles` table. Anonymous users see a "Create Permanent Account" CTA; authenticated users can reset their password or log out.
+- **Multi-language** — Full UI localization in Bahasa Indonesia and English. Switch instantly from Settings without restarting the app.
+- **Theme** — Light, dark, and system-follow modes. Applied globally and persisted in the user profile.
 - **Offline-safe keys** — All LLM API keys are stored server-side in Supabase. No keys are bundled in the app or exposed to the client.
 - **Rate-limited inserts** — Database-level trigger enforces 30 bills/hour and 200 bills/day per user to prevent abuse.
 
@@ -26,7 +29,7 @@
 | UI utilities | flutter_screenutil, flutter_animate, Lottie |
 | Backend | Supabase (Postgres + RLS, Auth, Edge Functions / Deno) |
 | LLM | Gemini, OpenRouter, NvidiaNIM — provider config stored in DB |
-| Localization | flutter_localizations + ARB files |
+| Localization | flutter_localizations + ARB gen-l10n (ID / EN) |
 
 ---
 
@@ -87,6 +90,7 @@ supabase functions deploy process-receipt
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
+flutter pub get   # also triggers flutter gen-l10n (ARB → Dart)
 flutter run
 ```
 
@@ -102,7 +106,7 @@ flutter run
 6. **Assign items** — mark which items each participant ordered.
 7. **Save** — totals per participant (including their share of tax/service) are calculated and stored.
 8. **Track settlement** — on the bill detail screen, toggle each participant's payment status. The bill auto-marks as settled when all participants are paid.
-9. *(Optional)* **Create an account** — tap your profile to promote your anonymous session to a full email account and keep all your bills.
+9. *(Optional)* **Open the Settings tab** — tap the person icon in the bottom nav. Change your display name, default currency, language, or theme. Tap "Create Permanent Account" to promote your anonymous session to a full email account and keep all your bills.
 
 ---
 

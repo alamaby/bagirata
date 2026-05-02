@@ -125,4 +125,124 @@ class AppL10nId extends AppL10n {
 
   @override
   String get registerOrLogin => 'Daftar / Masuk';
+
+  @override
+  String get loginWelcomeBack => 'Selamat datang kembali';
+
+  @override
+  String get loginSubtitle => 'Masuk untuk melanjutkan ke BagiStruk.';
+
+  @override
+  String get loginSaveBanner => 'Daftar untuk menyimpan riwayat tagihanmu';
+
+  @override
+  String get loginButton => 'Masuk';
+
+  @override
+  String get loginOr => 'atau';
+
+  @override
+  String get loginEmailHint => 'kamu@email.com';
+
+  @override
+  String get loginNoAccount => 'Belum punya akun? ';
+
+  @override
+  String get loginRegisterLink => 'Daftar';
+
+  @override
+  String get registerTitle => 'Daftar';
+
+  @override
+  String get registerBackToScanTooltip => 'Kembali ke Scan';
+
+  @override
+  String get registerSkip => 'Lewati';
+
+  @override
+  String get registerHeading => 'Buat akun baru';
+
+  @override
+  String get registerSubtitle => 'Simpan riwayat tagihanmu di semua perangkat.';
+
+  @override
+  String get registerPasswordHint => 'Minimal 6 karakter';
+
+  @override
+  String get registerHaveAccount => 'Sudah punya akun? ';
+
+  @override
+  String get registerLoginLink => 'Login';
+
+  @override
+  String get verifyEmailTitle => 'Verifikasi email';
+
+  @override
+  String get verifyEmailBackTooltip => 'Kembali';
+
+  @override
+  String get verifyEmailHeading => 'Cek email kamu';
+
+  @override
+  String get verifyEmailBodyPrefix => 'Kami sudah mengirim link konfirmasi ke ';
+
+  @override
+  String get verifyEmailBodySuffix =>
+      '. Klik link itu untuk mengaktifkan akunmu — sampai itu kamu belum bisa login dari perangkat lain.';
+
+  @override
+  String get verifyEmailAutonav =>
+      'Setelah konfirmasi, kamu otomatis dipindahkan ke Riwayat.';
+
+  @override
+  String get verifyEmailResend => 'Kirim ulang email';
+
+  @override
+  String get verifyEmailResending => 'Mengirim…';
+
+  @override
+  String get verifyEmailResent => 'Email verifikasi sudah dikirim ulang.';
+
+  @override
+  String get verifyEmailUseDifferent => 'Pakai email lain';
+
+  @override
+  String get historySignOutTooltip => 'Keluar';
+
+  @override
+  String get historySignedOut => 'Kamu sudah keluar.';
+
+  @override
+  String get historyLoadingMessage => 'Memuat riwayat…';
+
+  @override
+  String get historyTotalBills => 'Total bill';
+
+  @override
+  String get historyOutstanding => 'Piutang outstanding';
+
+  @override
+  String get historyEmptyMessage =>
+      'Belum ada bill tersimpan.\nMulai scan struk dari tab Scan.';
+
+  @override
+  String get splitSummaryTitle => 'Rincian per Orang';
+
+  @override
+  String get splitSummaryNoItems => 'Belum ambil item.';
+
+  @override
+  String get splitSummarySubtotal => 'Subtotal';
+
+  @override
+  String get splitSummaryTax => 'Pajak (proporsional)';
+
+  @override
+  String get splitSummaryService => 'Service (proporsional)';
+
+  @override
+  String get splitSummaryShareWhatsapp => 'Bagikan ke WhatsApp';
+
+  @override
+  String get splitWhatsappFailed => 'Tidak bisa buka WhatsApp';
 }

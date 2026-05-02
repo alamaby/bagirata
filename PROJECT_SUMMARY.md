@@ -1,6 +1,6 @@
 # BagiStruk — Technical Documentation
 
-**Status: End-to-end live** — capture → OCR (Flutter → Edge Function → LLM) → Review & Edit → Split → **Settlement** (per-participant `is_paid` toggle, auto `bills.is_settled`). Lazy anonymous sign-in (only when an action needs `auth.uid()`) so persisted email sessions survive restart. Per-user insert rate limit enforced at the database level.
+**Status: End-to-end live** — capture → OCR (Flutter → Edge Function → LLM) → Review & Edit → Split → **Settlement** (per-participant `is_paid` toggle, auto `bills.is_settled`). Lazy anonymous sign-in (only when an action needs `auth.uid()`) so persisted email sessions survive restart. Per-user insert rate limit enforced at the database level. Profile & Settings screen with dynamic locale (ID/EN), ThemeMode, and multi-currency formatter.
 
 ---
 
@@ -112,6 +112,16 @@ Core application tables:
 - `BEFORE INSERT` trigger on `bills`: hard limit of **30/hour** and **200/day** per `owner_id`. Exceeding the limit raises a `P0001` exception.
 - `service_role` bypasses the limit (for admin/seed operations).
 - Index on `(owner_id, created_at DESC)` keeps the count-window query fast as the table grows.
+
+### `20260501120000_profiles_preferences.sql`
+
+- Adds four preference columns to `profiles`: `display_name TEXT`, `default_currency TEXT DEFAULT 'IDR'`, `language_pref TEXT DEFAULT 'id'`, `theme_pref TEXT DEFAULT 'system'`.
+- DB function `ensure_profile_for_user()` + trigger `on_auth_user_created`: auto-inserts a `profiles` row (`ON CONFLICT DO NOTHING`) for every new `auth.users` row, so the profile is always present when the client first calls `getCurrentProfile()`.
+
+### `20260502090000_fix_ensure_profile_search_path.sql`
+
+- **Fixes "database error creating anonymous user"** — `ensure_profile_for_user()` ran in the `auth.users` execution context where `public` is NOT on the `search_path`. The bare `profiles` reference raised `relation "profiles" does not exist`, blocking every anonymous (and email) sign-up.
+- Fix: recreates the function with `SET search_path = ''` and fully-qualified table `public.profiles`. Drops and recreates the trigger to point at the rebuilt function body.
 
 ---
 
@@ -345,6 +355,76 @@ Reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from `.env`. Exit 0 only on HTTP 20
 - **Lottie asset** at `assets/lottie/scanning.json` is still a placeholder — replace with the final animation before release.
 - **Edge Function has no self-rate-limit** — relies on the Supabase project quota. Consider a `cooldown_until` column in `llm_configs` for a circuit-breaker pattern.
 - **Weekly `llm_logs` audit** is not automated — a candidate for a scheduled agent.
+- **Partial i18n** — bill review/split/detail, OCR error messages, and the paywall sheet still have hardcoded Indonesian strings. See §12 TODO table.
+
+---
+
+---
+
+## 11. Profile & Settings
+
+Added in migration `20260501120000_profiles_preferences.sql`:
+- Four new columns on `profiles`: `display_name TEXT`, `default_currency TEXT DEFAULT 'IDR'`, `language_pref TEXT DEFAULT 'id'`, `theme_pref TEXT DEFAULT 'system'`.
+- DB trigger `on_auth_user_created` auto-inserts a `profiles` row for every new auth user (anon or email). Client also upserts defensively on every `getCurrentProfile()` call.
+
+**Trigger search_path fix** (`20260502090000_fix_ensure_profile_search_path.sql`): the original function used bare `profiles` (no schema). Because `SECURITY DEFINER` functions fire in the `auth.users` execution context — where `public` is NOT on the `search_path` — this raised `relation "profiles" does not exist` and blocked every new sign-up. Fixed by adding `SET search_path = ''` and qualifying the table as `public.profiles`.
+
+**New Dart files:**
+
+| Path | Role |
+|---|---|
+| `lib/domain/entities/user_profile.dart` | `@freezed` UserProfile entity |
+| `lib/domain/repositories/i_profile_repository.dart` | CRUD interface |
+| `lib/data/dtos/profile_dto.dart` | `@JsonSerializable` DTO |
+| `lib/data/datasources/profile_remote_datasource.dart` | PostgREST wrapper |
+| `lib/data/repositories/profile_repository_impl.dart` | `Result<T>`-wrapped impl |
+| `lib/presentation/settings/providers/profile_notifier.dart` | `keepAlive` async notifier; watches `authStateProvider`; returns synthetic default when no session — prevents the keepAlive error cache forming on cold start |
+| `lib/presentation/settings/providers/preferences_providers.dart` | `localePrefProvider`, `themeModePrefProvider`, `currencyPrefProvider` — derived from `profileProvider` |
+| `lib/presentation/settings/providers/settings_actions.dart` | `performLogout` — invalidates all user-scoped providers then calls `ensureSignedIn()` for a fresh anon session |
+| `lib/presentation/settings/screens/settings_screen.dart` | Account + Preferences UI; anonymous guard auto-opens paywall |
+| `lib/presentation/settings/widgets/` | `edit_name_sheet`, `confirm_dialog`, `currency_picker_dialog`, `language_picker_dialog`, `theme_picker_dialog` |
+| `lib/core/format/currency_formatter.dart` | `CurrencyFormatter.of(code)` — `NumberFormat` factory for IDR/USD/MYR/AUD/SGD/SAR |
+
+**Cold-start safety:** `profileProvider` watches `authStateProvider` and returns `UserProfile(id:'', isAnonymous:true)` when `userId==null`. This prevents the `keepAlive` error cache from forming before a session exists.
+
+**Post-login routing:** Settings tab passes `from: Routes.settings` through `showPaywallSheet` → login URL `?from=` query param → `LoginScreen.from` field → `context.go(widget.from)` on success, landing the user back on the Settings tab instead of History.
+
+---
+
+## 12. Localization (i18n)
+
+**Generator:** Flutter's built-in `gen-l10n` (`flutter: generate: true` in `pubspec.yaml`; config in `l10n.yaml` at project root).
+
+**Template:** `lib/l10n/app_id.arb` (Bahasa Indonesia — source of truth).  
+**Translation:** `lib/l10n/app_en.arb` (English).  
+**Output:** `lib/l10n/generated/app_l10n.dart` (auto-generated — do not edit directly).
+
+**Usage:** `AppL10n.of(context).<key>` — consistent pattern throughout the app.
+
+**Wiring in `app.dart`:** `MaterialApp.router` receives `locale:` from `localePrefProvider` (via `profileProvider`) and `themeMode:` from `themeModePrefProvider`. `localizationsDelegates` and `supportedLocales` come from `AppL10n`.
+
+**Screens localized:**
+- Shell / bottom nav (`main_shell_screen.dart`)
+- Scan (`receipt_capture_screen.dart`)
+- Settings (`settings_screen.dart` + all widgets)
+- Auth (`login_screen.dart`, `register_screen.dart`, `verify_email_screen.dart`)
+- History (`history_screen.dart`)
+- Bill split summary (`split_summary_sheet.dart`)
+
+### TODO: remaining hardcoded strings
+
+The following files still contain hardcoded Indonesian strings. Localize in a future pass:
+
+| File | Hardcoded strings |
+|---|---|
+| `lib/presentation/bills/screens/bill_review_screen.dart` | AppBar title, item labels, save button, confidence chip, mismatch banner |
+| `lib/presentation/bills/screens/bill_split_screen.dart` | Participant add/edit UI, item assignment labels |
+| `lib/presentation/bills/screens/bill_detail_screen.dart` | Settlement labels, participant toggle text |
+| `lib/presentation/ocr/utils/ocr_messages.dart` | Error title/body strings for all `OcrFailure` cases |
+| `lib/presentation/shell/widgets/paywall_bottom_sheet.dart` | Sheet title, subtitle, and CTA buttons |
+| `lib/presentation/ocr/widgets/receipt_preview_component.dart` | Empty-state copy |
+| `lib/main.dart` | Supabase initialization error message |
+| `lib/presentation/bills/widgets/split_summary_sheet.dart` (`_buildShareText`) | WhatsApp message body (non-UI, lower priority) |
 
 ---
 
@@ -372,3 +452,12 @@ Reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` from `.env`. Exit 0 only on HTTP 20
 | [assets/lottie/scanning.json](assets/lottie/scanning.json) | Scanning animation (replace with final Lottie before release) |
 | [.env.example](.env.example) | Client env template (anon key only) |
 | [smoketest.sh](smoketest.sh) | CLI E2E test for the Edge Function |
+| [lib/l10n/app_id.arb](lib/l10n/app_id.arb) | ARB source — Bahasa Indonesia (template for all UI strings) |
+| [lib/l10n/app_en.arb](lib/l10n/app_en.arb) | ARB translation — English |
+| [lib/l10n/generated/app_l10n.dart](lib/l10n/generated/app_l10n.dart) | Auto-generated localization class (do not edit) |
+| [lib/core/format/currency_formatter.dart](lib/core/format/currency_formatter.dart) | Multi-currency `NumberFormat` factory (IDR/USD/MYR/AUD/SGD/SAR) |
+| [lib/presentation/settings/screens/settings_screen.dart](lib/presentation/settings/screens/settings_screen.dart) | Profile & Settings UI |
+| [lib/presentation/settings/providers/profile_notifier.dart](lib/presentation/settings/providers/profile_notifier.dart) | `keepAlive` profile state — cold-start safe |
+| [lib/presentation/settings/providers/preferences_providers.dart](lib/presentation/settings/providers/preferences_providers.dart) | Locale / ThemeMode / currency pref providers |
+| [supabase/migrations/20260501120000_profiles_preferences.sql](supabase/migrations/20260501120000_profiles_preferences.sql) | Profiles preference columns + auto-create trigger |
+| [supabase/migrations/20260502090000_fix_ensure_profile_search_path.sql](supabase/migrations/20260502090000_fix_ensure_profile_search_path.sql) | Fixes `ensure_profile_for_user` search_path bug — `SET search_path = ''`, fully-qualified `public.profiles` |

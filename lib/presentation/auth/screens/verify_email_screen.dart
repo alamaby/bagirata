@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
+import '../../../l10n/generated/app_l10n.dart';
 import '../utils/auth_messages.dart';
 
 /// Shown after `signUp` while waiting for the user to click the email link.
@@ -33,13 +34,14 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     final res = await repo.resendEmailChange(email: widget.email);
     if (!mounted) return;
     setState(() => _resending = false);
+    final l10n = AppL10n.of(context);
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     switch (res) {
       case Success():
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Email verifikasi sudah dikirim ulang.'),
+          SnackBar(
+            content: Text(l10n.verifyEmailResent),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -65,14 +67,15 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verifikasi email'),
+        title: Text(l10n.verifyEmailTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Kembali',
+          tooltip: l10n.verifyEmailBackTooltip,
           onPressed: _cancel,
         ),
       ),
@@ -99,7 +102,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               ),
               SizedBox(height: 24.h),
               Text(
-                'Cek email kamu',
+                l10n.verifyEmailHeading,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22.sp,
@@ -116,10 +119,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                     color: scheme.onSurfaceVariant,
                   ),
                   children: [
-                    const TextSpan(
-                      text:
-                          'Kami sudah mengirim link konfirmasi ke ',
-                    ),
+                    TextSpan(text: l10n.verifyEmailBodyPrefix),
                     TextSpan(
                       text: widget.email,
                       style: TextStyle(
@@ -127,10 +127,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                         color: scheme.onSurface,
                       ),
                     ),
-                    const TextSpan(
-                      text:
-                          '. Klik link itu untuk mengaktifkan akunmu — sampai itu kamu belum bisa login dari perangkat lain.',
-                    ),
+                    TextSpan(text: l10n.verifyEmailBodySuffix),
                   ],
                 ),
                 textAlign: TextAlign.center,
@@ -150,7 +147,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                     SizedBox(width: 12.w),
                     Expanded(
                       child: Text(
-                        'Setelah konfirmasi, kamu otomatis dipindahkan ke Riwayat.',
+                        l10n.verifyEmailAutonav,
                         style: TextStyle(
                           fontSize: 13.sp,
                           color: scheme.onSurface,
@@ -171,7 +168,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                       )
                     : const Icon(Icons.refresh),
                 label: Text(
-                  _resending ? 'Mengirim…' : 'Kirim ulang email',
+                  _resending ? l10n.verifyEmailResending : l10n.verifyEmailResend,
                   style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -179,7 +176,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
               TextButton(
                 onPressed: _cancel,
                 child: Text(
-                  'Pakai email lain',
+                  l10n.verifyEmailUseDifferent,
                   style: TextStyle(fontSize: 13.sp),
                 ),
               ),

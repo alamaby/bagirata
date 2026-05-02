@@ -8,6 +8,7 @@ import '../../../core/format/app_format.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
 import '../../../domain/entities/bill.dart';
+import '../../../l10n/generated/app_l10n.dart';
 import '../../bills/providers/bill_list_notifier.dart';
 import '../../shared/widgets/loading_view.dart';
 
@@ -16,13 +17,14 @@ class HistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppL10n.of(context);
     final bills = ref.watch(billListProvider);
     final currency = AppFormat.currency();
 
     return Scaffold(
       body: SafeArea(
         child: bills.when(
-          loading: () => const LoadingView(message: 'Memuat riwayat…'),
+          loading: () => LoadingView(message: l10n.historyLoadingMessage),
           error: (e, _) => _ErrorView(
             message: e.toString(),
             onRetry: () => ref.read(billListProvider.notifier).refresh(),
@@ -32,11 +34,11 @@ class HistoryScreen extends ConsumerWidget {
             child: CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  title: const Text('Riwayat'),
+                  title: Text(l10n.historyTab),
                   pinned: true,
                   actions: [
                     IconButton(
-                      tooltip: 'Keluar',
+                      tooltip: l10n.historySignOutTooltip,
                       icon: const Icon(Icons.logout),
                       onPressed: () => _signOut(context, ref),
                     ),
@@ -85,14 +87,15 @@ class HistoryScreen extends ConsumerWidget {
   }
 
   Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    final l10n = AppL10n.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final repo = ref.read(authRepositoryProvider);
     await repo.signOut();
     await repo.signInAnonymously();
     if (!context.mounted) return;
     messenger.showSnackBar(
-      const SnackBar(
-        content: Text('Kamu sudah keluar.'),
+      SnackBar(
+        content: Text(l10n.historySignedOut),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -107,6 +110,7 @@ class _SummaryCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
     final totalBills = bills.length;
     final outstanding = bills
@@ -119,7 +123,7 @@ class _SummaryCards extends StatelessWidget {
         children: [
           Expanded(
             child: _StatCard(
-              label: 'Total bill',
+              label: l10n.historyTotalBills,
               value: '$totalBills',
               icon: Icons.receipt_long_outlined,
               color: scheme.primaryContainer,
@@ -129,7 +133,7 @@ class _SummaryCards extends StatelessWidget {
           SizedBox(width: 12.w),
           Expanded(
             child: _StatCard(
-              label: 'Piutang outstanding',
+              label: l10n.historyOutstanding,
               value: currency.format(outstanding),
               icon: Icons.account_balance_wallet_outlined,
               color: scheme.tertiaryContainer,
@@ -197,6 +201,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
@@ -208,7 +213,7 @@ class _EmptyState extends StatelessWidget {
                 size: 56.r, color: scheme.onSurfaceVariant),
             SizedBox(height: 12.h),
             Text(
-              'Belum ada bill tersimpan.\nMulai scan struk dari tab Scan.',
+              l10n.historyEmptyMessage,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
@@ -230,6 +235,7 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
     return Center(
       child: Padding(
         padding: EdgeInsets.all(24.w),
@@ -243,7 +249,7 @@ class _ErrorView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14.sp)),
             SizedBox(height: 16.h),
-            FilledButton.tonal(onPressed: onRetry, child: const Text('Coba lagi')),
+            FilledButton.tonal(onPressed: onRetry, child: Text(l10n.retry)),
           ],
         ),
       ),

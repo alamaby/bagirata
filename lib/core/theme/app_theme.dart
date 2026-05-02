@@ -30,7 +30,15 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
+          // Use Size(0, 48) — NOT Size.fromHeight(48), which expands to
+          // Size(double.infinity, 48) and forces every FilledButton's minimum
+          // width to infinity. That blows up `BoxConstraints forces an
+          // infinite width` whenever a FilledButton sits in a parent that
+          // passes loose constraints (e.g. Row(mainAxisSize: min) inside a
+          // bottom sheet's action row). Full-width buttons still get full
+          // width via Column(crossAxisAlignment: stretch) or an explicit
+          // SizedBox(width: double.infinity) wrapper at the call site.
+          minimumSize: const Size(0, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

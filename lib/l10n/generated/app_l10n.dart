@@ -324,6 +324,240 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'Daftar / Masuk'**
   String get registerOrLogin;
+
+  /// No description provided for @loginWelcomeBack.
+  ///
+  /// In id, this message translates to:
+  /// **'Selamat datang kembali'**
+  String get loginWelcomeBack;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Masuk untuk melanjutkan ke BagiStruk.'**
+  String get loginSubtitle;
+
+  /// No description provided for @loginSaveBanner.
+  ///
+  /// In id, this message translates to:
+  /// **'Daftar untuk menyimpan riwayat tagihanmu'**
+  String get loginSaveBanner;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In id, this message translates to:
+  /// **'Masuk'**
+  String get loginButton;
+
+  /// No description provided for @loginOr.
+  ///
+  /// In id, this message translates to:
+  /// **'atau'**
+  String get loginOr;
+
+  /// No description provided for @loginEmailHint.
+  ///
+  /// In id, this message translates to:
+  /// **'kamu@email.com'**
+  String get loginEmailHint;
+
+  /// No description provided for @loginNoAccount.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum punya akun? '**
+  String get loginNoAccount;
+
+  /// No description provided for @loginRegisterLink.
+  ///
+  /// In id, this message translates to:
+  /// **'Daftar'**
+  String get loginRegisterLink;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Daftar'**
+  String get registerTitle;
+
+  /// No description provided for @registerBackToScanTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Kembali ke Scan'**
+  String get registerBackToScanTooltip;
+
+  /// No description provided for @registerSkip.
+  ///
+  /// In id, this message translates to:
+  /// **'Lewati'**
+  String get registerSkip;
+
+  /// No description provided for @registerHeading.
+  ///
+  /// In id, this message translates to:
+  /// **'Buat akun baru'**
+  String get registerHeading;
+
+  /// No description provided for @registerSubtitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Simpan riwayat tagihanmu di semua perangkat.'**
+  String get registerSubtitle;
+
+  /// No description provided for @registerPasswordHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Minimal 6 karakter'**
+  String get registerPasswordHint;
+
+  /// No description provided for @registerHaveAccount.
+  ///
+  /// In id, this message translates to:
+  /// **'Sudah punya akun? '**
+  String get registerHaveAccount;
+
+  /// No description provided for @registerLoginLink.
+  ///
+  /// In id, this message translates to:
+  /// **'Login'**
+  String get registerLoginLink;
+
+  /// No description provided for @verifyEmailTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Verifikasi email'**
+  String get verifyEmailTitle;
+
+  /// No description provided for @verifyEmailBackTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Kembali'**
+  String get verifyEmailBackTooltip;
+
+  /// No description provided for @verifyEmailHeading.
+  ///
+  /// In id, this message translates to:
+  /// **'Cek email kamu'**
+  String get verifyEmailHeading;
+
+  /// No description provided for @verifyEmailBodyPrefix.
+  ///
+  /// In id, this message translates to:
+  /// **'Kami sudah mengirim link konfirmasi ke '**
+  String get verifyEmailBodyPrefix;
+
+  /// No description provided for @verifyEmailBodySuffix.
+  ///
+  /// In id, this message translates to:
+  /// **'. Klik link itu untuk mengaktifkan akunmu — sampai itu kamu belum bisa login dari perangkat lain.'**
+  String get verifyEmailBodySuffix;
+
+  /// No description provided for @verifyEmailAutonav.
+  ///
+  /// In id, this message translates to:
+  /// **'Setelah konfirmasi, kamu otomatis dipindahkan ke Riwayat.'**
+  String get verifyEmailAutonav;
+
+  /// No description provided for @verifyEmailResend.
+  ///
+  /// In id, this message translates to:
+  /// **'Kirim ulang email'**
+  String get verifyEmailResend;
+
+  /// No description provided for @verifyEmailResending.
+  ///
+  /// In id, this message translates to:
+  /// **'Mengirim…'**
+  String get verifyEmailResending;
+
+  /// No description provided for @verifyEmailResent.
+  ///
+  /// In id, this message translates to:
+  /// **'Email verifikasi sudah dikirim ulang.'**
+  String get verifyEmailResent;
+
+  /// No description provided for @verifyEmailUseDifferent.
+  ///
+  /// In id, this message translates to:
+  /// **'Pakai email lain'**
+  String get verifyEmailUseDifferent;
+
+  /// No description provided for @historySignOutTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Keluar'**
+  String get historySignOutTooltip;
+
+  /// No description provided for @historySignedOut.
+  ///
+  /// In id, this message translates to:
+  /// **'Kamu sudah keluar.'**
+  String get historySignedOut;
+
+  /// No description provided for @historyLoadingMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Memuat riwayat…'**
+  String get historyLoadingMessage;
+
+  /// No description provided for @historyTotalBills.
+  ///
+  /// In id, this message translates to:
+  /// **'Total bill'**
+  String get historyTotalBills;
+
+  /// No description provided for @historyOutstanding.
+  ///
+  /// In id, this message translates to:
+  /// **'Piutang outstanding'**
+  String get historyOutstanding;
+
+  /// No description provided for @historyEmptyMessage.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada bill tersimpan.\nMulai scan struk dari tab Scan.'**
+  String get historyEmptyMessage;
+
+  /// No description provided for @splitSummaryTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Rincian per Orang'**
+  String get splitSummaryTitle;
+
+  /// No description provided for @splitSummaryNoItems.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ambil item.'**
+  String get splitSummaryNoItems;
+
+  /// No description provided for @splitSummarySubtotal.
+  ///
+  /// In id, this message translates to:
+  /// **'Subtotal'**
+  String get splitSummarySubtotal;
+
+  /// No description provided for @splitSummaryTax.
+  ///
+  /// In id, this message translates to:
+  /// **'Pajak (proporsional)'**
+  String get splitSummaryTax;
+
+  /// No description provided for @splitSummaryService.
+  ///
+  /// In id, this message translates to:
+  /// **'Service (proporsional)'**
+  String get splitSummaryService;
+
+  /// No description provided for @splitSummaryShareWhatsapp.
+  ///
+  /// In id, this message translates to:
+  /// **'Bagikan ke WhatsApp'**
+  String get splitSummaryShareWhatsapp;
+
+  /// No description provided for @splitWhatsappFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak bisa buka WhatsApp'**
+  String get splitWhatsappFailed;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {
