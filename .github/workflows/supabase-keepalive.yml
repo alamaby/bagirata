@@ -1,0 +1,36 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    - cron: '0 3 */3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Mask URL in logs
+        run: echo "::add-mask::${{ secrets.SUPABASE_URL }}"
+
+      - name: Ping auth health
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+        run: curl --silent --show-error --fail-with-body "$URL/auth/v1/health"
+
+      - name: Ping PostgREST (DB activity)
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl --silent --show-error --fail-with-body -I \
+            -H "apikey: $KEY" \
+            -H "Authorization: Bearer $KEY" \
+            "$URL/rest/v1/profiles?select=id&limit=1"
