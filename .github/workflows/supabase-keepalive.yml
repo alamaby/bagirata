@@ -23,7 +23,11 @@ jobs:
       - name: Ping auth health
         env:
           URL: ${{ secrets.SUPABASE_URL }}
-        run: curl --silent --show-error --fail-with-body "$URL/auth/v1/health"
+          KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          curl --silent --show-error --fail-with-body \
+            -H "apikey: $KEY" \
+            "$URL/auth/v1/health"
 
       - name: Ping PostgREST (DB activity)
         env:
