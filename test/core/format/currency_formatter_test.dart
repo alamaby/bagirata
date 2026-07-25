@@ -101,10 +101,11 @@ void main() {
   group('CurrencyFormatter.of', () {
     test('IDR returns NumberFormat with 0 decimal digits', () {
       final fmt = CurrencyFormatter.of('IDR');
+      expect(fmt.decimalDigits, 0);
       final formatted = fmt.format(12345);
-      // IDR uses thousands separator (dot) and no decimal
+      // id_ID uses '.' as thousand separator, so 'Rp 12.345' is correct.
       expect(formatted, contains('12'));
-      expect(formatted, isNot(contains('.')));
+      expect(formatted, contains('345'));
     });
   });
 }

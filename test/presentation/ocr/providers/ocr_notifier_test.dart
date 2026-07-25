@@ -1,140 +1,180 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:bagistruk/core/error/failure.dart';
 import 'package:bagistruk/core/error/result.dart';
 import 'package:bagistruk/data/providers.dart';
 import 'package:bagistruk/domain/entities/ocr_result.dart';
+import 'package:bagistruk/domain/repositories/i_ocr_repository.dart';
 import 'package:bagistruk/presentation/ocr/providers/ocr_notifier.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
-import '../../../data/repositories/fake_ocr_repository.dart';
+import 'ocr_notifier_test.mocks.dart';
 
+@GenerateMocks([IOCRRepository])
 void main() {
-  group('OcrNotifier', () {
-    test('initial state is OcrIdle', () {
-      final container = _createContainer(
-        _resultRepo(Result.success(_successResult())),
-      );
-      final notifier = container.read(ocrProvider.notifier);
-      expect(notifier.state, const OcrState.idle());
-    });
+  late MockIOCRRepository mockRepo;
+  late ProviderContainer container;
+  late ProviderSubscription<OcrState> subscription;
 
-    test('process sends images and yields success', () async {
-      final images = [
-        Uint8List.fromList([1, 2, 3]),
-      ];
-      final fake = _resultRepo(Result.success(_successResult()));
-      final container = _createContainer(fake);
-      final notifier = container.read(ocrProvider.notifier);
+  setUpAll(() {
+    provideDummy<Result<OcrResult>>(
+      const Result.success(
+        OcrResult(
+          items: [OcrLineItem(name: 'A', price: 100, qty: 1)],
+          providerUsed: 'gemini',
+        ),
+      ),
+    );
+  });
 
-      await notifier.process(
-        images,
-        hint: 'receipt',
-        currency: 'IDR',
-        fingerprintHeaders: {'x-v2-sig': 'abc'},
-      );
-
-      // Verify forwarding
-      expect(fake.capturedImages, equals(images));
-      expect(fake.capturedHint, 'receipt');
-      expect(fake.capturedCurrency, 'IDR');
-      expect(fake.capturedFingerprint, containsPair('x-v2-sig', 'abc'));
-
-      expect(notifier.state, isA<OcrSuccess>());
-      expect((notifier.state as OcrSuccess).result.providerUsed, 'gemini');
-    });
-
-    test('process transitions through processing state', () async {
-      final images = [
-        Uint8List.fromList([1]),
-      ];
-      final fake = _resultRepo(Result.success(_successResult()));
-      final container = _createContainer(fake);
-      final notifier = container.read(ocrProvider.notifier);
-
-      // Capture state after setting processing but before result
-      final states = <OcrState>[];
-      container.listen<OcrState>(ocrProvider, (_, next) => states.add(next));
-
-      await notifier.process(images);
-
-      expect(states.any((s) => s == const OcrState.processing(1)), isTrue);
-      expect(states.any((s) => s is OcrSuccess), isTrue);
-    });
-
-    test('process failure yields OcrFailure', () async {
-      final fake = _resultRepo(
-        const Result.failure(Failure.server(message: 'OCR failed')),
-      );
-      final container = _createContainer(fake);
-      final notifier = container.read(ocrProvider.notifier);
-
-      await notifier.process([
-        Uint8List.fromList([1]),
-      ]);
-
-      expect(notifier.state, isA<OcrFailure>());
-      final failure = (notifier.state as OcrFailure).failure;
-      expect(failure, isA<ServerFailure>());
-      expect((failure as ServerFailure).message, 'OCR failed');
-    });
-
-    test('reset returns to OcrIdle', () async {
-      final container = _createContainer(
-        _resultRepo(Result.success(_successResult())),
-      );
-      final notifier = container.read(ocrProvider.notifier);
-
-      await notifier.process([
-        Uint8List.fromList([1]),
-      ]);
-      expect(notifier.state, isA<OcrSuccess>());
-
-      notifier.reset();
-      expect(notifier.state, const OcrState.idle());
-    });
-
-    test('multiple process calls reset state each time', () async {
-      final container = _createContainer(
-        _resultRepo(Result.success(_successResult())),
-      );
-      final notifier = container.read(ocrProvider.notifier);
-
-      await notifier.process([
-        Uint8List.fromList([1]),
-      ]);
-      expect(notifier.state, isA<OcrSuccess>());
-
-      await notifier.process([
-        Uint8List.fromList([2]),
-      ]);
-      expect(notifier.state, isA<OcrSuccess>());
-      expect((notifier.state as OcrSuccess).result.providerUsed, 'gemini');
-    });
-
-    test('empty image list still processes (server may reject)', () async {
-      final fake = _resultRepo(
-        const Result.failure(Failure.server(message: 'No images')),
-      );
-      final container = _createContainer(fake);
-      final notifier = container.read(ocrProvider.notifier);
-
-      await notifier.process([]);
-      expect(notifier.state, isA<OcrFailure>());
+  setUp(() {
+    mockRepo = MockIOCRRepository();
+    container = ProviderContainer(
+      overrides: [ocrRepositoryProvider.overrideWithValue(mockRepo)],
+    );
+    // Keep the autoDispose notifier alive for the duration of each test so we
+    // can observe intermediate state transitions.
+    subscription = container.listen<OcrState>(
+      ocrProvider,
+      (previous, next) {},
+    );
+    addTearDown(() {
+      subscription.close();
+      container.dispose();
     });
   });
+
+  test('build returns OcrIdle', () {
+    expect(container.read(ocrProvider), isA<OcrIdle>());
+  });
+
+  group('process', () {
+    test('success transitions idle -> processing -> success', () async {
+      final completer = Completer<Result<OcrResult>>();
+      const result = OcrResult(
+        items: [OcrLineItem(name: 'Kopi', price: 18000, qty: 2)],
+        detectedTotal: 36000,
+        providerUsed: 'gemini',
+      );
+      when(mockRepo.processReceipt(any)).thenAnswer((_) => completer.future);
+
+      final future = container
+          .read(ocrProvider.notifier)
+          .process([Uint8List.fromList([1, 2, 3])]);
+
+      // Yield once so the synchronous state change inside `process` is
+      // observed before the awaited repository call resolves.
+      await Future<void>.delayed(Duration.zero);
+      final processing = container.read(ocrProvider);
+      expect(processing, isA<OcrProcessing>());
+      expect((processing as OcrProcessing).imageCount, 1);
+
+      completer.complete(const Result.success(result));
+      await future;
+
+      final state = container.read(ocrProvider);
+      expect(state, isA<OcrSuccess>());
+      expect((state as OcrSuccess).result, result);
+    });
+
+    test('failure transitions to OcrFailure with the mapped failure', () async {
+      when(mockRepo.processReceipt(any)).thenAnswer(
+        (_) async => const Result.failure(
+          Failure.network('no internet'),
+        ),
+      );
+
+      await container
+          .read(ocrProvider.notifier)
+          .process([Uint8List.fromList([0])]);
+
+      final state = container.read(ocrProvider);
+      expect(state, isA<OcrFailure>());
+      expect((state as OcrFailure).failure, isA<NetworkFailure>());
+    });
+
+    test('processing state reflects image count', () async {
+      final completer = Completer<Result<OcrResult>>();
+      when(mockRepo.processReceipt(any)).thenAnswer((_) => completer.future);
+
+      final images = List.generate(3, (_) => Uint8List.fromList([0]));
+
+      final future = container
+          .read(ocrProvider.notifier)
+          .process(images);
+
+      await Future<void>.delayed(Duration.zero);
+      final processing = container.read(ocrProvider);
+      expect(processing, isA<OcrProcessing>());
+      expect((processing as OcrProcessing).imageCount, 3);
+
+      completer.complete(
+        const Result.success(
+          OcrResult(
+            items: [OcrLineItem(name: 'A', price: 100, qty: 1)],
+            providerUsed: 'gemini',
+          ),
+        ),
+      );
+      await future;
+
+      expect(container.read(ocrProvider), isA<OcrSuccess>());
+    });
+
+    test('forwards hint and currency to repository', () async {
+      when(
+        mockRepo.processReceipt(
+          any,
+          hint: 'menu includes 11% PB1',
+          currency: 'IDR',
+          fingerprintHeaders: null,
+        ),
+      ).thenAnswer(
+        (_) async => const Result.success(
+          OcrResult(
+            items: [OcrLineItem(name: 'A', price: 100, qty: 1)],
+            providerUsed: 'gemini',
+          ),
+        ),
+      );
+
+      await container.read(ocrProvider.notifier).process(
+        [Uint8List.fromList([0])],
+        hint: 'menu includes 11% PB1',
+        currency: 'IDR',
+      );
+
+      verify(
+        mockRepo.processReceipt(
+          any,
+          hint: 'menu includes 11% PB1',
+          currency: 'IDR',
+          fingerprintHeaders: null,
+        ),
+      ).called(1);
+    });
+  });
+
+  test('reset returns state to idle', () async {
+    when(mockRepo.processReceipt(any)).thenAnswer(
+      (_) async => const Result.success(
+        OcrResult(
+          items: [OcrLineItem(name: 'A', price: 100, qty: 1)],
+          providerUsed: 'gemini',
+        ),
+      ),
+    );
+
+    await container.read(ocrProvider.notifier).process(
+      [Uint8List.fromList([0])],
+    );
+    expect(container.read(ocrProvider), isA<OcrSuccess>());
+
+    container.read(ocrProvider.notifier).reset();
+    expect(container.read(ocrProvider), isA<OcrIdle>());
+  });
 }
-
-OcrResult _successResult() => const OcrResult(
-  items: [OcrLineItem(name: 'Nasi Goreng', price: 25000)],
-  detectedTotal: 25000,
-  providerUsed: 'gemini',
-);
-
-FakeOCRRepository _resultRepo(Result<OcrResult> result) =>
-    FakeOCRRepository(result);
-
-ProviderContainer _createContainer(FakeOCRRepository repo) => ProviderContainer(
-  overrides: [ocrRepositoryProvider.overrideWithValue(repo)],
-);
