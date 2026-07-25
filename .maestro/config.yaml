@@ -1,0 +1,4 @@
+# Manual smoke suite only. Flows exercise installed app and can reach configured
+# backend; results are not deterministic or evidence of production stability.
+flows:
+  - "*.yaml"

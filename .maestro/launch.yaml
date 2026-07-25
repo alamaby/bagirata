@@ -1,0 +1,13 @@
+appId: com.alamaby.bagistruk
+name: Launch existing test state
+tags:
+  - smoke
+  - manual
+---
+# Preconditions: test build installed; bootstrap services reachable; onboarding
+# and legal state already resolved. This flow intentionally preserves app data.
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: "Pindai|Scan"
+    timeout: 30000

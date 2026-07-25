@@ -1,0 +1,16 @@
+appId: com.alamaby.bagistruk
+name: Empty history state
+tags:
+  - smoke
+  - manual
+  - requires-auth
+  - requires-backend
+---
+# Preconditions: signed-in isolated test user with zero active bills. Production
+# accounts are unsuitable because existing history makes assertion invalid.
+- launchApp:
+    clearState: false
+- tapOn: "Riwayat|History"
+- extendedWaitUntil:
+    visible: "Belum ada bill tersimpan.*|No saved bills yet.*"
+    timeout: 30000

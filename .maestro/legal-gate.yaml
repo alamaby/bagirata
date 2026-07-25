@@ -1,0 +1,16 @@
+appId: com.alamaby.bagistruk
+name: Legal gate on fresh test state
+tags:
+  - smoke
+  - manual
+  - requires-backend
+---
+# Preconditions: isolated test account/backend and fresh app state. Never run
+# against an account whose acceptance state must be preserved.
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Persetujuan Hukum|Legal Agreement"
+    timeout: 30000
+- assertVisible: "Baca Syarat Layanan|Read Terms of Service"
+- assertVisible: "Baca Kebijakan Privasi|Read Privacy Policy"

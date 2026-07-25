@@ -1,0 +1,17 @@
+appId: com.alamaby.bagistruk
+name: Bottom navigation
+tags:
+  - smoke
+  - manual
+  - requires-auth
+---
+# Preconditions: signed-in test user, legal acceptance complete, onboarding
+# complete, Indonesian or English locale, stable test backend.
+- launchApp:
+    clearState: false
+- tapOn: "Riwayat|History"
+- assertVisible: "Riwayat|History"
+- tapOn: "Pengaturan|Settings"
+- assertVisible: "Profil & Pengaturan|Profile & Settings"
+- tapOn: "Pindai|Scan"
+- assertVisible: "Pindai Struk|Scan Receipt"

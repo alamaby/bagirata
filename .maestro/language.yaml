@@ -1,0 +1,19 @@
+appId: com.alamaby.bagistruk
+name: Language preference
+tags:
+  - smoke
+  - manual
+  - mutates-preferences
+---
+# Preconditions: Settings reachable. Restore preferred locale after manual run.
+# Labels may differ if device starts in English.
+- launchApp:
+    clearState: false
+- tapOn: "Pengaturan|Settings"
+- extendedWaitUntil:
+    visible: "Profil & Pengaturan|Profile & Settings"
+    timeout: 15000
+- tapOn: "Bahasa|Language"
+- tapOn: "English"
+- assertVisible: "Profile & Settings"
+- assertVisible: "Scan"

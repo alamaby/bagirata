@@ -120,7 +120,16 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
     if (!AdConfig.adsEnabled || unitId == null) return;
 
     final canRequestAds = await AdService.canRequestAds();
-    if (!mounted || !canRequestAds) return;
+    if (!mounted) return;
+
+    if (!canRequestAds) {
+      _logger.i(
+        'BannerAd waiting for consent/ad readiness '
+        'placement=${widget.placement.name} attempt=$_retryAttempt',
+      );
+      _scheduleRetry();
+      return;
+    }
 
     final ad = BannerAd(
       adUnitId: unitId,

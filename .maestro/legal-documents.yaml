@@ -1,0 +1,22 @@
+appId: com.alamaby.bagistruk
+name: Legal documents from Settings
+tags:
+  - smoke
+  - manual
+---
+# Preconditions: Settings reachable and bundled legal Markdown assets present.
+# This flow avoids changing legal acceptance or account state.
+- launchApp:
+    clearState: false
+- tapOn: "Pengaturan|Settings"
+- scrollUntilVisible:
+    element: "Kebijakan Privasi|Privacy Policy"
+    direction: DOWN
+- tapOn: "Kebijakan Privasi|Privacy Policy"
+- assertVisible: "Kebijakan Privasi|Privacy Policy"
+- back
+- scrollUntilVisible:
+    element: "Syarat dan Ketentuan|Terms of Service"
+    direction: DOWN
+- tapOn: "Syarat dan Ketentuan|Terms of Service"
+- assertVisible: "Syarat dan Ketentuan|Terms of Service"

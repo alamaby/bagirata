@@ -1,0 +1,18 @@
+appId: com.alamaby.bagistruk
+name: Currency preference
+tags:
+  - smoke
+  - manual
+  - mutates-preferences
+---
+# Preconditions: Settings reachable and test profile writes allowed. Restore
+# preferred currency after manual run; backend latency can affect result.
+- launchApp:
+    clearState: false
+- tapOn: "Pengaturan|Settings"
+- extendedWaitUntil:
+    visible: "Profil & Pengaturan|Profile & Settings"
+    timeout: 15000
+- tapOn: "Mata uang|Currency"
+- tapOn: "IDR"
+- assertVisible: "IDR"
