@@ -174,6 +174,10 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
       });
       return;
     }
+    if (!mounted) return;
+    setState(() {
+      _failedPermanently = false;
+    });
     final delay = _retryDelays[_retryAttempt];
     _retryAttempt += 1;
     _retryTimer?.cancel();
