@@ -377,6 +377,28 @@
   },
   "historyUpgradeCta": "Upgrade ke Plus",
   "historyPlusBannerDismiss": "Tutup",
+  "historyFreePlusBannerLabel": "Riwayat {freeDays} hari · Insight bulanan",
+  "@historyFreePlusBannerLabel": {
+    "placeholders": {
+      "freeDays": { "type": "int" }
+    }
+  },
+  "historyFreePlusBannerSemantics": "Riwayat {freeDays} hari dan Insight bulanan, fitur Plus. Ketuk untuk detail.",
+  "@historyFreePlusBannerSemantics": {
+    "placeholders": {
+      "freeDays": { "type": "int" }
+    }
+  },
+  "historyFreePlusSheetTitle": "Fitur History Plus",
+  "historyFreePlusHistoryTitle": "Riwayat lebih panjang",
+  "historyFreePlusHistoryBody": "Free menampilkan {freeDays} hari terakhir. Plus menampilkan hingga {plusDays} hari.",
+  "@historyFreePlusHistoryBody": {
+    "placeholders": {
+      "freeDays": { "type": "int" },
+      "plusDays": { "type": "int" }
+    }
+  },
+  "historyFreePlusDismissAction": "Nanti",
   "historyFilterTooltip": "Urutkan & filter",
   "historyFilterTitle": "Urutkan & filter",
   "historyFilterSort": "Urutan",

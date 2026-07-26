@@ -131,7 +131,20 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         ref.read(historyFilterProvider.notifier).reset(),
                   ),
                 ),
-              if (!isPlus || !isBannerDismissed)
+              if (!isPlus && hasHistoryAccess)
+                SliverToBoxAdapter(
+                  child: _FreeHistoryPlusBanner(
+                    freeDays: PlusFeatureLimits.freeHistoryDays,
+                    plusDays: PlusFeatureLimits.plusHistoryDays,
+                    onTap: () => _showFreeHistoryPlusSheet(
+                      context,
+                      freeDays: PlusFeatureLimits.freeHistoryDays,
+                      plusDays: PlusFeatureLimits.plusHistoryDays,
+                      currency: insightCurrency,
+                    ),
+                  ),
+                )
+              else if (!isPlus || !isBannerDismissed)
                 SliverToBoxAdapter(
                   child: _HistoryAccessBanner(
                     isPlus: isPlus,
@@ -144,7 +157,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                         : null,
                   ),
                 ),
-              if (hasHistoryAccess && hasSummary)
+              if (isPlus && hasHistoryAccess && hasSummary)
                 SliverToBoxAdapter(
                   child: _MonthlyInsightSection(
                     isPlus: isPlus,
@@ -345,6 +358,29 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _showFreeHistoryPlusSheet(
+    BuildContext context, {
+    required int freeDays,
+    required int plusDays,
+    required NumberFormat currency,
+  }) async {
+    final shouldUpgrade = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (ctx) => _FreeHistoryPlusSheet(
+        freeDays: freeDays,
+        plusDays: plusDays,
+        currency: currency,
+      ),
+    );
+    if (shouldUpgrade == true && context.mounted) {
+      context.goNamed(Routes.settingsName);
+    }
   }
 }
 
@@ -1215,6 +1251,223 @@ class _BlurredMetricRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FreeHistoryPlusSheet extends StatelessWidget {
+  const _FreeHistoryPlusSheet({
+    required this.freeDays,
+    required this.plusDays,
+    required this.currency,
+  });
+
+  final int freeDays;
+  final int plusDays;
+  final NumberFormat currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.9;
+
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16.w,
+            right: 16.w,
+            top: 12.h,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16.h,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 32.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.historyFreePlusSheetTitle,
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    _SmallPlusPill(color: scheme.primary),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                _FreeSheetFeatureRow(
+                  icon: Icons.history_toggle_off_outlined,
+                  title: l10n.historyFreePlusHistoryTitle,
+                  body: l10n.historyFreePlusHistoryBody(freeDays, plusDays),
+                ),
+                SizedBox(height: 12.h),
+                _FreeSheetFeatureRow(
+                  icon: Icons.insights_outlined,
+                  title: l10n.monthlyInsightTitle,
+                  body: l10n.monthlyInsightLockedSubtitle,
+                ),
+                SizedBox(height: 14.h),
+                _BlurredMetricRow(currency: currency),
+                SizedBox(height: 20.h),
+                FilledButton.icon(
+                  icon: Icon(Icons.workspace_premium_outlined, size: 20.r),
+                  label: Text(l10n.historyUpgradeCta),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+                SizedBox(height: 8.h),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(l10n.historyFreePlusDismissAction),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FreeSheetFeatureRow extends StatelessWidget {
+  const _FreeSheetFeatureRow({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: scheme.onSurfaceVariant, size: 22.r),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  body,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FreeHistoryPlusBanner extends StatelessWidget {
+  const _FreeHistoryPlusBanner({
+    required this.freeDays,
+    required this.plusDays,
+    required this.onTap,
+  });
+
+  final int freeDays;
+  final int plusDays;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final semantics = l10n.historyFreePlusBannerSemantics(freeDays);
+    final label = l10n.historyFreePlusBannerLabel(freeDays);
+    return Semantics(
+      button: true,
+      label: semantics,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
+        child: Material(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(14.r),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(14.r),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: 48.h),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.history_toggle_off_outlined,
+                      color: scheme.onSurfaceVariant,
+                      size: 20.r,
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    _SmallPlusPill(color: scheme.primary),
+                    SizedBox(width: 6.w),
+                    Icon(
+                      Icons.chevron_right,
+                      color: scheme.onSurfaceVariant,
+                      size: 20.r,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -377,6 +377,28 @@
   },
   "historyUpgradeCta": "Upgrade to Plus",
   "historyPlusBannerDismiss": "Dismiss",
+  "historyFreePlusBannerLabel": "{freeDays}-day history · Monthly insight",
+  "@historyFreePlusBannerLabel": {
+    "placeholders": {
+      "freeDays": { "type": "int" }
+    }
+  },
+  "historyFreePlusBannerSemantics": "{freeDays}-day history and Monthly insight, a Plus feature. Tap for details.",
+  "@historyFreePlusBannerSemantics": {
+    "placeholders": {
+      "freeDays": { "type": "int" }
+    }
+  },
+  "historyFreePlusSheetTitle": "Plus history features",
+  "historyFreePlusHistoryTitle": "Longer history",
+  "historyFreePlusHistoryBody": "Free shows the last {freeDays} days. Plus shows up to {plusDays} days.",
+  "@historyFreePlusHistoryBody": {
+    "placeholders": {
+      "freeDays": { "type": "int" },
+      "plusDays": { "type": "int" }
+    }
+  },
+  "historyFreePlusDismissAction": "Not now",
   "historyFilterTooltip": "Sort & filter",
   "historyFilterTitle": "Sort & filter",
   "historyFilterSort": "Sort by",

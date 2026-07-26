@@ -894,6 +894,30 @@ class AppL10nId extends AppL10n {
   String get historyPlusBannerDismiss => 'Tutup';
 
   @override
+  String historyFreePlusBannerLabel(int freeDays) {
+    return 'Riwayat $freeDays hari · Insight bulanan';
+  }
+
+  @override
+  String historyFreePlusBannerSemantics(int freeDays) {
+    return 'Riwayat $freeDays hari dan Insight bulanan, fitur Plus. Ketuk untuk detail.';
+  }
+
+  @override
+  String get historyFreePlusSheetTitle => 'Fitur History Plus';
+
+  @override
+  String get historyFreePlusHistoryTitle => 'Riwayat lebih panjang';
+
+  @override
+  String historyFreePlusHistoryBody(int freeDays, int plusDays) {
+    return 'Free menampilkan $freeDays hari terakhir. Plus menampilkan hingga $plusDays hari.';
+  }
+
+  @override
+  String get historyFreePlusDismissAction => 'Nanti';
+
+  @override
   String get historyFilterTooltip => 'Urutkan & filter';
 
   @override

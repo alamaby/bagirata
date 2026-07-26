@@ -895,6 +895,30 @@ class AppL10nEn extends AppL10n {
   String get historyPlusBannerDismiss => 'Dismiss';
 
   @override
+  String historyFreePlusBannerLabel(int freeDays) {
+    return '$freeDays-day history · Monthly insight';
+  }
+
+  @override
+  String historyFreePlusBannerSemantics(int freeDays) {
+    return '$freeDays-day history and Monthly insight, a Plus feature. Tap for details.';
+  }
+
+  @override
+  String get historyFreePlusSheetTitle => 'Plus history features';
+
+  @override
+  String get historyFreePlusHistoryTitle => 'Longer history';
+
+  @override
+  String historyFreePlusHistoryBody(int freeDays, int plusDays) {
+    return 'Free shows the last $freeDays days. Plus shows up to $plusDays days.';
+  }
+
+  @override
+  String get historyFreePlusDismissAction => 'Not now';
+
+  @override
   String get historyFilterTooltip => 'Sort & filter';
 
   @override

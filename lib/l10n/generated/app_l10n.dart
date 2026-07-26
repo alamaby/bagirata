@@ -1655,6 +1655,42 @@ abstract class AppL10n {
   /// **'Tutup'**
   String get historyPlusBannerDismiss;
 
+  /// No description provided for @historyFreePlusBannerLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Riwayat {freeDays} hari · Insight bulanan'**
+  String historyFreePlusBannerLabel(int freeDays);
+
+  /// No description provided for @historyFreePlusBannerSemantics.
+  ///
+  /// In id, this message translates to:
+  /// **'Riwayat {freeDays} hari dan Insight bulanan, fitur Plus. Ketuk untuk detail.'**
+  String historyFreePlusBannerSemantics(int freeDays);
+
+  /// No description provided for @historyFreePlusSheetTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Fitur History Plus'**
+  String get historyFreePlusSheetTitle;
+
+  /// No description provided for @historyFreePlusHistoryTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Riwayat lebih panjang'**
+  String get historyFreePlusHistoryTitle;
+
+  /// No description provided for @historyFreePlusHistoryBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Free menampilkan {freeDays} hari terakhir. Plus menampilkan hingga {plusDays} hari.'**
+  String historyFreePlusHistoryBody(int freeDays, int plusDays);
+
+  /// No description provided for @historyFreePlusDismissAction.
+  ///
+  /// In id, this message translates to:
+  /// **'Nanti'**
+  String get historyFreePlusDismissAction;
+
   /// No description provided for @historyFilterTooltip.
   ///
   /// In id, this message translates to:
