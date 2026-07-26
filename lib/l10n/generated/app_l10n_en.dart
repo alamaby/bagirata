@@ -818,13 +818,13 @@ class AppL10nEn extends AppL10n {
   String get verifyOtpHeading => 'Check your email code';
 
   @override
-  String get verifyOtpBodyPrefix => 'We sent a 6-digit code to ';
+  String get verifyOtpBodyPrefix => 'We sent an 8-digit code to ';
 
   @override
   String get verifyOtpBodySuffix => '. Enter it to sign in to your account.';
 
   @override
-  String get verifyOtpInvalid => 'Enter the 6-digit code.';
+  String get verifyOtpInvalid => 'Enter the 8-digit code.';
 
   @override
   String get verifyOtpButton => 'Verify & sign in';

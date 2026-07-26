@@ -1520,7 +1520,7 @@ abstract class AppL10n {
   /// No description provided for @verifyOtpBodyPrefix.
   ///
   /// In id, this message translates to:
-  /// **'Kami sudah mengirim kode 6 digit ke '**
+  /// **'Kami sudah mengirim kode 8 digit ke '**
   String get verifyOtpBodyPrefix;
 
   /// No description provided for @verifyOtpBodySuffix.
@@ -1532,7 +1532,7 @@ abstract class AppL10n {
   /// No description provided for @verifyOtpInvalid.
   ///
   /// In id, this message translates to:
-  /// **'Masukkan kode 6 digit.'**
+  /// **'Masukkan kode 8 digit.'**
   String get verifyOtpInvalid;
 
   /// No description provided for @verifyOtpButton.

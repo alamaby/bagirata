@@ -337,9 +337,9 @@
 
   "verifyOtpTitle": "Enter code",
   "verifyOtpHeading": "Check your email code",
-  "verifyOtpBodyPrefix": "We sent a 6-digit code to ",
+  "verifyOtpBodyPrefix": "We sent an 8-digit code to ",
   "verifyOtpBodySuffix": ". Enter it to sign in to your account.",
-  "verifyOtpInvalid": "Enter the 6-digit code.",
+  "verifyOtpInvalid": "Enter the 8-digit code.",
   "verifyOtpButton": "Verify & sign in",
   "verifyOtpResend": "Resend code",
   "verifyOtpResending": "Sending…",

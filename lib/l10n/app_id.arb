@@ -337,9 +337,9 @@
 
   "verifyOtpTitle": "Masukkan kode",
   "verifyOtpHeading": "Cek kode email",
-  "verifyOtpBodyPrefix": "Kami sudah mengirim kode 6 digit ke ",
+  "verifyOtpBodyPrefix": "Kami sudah mengirim kode 8 digit ke ",
   "verifyOtpBodySuffix": ". Masukkan kode itu untuk masuk ke akunmu.",
-  "verifyOtpInvalid": "Masukkan kode 6 digit.",
+  "verifyOtpInvalid": "Masukkan kode 8 digit.",
   "verifyOtpButton": "Verifikasi & masuk",
   "verifyOtpResend": "Kirim ulang kode",
   "verifyOtpResending": "Mengirim…",

@@ -95,15 +95,18 @@ class AuthRemoteDataSource {
     }
   }
 
-  /// Sends a six-digit passwordless email code when the Supabase Magic Link
-  /// template contains `{{ .Token }}`. The language metadata is available in
-  /// the template as `{{ .Data.language }}` for localized email content.
+  /// Sends a passwordless email OTP via Supabase Magic Link /
+  /// Confirm signup templates (`{{ .Token }}`). The language metadata is
+  /// available in the template as `{{ .Data.language }}` for localized
+  /// email content. `emailRedirectTo` ensures the fallback link opens the
+  /// mobile app via the registered custom scheme instead of the Site URL.
   Future<void> sendEmailOtp({
     required String email,
     required String languageCode,
   }) async {
     await _auth.signInWithOtp(
       email: email,
+      emailRedirectTo: _authEmailRedirectTo,
       shouldCreateUser: true,
       data: {'language': languageCode},
     );

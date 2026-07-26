@@ -816,14 +816,14 @@ class AppL10nId extends AppL10n {
   String get verifyOtpHeading => 'Cek kode email';
 
   @override
-  String get verifyOtpBodyPrefix => 'Kami sudah mengirim kode 6 digit ke ';
+  String get verifyOtpBodyPrefix => 'Kami sudah mengirim kode 8 digit ke ';
 
   @override
   String get verifyOtpBodySuffix =>
       '. Masukkan kode itu untuk masuk ke akunmu.';
 
   @override
-  String get verifyOtpInvalid => 'Masukkan kode 6 digit.';
+  String get verifyOtpInvalid => 'Masukkan kode 8 digit.';
 
   @override
   String get verifyOtpButton => 'Verifikasi & masuk';

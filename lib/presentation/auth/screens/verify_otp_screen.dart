@@ -24,6 +24,8 @@ class VerifyOtpScreen extends ConsumerStatefulWidget {
 }
 
 class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
+  static const int _otpLength = 8;
+
   final _formKey = GlobalKey<FormState>();
   final _otp = TextEditingController();
   Timer? _timer;
@@ -117,7 +119,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
 
   String? _validateOtp(String? value) {
     final code = value?.trim() ?? '';
-    if (code.length != 6) return AppL10n.of(context).verifyOtpInvalid;
+    if (code.length != _otpLength) return AppL10n.of(context).verifyOtpInvalid;
     return null;
   }
 
@@ -227,7 +229,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
                 onFieldSubmitted: (_) => _verify(),
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(6),
+                  LengthLimitingTextInputFormatter(_otpLength),
                 ],
                 style: TextStyle(
                   fontSize: 24.sp,
@@ -235,7 +237,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
                   letterSpacing: 0,
                 ),
                 decoration: InputDecoration(
-                  hintText: '000000',
+                  hintText: '00000000',
                   filled: true,
                   fillColor: scheme.surfaceContainerHighest.withValues(
                     alpha: 0.4,
