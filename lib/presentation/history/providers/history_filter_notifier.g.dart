@@ -42,7 +42,7 @@ final class HistoryFilterNotifierProvider
 }
 
 String _$historyFilterNotifierHash() =>
-    r'0046663b06028111304d2fbf9b82dc196de99a75';
+    r'9d29d5a0caf16bd4c505c00c4920ffe06c6002f2';
 
 abstract class _$HistoryFilterNotifier extends $Notifier<HistoryFilterState> {
   HistoryFilterState build();

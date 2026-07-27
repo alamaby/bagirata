@@ -79,7 +79,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final hasSummary = summary != null && summary.totalBillCount > 0;
     final hasItems = items.isNotEmpty;
     final canSortNominal =
-        filter.currencyCode != null || currencies.length <= 1;
+        filter.currencyCode != null || currencies.length == 1;
 
     return Scaffold(
       body: SafeArea(
@@ -109,7 +109,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       ref,
                       currencies,
                       filter,
-                      canSortNominal,
                     ),
                   ),
                 ],
@@ -332,7 +331,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     WidgetRef ref,
     List<String> currencies,
     HistoryFilterState currentFilter,
-    bool canSortNominal,
   ) {
     final draft = HistoryFilterState(
       sort: currentFilter.sort,
@@ -349,12 +347,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       builder: (ctx) => _FilterSheet(
         initialFilter: draft,
         currencies: currencies,
-        canSortNominal: canSortNominal,
         onApply: (applied) {
-          final notifier = ref.read(historyFilterProvider.notifier);
-          notifier.setSort(applied.sort);
-          notifier.setPaymentStatus(applied.paymentStatus);
-          notifier.setCurrencyCode(applied.currencyCode);
+          final normalized = applied.isAmountSort &&
+                  applied.currencyCode == null &&
+                  currencies.length == 1
+              ? applied.copyWith(currencyCode: currencies.single)
+              : applied;
+          ref.read(historyFilterProvider.notifier).apply(normalized);
         },
       ),
     );
@@ -519,13 +518,11 @@ class _FilterSheet extends StatefulWidget {
   const _FilterSheet({
     required this.initialFilter,
     required this.currencies,
-    required this.canSortNominal,
     required this.onApply,
   });
 
   final HistoryFilterState initialFilter;
   final List<String> currencies;
-  final bool canSortNominal;
   final ValueChanged<HistoryFilterState> onApply;
 
   @override
@@ -540,6 +537,9 @@ class _FilterSheetState extends State<_FilterSheet> {
     super.initState();
     _draft = widget.initialFilter;
   }
+
+  bool get _isNominalAvailable =>
+      _draft.currencyCode != null || widget.currencies.length == 1;
 
   @override
   Widget build(BuildContext context) {
@@ -615,7 +615,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     _SortChip(
                       label: l10n.historySortAmountDesc,
                       selected: _draft.sort == HistorySort.amountDesc,
-                      enabled: widget.canSortNominal,
+                      enabled: _isNominalAvailable,
                       onSelected: () => setState(
                         () => _draft = _draft.copyWith(
                           sort: HistorySort.amountDesc,
@@ -625,7 +625,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     _SortChip(
                       label: l10n.historySortAmountAsc,
                       selected: _draft.sort == HistorySort.amountAsc,
-                      enabled: widget.canSortNominal,
+                      enabled: _isNominalAvailable,
                       onSelected: () => setState(
                         () => _draft = _draft.copyWith(
                           sort: HistorySort.amountAsc,
@@ -634,7 +634,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ),
                   ],
                 ),
-                if (!widget.canSortNominal) ...[
+                if (!_isNominalAvailable) ...[
                   SizedBox(height: 4.h),
                   Text(
                     l10n.historySortNominalDisabled,
@@ -680,7 +680,12 @@ class _FilterSheetState extends State<_FilterSheet> {
                       label: l10n.historyStatusAll,
                       selected: _draft.currencyCode == null,
                       onSelected: () => setState(
-                        () => _draft = _draft.copyWith(currencyCode: null),
+                        () => _draft = _draft.copyWith(
+                          currencyCode: null,
+                          sort: widget.currencies.length > 1 && _draft.isAmountSort
+                              ? HistorySort.newest
+                              : _draft.sort,
+                        ),
                       ),
                     ),
                     ...widget.currencies.map(

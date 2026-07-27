@@ -153,12 +153,23 @@ class HistoryListNotifier extends _$HistoryListNotifier {
       return true;
     }
 
+    final availableCurrencies =
+        state.summary?.availableCurrencies ?? const <String>[];
+    final effectiveCurrencyCode = filter.currencyCode ??
+        (filter.isAmountSort && availableCurrencies.length == 1
+            ? availableCurrencies.single
+            : null);
+    final effectiveSort =
+        filter.isAmountSort && effectiveCurrencyCode == null
+            ? HistorySort.newest
+            : filter.sort;
+
     final repo = ref.read(billRepositoryProvider);
     final result = await repo.listHistoryBillsPage(
       createdAfter: createdAfter,
       limit: 25,
-      sort: _sortValue(filter.sort),
-      currencyCode: filter.currencyCode,
+      sort: _sortValue(effectiveSort),
+      currencyCode: effectiveCurrencyCode,
       paymentStatus: filter.paymentStatus != null
           ? _statusValue(filter.paymentStatus!)
           : null,

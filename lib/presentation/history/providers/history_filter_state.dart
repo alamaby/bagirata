@@ -16,5 +16,8 @@ abstract class HistoryFilterState with _$HistoryFilterState {
 
   const HistoryFilterState._();
 
+  bool get isAmountSort =>
+      sort == HistorySort.amountAsc || sort == HistorySort.amountDesc;
+
   bool get hasActiveFilters => paymentStatus != null || currencyCode != null;
 }

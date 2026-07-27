@@ -59,5 +59,57 @@ void main() {
       expect(state.currencyCode, isNull);
       expect(state.hasActiveFilters, isFalse);
     });
+
+    test('isAmountSort true for amountAsc', () {
+      final state =
+          const HistoryFilterState(sort: HistorySort.amountAsc);
+      expect(state.isAmountSort, isTrue);
+    });
+
+    test('isAmountSort true for amountDesc', () {
+      final state =
+          const HistoryFilterState(sort: HistorySort.amountDesc);
+      expect(state.isAmountSort, isTrue);
+    });
+
+    test('isAmountSort false for newest', () {
+      final state =
+          const HistoryFilterState(sort: HistorySort.newest);
+      expect(state.isAmountSort, isFalse);
+    });
+
+    test('apply replaces all fields atomically', () {
+      container
+          .read(historyFilterProvider.notifier)
+          .setSort(HistorySort.oldest);
+      container
+          .read(historyFilterProvider.notifier)
+          .setPaymentStatus(BillPaymentStatus.unpaid);
+      container
+          .read(historyFilterProvider.notifier)
+          .setCurrencyCode('IDR');
+
+      container.read(historyFilterProvider.notifier).apply(
+            const HistoryFilterState(
+              sort: HistorySort.amountDesc,
+              paymentStatus: BillPaymentStatus.settled,
+              currencyCode: 'USD',
+            ),
+          );
+
+      final state = container.read(historyFilterProvider);
+      expect(state.sort, HistorySort.amountDesc);
+      expect(state.paymentStatus, BillPaymentStatus.settled);
+      expect(state.currencyCode, 'USD');
+    });
+
+    test('isAmountSort and hasActiveFilters composable', () {
+      final state = const HistoryFilterState(
+        sort: HistorySort.amountAsc,
+        currencyCode: 'IDR',
+      );
+      expect(state.isAmountSort, isTrue);
+      expect(state.hasActiveFilters, isTrue);
+    });
   });
 }
