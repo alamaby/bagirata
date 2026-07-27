@@ -57,6 +57,54 @@ final class BillRemoteDataSourceProvider
 String _$billRemoteDataSourceHash() =>
     r'f75f77ccd54f300719d588cc44bc2138fb0b3f84';
 
+@ProviderFor(passwordRecoverySession)
+const passwordRecoverySessionProvider = PasswordRecoverySessionProvider._();
+
+final class PasswordRecoverySessionProvider
+    extends
+        $FunctionalProvider<
+          PasswordRecoverySession,
+          PasswordRecoverySession,
+          PasswordRecoverySession
+        >
+    with $Provider<PasswordRecoverySession> {
+  const PasswordRecoverySessionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'passwordRecoverySessionProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$passwordRecoverySessionHash();
+
+  @$internal
+  @override
+  $ProviderElement<PasswordRecoverySession> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PasswordRecoverySession create(Ref ref) {
+    return passwordRecoverySession(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PasswordRecoverySession value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PasswordRecoverySession>(value),
+    );
+  }
+}
+
+String _$passwordRecoverySessionHash() =>
+    r'70a7c4e820f191efe054bc96eab2c8e9cd5f7339';
+
 @ProviderFor(authRemoteDataSource)
 const authRemoteDataSourceProvider = AuthRemoteDataSourceProvider._();
 
@@ -103,7 +151,7 @@ final class AuthRemoteDataSourceProvider
 }
 
 String _$authRemoteDataSourceHash() =>
-    r'9913d41192aa8525aa5615455a5d02e74cc65336';
+    r'119732ce2135e9044fe206a852bb89000b8ad2c6';
 
 @ProviderFor(billRepository)
 const billRepositoryProvider = BillRepositoryProvider._();

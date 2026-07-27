@@ -483,6 +483,7 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   String? mockEmail;
   bool mockIsAnonymous = false;
   bool mockIsEmailConfirmed = false;
+  bool mockIsPasswordRecovery = false;
   Stream<String?>? mockUserIdStream;
   Stream<AuthSnapshot>? mockAuthStateStream;
   String? lastSignUpEmail;
@@ -502,6 +503,9 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
 
   @override
   bool get isEmailConfirmed => mockIsEmailConfirmed;
+
+  @override
+  bool get isPasswordRecovery => mockIsPasswordRecovery;
 
   @override
   Stream<String?> watchUserId() =>
@@ -577,6 +581,9 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   @override
   Future<void> updatePassword(String newPassword) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> clearPasswordRecovery() => throw UnimplementedError();
 }
 
 class _FakeProfileRemoteDataSource implements ProfileRemoteDataSource {

@@ -13,6 +13,15 @@ abstract interface class IAuthRepository {
   /// registered user parked on the verify-email screen.
   bool get isEmailConfirmed;
 
+  /// True when the active Supabase session originated from a
+  /// `type=recovery` deep link (password reset email). Sourced from a
+  /// persistent flag set by [DeepLinkHandler] because the underlying
+  /// `AuthChangeEvent.passwordRecovery` is delivered once on the stream
+  /// and is consumed before the router can read it on cold start.
+  /// Cleared automatically on sign-out / delete-account / after a
+  /// successful `updatePassword` call.
+  bool get isPasswordRecovery;
+
   /// The current session user's email, or null when signed out or the
   /// session is anonymous. Used as the identity source for matching
   /// pending post-signup actions that were deferred from the register
@@ -90,4 +99,10 @@ abstract interface class IAuthRepository {
   /// recovery session (after consuming the `type=recovery` deep link) or as a
   /// fully signed-in user. Supabase's server-side password policy applies.
   Future<Result<void>> updatePassword(String newPassword);
+
+  /// Clears the persistent password-recovery flag. Used by the
+  /// reset-password screen when it detects the session is no longer in
+  /// recovery mode (e.g. token expired) so the user is not bounced back
+  /// to /reset-password on the next cold start.
+  Future<void> clearPasswordRecovery();
 }

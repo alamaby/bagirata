@@ -18,6 +18,9 @@ class AuthRepositoryImpl implements IAuthRepository {
   bool get isEmailConfirmed => _ds.isEmailConfirmed;
 
   @override
+  bool get isPasswordRecovery => _ds.isPasswordRecovery;
+
+  @override
   String? get currentEmail => _ds.currentEmail;
 
   @override
@@ -91,4 +94,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Result<void>> updatePassword(String newPassword) =>
       guardAsync(() => _ds.updatePassword(newPassword));
+
+  @override
+  Future<void> clearPasswordRecovery() => _ds.clearPasswordRecovery();
 }

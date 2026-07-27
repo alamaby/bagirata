@@ -13,7 +13,9 @@ import 'core/config/env.dart';
 import 'core/format/app_format.dart';
 import 'core/format/device_locale_defaults.dart';
 import 'core/utils/app_logger.dart';
+import 'data/providers.dart';
 import 'data/services/deep_link_handler.dart';
+import 'data/services/password_recovery_session.dart';
 import 'l10n/generated/app_l10n.dart';
 import 'l10n/generated/app_l10n_en.dart';
 import 'l10n/generated/app_l10n_id.dart';
@@ -34,7 +36,16 @@ Future<void> main() async {
     return;
   }
 
-  runApp(const ProviderScope(child: BagiStrukApp()));
+  final recovery = await PasswordRecoverySession.create();
+  // Inject the recovery session into the deep-link handler so the cold-start
+  // path can stamp the persistent recovery flag before ProviderScope mounts.
+  DeepLinkHandler.configure(recovery: recovery);
+  runApp(
+    ProviderScope(
+      overrides: [passwordRecoverySessionProvider.overrideWithValue(recovery)],
+      child: const BagiStrukApp(),
+    ),
+  );
 }
 
 AppL10n _resolveStartupL10n() {

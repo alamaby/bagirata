@@ -60,19 +60,23 @@ GoRouter appRouter(Ref ref) {
       //      target and need to route the user to the correct screen.
       //
       // Both rawUri patterns (fragment or query) are handled.
-      if (loc == Routes.callback ||
+      final looksLikeCallback =
+          loc == Routes.callback ||
           rawLoc.contains('access_token=') ||
           rawLoc.contains('refresh_token=') ||
           rawLoc.contains('code=') ||
           rawLoc.contains('type=email_change') ||
           rawLoc.contains('type=signup') ||
           rawLoc.contains('type=recovery') ||
-          rawLoc.contains('error_description=')) {
+          rawLoc.contains('error_description=');
+      if (looksLikeCallback) {
         final isRecovery = rawLoc.contains('type=recovery');
         final result = await ref
             .read(authRepositoryProvider)
             .recoverSessionFromUri(state.uri);
-        if (result is Success<void>) {
+        final recoveryFlagActive =
+            ref.read(authRepositoryProvider).isPasswordRecovery;
+        if (result is Success<void> || (isRecovery && recoveryFlagActive)) {
           // Apply any pending post-signup actions (marketing opt-in, welcome
           // marker) that were deferred from the register screen so they are
           // only written after the email is confirmed.
@@ -95,6 +99,20 @@ GoRouter appRouter(Ref ref) {
       };
       final isAnon = snap?.isAnonymous ?? true;
       final isSignedIn = snap?.userId != null && !isAnon;
+
+      // ── Password-recovery session ────────────────────────────────────
+      // The `type=recovery` deep link is consumed in `main()` by
+      // `DeepLinkHandler.handleInitialLink()` before GoRouter mounts, so
+      // the router starts from `initialLocation: /scan` instead of the
+      // callback URI. We re-read the persistent recovery flag here and
+      // pull the user to `/reset-password` ourselves. This gate must run
+      // BEFORE every other entry-point gate (legal, onboarding, history
+      // paywall) so a user mid-recovery does not get bounced to onboarding
+      // or paywall screens that would discard the recovery session.
+      final isRecoveryActive = ref.read(authRepositoryProvider).isPasswordRecovery;
+      if (isRecoveryActive && loc != Routes.resetPassword) {
+        return Routes.resetPassword;
+      }
 
       final goingToProtected = loc.startsWith(Routes.history);
       final onAuthScreen =

@@ -5,10 +5,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/config/app_constants.dart';
 import '../../core/config/env.dart';
 import '../../domain/entities/auth_snapshot.dart';
+import '../services/password_recovery_session.dart';
 
 class AuthRemoteDataSource {
-  AuthRemoteDataSource(this._client);
+  AuthRemoteDataSource(this._client, this._recovery);
   final SupabaseClient _client;
+  final PasswordRecoverySession _recovery;
   static Future<void>? _googleInitFuture;
 
   GoTrueClient get _auth => _client.auth;
@@ -21,18 +23,42 @@ class AuthRemoteDataSource {
 
   bool get isEmailConfirmed => _auth.currentUser?.emailConfirmedAt != null;
 
+  /// True when the active session originated from a `type=recovery`
+  /// deep link. Backed by [PasswordRecoverySession] so the value survives
+  /// across cold-start: the `passwordRecovery` auth event is delivered
+  /// once and consumed by `DeepLinkHandler` in `main()` before the
+  /// `ProviderScope` is mounted, so the in-memory event alone is not
+  /// enough for the router to gate `/reset-password`.
+  bool get isPasswordRecovery => _recovery.isActive;
+
   Stream<String?> watchUserId() =>
       _auth.onAuthStateChange.map((s) => s.session?.user.id);
 
-  Stream<AuthSnapshot> watchAuthState() => _auth.onAuthStateChange.map((s) {
-    final user = s.session?.user;
-    return AuthSnapshot(
-      userId: user?.id,
-      isAnonymous: user?.isAnonymous ?? false,
-      emailConfirmed: user?.emailConfirmedAt != null,
-      isPasswordRecovery: s.event == AuthChangeEvent.passwordRecovery,
-    );
-  });
+  Stream<AuthSnapshot> watchAuthState() => _auth.onAuthStateChange.asyncMap(
+    (s) async {
+      // Persist the recovery flag across cold-start so [authStateProvider]
+      // can seed `isPasswordRecovery: true` before the stream emits.
+      // Cleared automatically by the TTL or on `signedOut`.
+      switch (s.event) {
+        case AuthChangeEvent.passwordRecovery:
+          await _recovery.markActive();
+        case AuthChangeEvent.signedOut:
+          await _recovery.clear();
+        case AuthChangeEvent.userDeleted:
+          await _recovery.clear();
+        default:
+          break;
+      }
+      final user = s.session?.user;
+      return AuthSnapshot(
+        userId: user?.id,
+        isAnonymous: user?.isAnonymous ?? false,
+        emailConfirmed: user?.emailConfirmedAt != null,
+        isPasswordRecovery:
+            _recovery.isActive || s.event == AuthChangeEvent.passwordRecovery,
+      );
+    },
+  );
 
   Future<String> signInAnonymously() async {
     final res = await _auth.signInAnonymously();
@@ -193,13 +219,43 @@ class AuthRemoteDataSource {
     emailRedirectTo: _authEmailRedirectTo,
   );
 
+  /// Consumes a Supabase email-link callback. Idempotent for the same URI:
+  /// re-invoking with a URI Supabase has already consumed is swallowed so
+  /// the router redirect can safely call this twice (once on cold start
+  /// before `ProviderScope` mounts, once inside the redirect). Proactively
+  /// stamps [PasswordRecoverySession] when the URI is a `type=recovery`
+  /// callback so the router can route the user to `/reset-password` even
+  /// when the corresponding `AuthChangeEvent.passwordRecovery` has already
+  /// fired before `runApp`.
   Future<void> recoverSessionFromUri(Uri uri) async {
-    await _auth.getSessionFromUrl(uri);
+    final raw = uri.toString();
+    final isRecovery = raw.contains('type=recovery');
+    try {
+      await _auth.getSessionFromUrl(uri);
+      if (isRecovery) {
+        await _recovery.markActive();
+      }
+    } on AuthException catch (e) {
+      // `flow_state_not_found` / `otp_expired` raise here when the URI has
+      // already been consumed by `DeepLinkHandler` in `main()`. Surface
+      // any other failure but do not crash the cold start path.
+      final msg = e.message.toLowerCase();
+      final alreadyConsumed =
+          msg.contains('flow_state') ||
+          msg.contains('otp_expired') ||
+          msg.contains('already');
+      if (alreadyConsumed) {
+        if (isRecovery) await _recovery.markActive();
+        return;
+      }
+      rethrow;
+    }
   }
 
   Future<void> signOut() async {
     await _auth.signOut();
     await _signOutGoogleBestEffort();
+    await _recovery.clear();
   }
 
   Future<void> _signOutGoogleBestEffort() async {
@@ -221,6 +277,7 @@ class AuthRemoteDataSource {
     }
     await _auth.signOut(scope: SignOutScope.local);
     await _signOutGoogleBestEffort();
+    await _recovery.clear();
   }
 
   /// Triggers a password reset email for [email]. The link in the email opens
@@ -232,8 +289,18 @@ class AuthRemoteDataSource {
   /// Updates the current user's password. Must be invoked within an active
   /// recovery session (after consuming the `type=recovery` deep link) or as a
   /// fully signed-in user. Supabase's server-side password policy applies.
-  Future<void> updatePassword(String newPassword) =>
-      _auth.updateUser(UserAttributes(password: newPassword));
+  /// Clears the persistent recovery flag on success so the user cannot
+  /// navigate back into the reset-password flow after they have saved a
+  /// new password.
+  Future<void> updatePassword(String newPassword) async {
+    await _auth.updateUser(UserAttributes(password: newPassword));
+    await _recovery.clear();
+  }
+
+  /// Clears the persistent password-recovery flag. Called by the
+  /// reset-password screen when the active session is no longer in
+  /// recovery mode (token expired / tampered URL / navigation drift).
+  Future<void> clearPasswordRecovery() => _recovery.clear();
 
   Future<void> _ensureGoogleInitialized() {
     return _googleInitFuture ??= GoogleSignIn.instance.initialize(

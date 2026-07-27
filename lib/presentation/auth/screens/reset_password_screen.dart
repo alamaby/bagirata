@@ -103,7 +103,12 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       _ => null,
     };
     if (authSnap != null && !authSnap.isPasswordRecovery) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        // Recovery flag lives in SharedPreferences; clear it so the user
+        // is not stuck in a loop bouncing back to /reset-password on the
+        // next cold start.
+        await ref.read(authRepositoryProvider).clearPasswordRecovery();
         if (mounted) {
           context.go('${Routes.login}?reason=reset_expired');
         }

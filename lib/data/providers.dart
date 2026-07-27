@@ -22,6 +22,7 @@ import 'repositories/ocr_repository_impl.dart';
 import 'repositories/profile_repository_impl.dart';
 import 'repositories/saved_participant_repository_impl.dart';
 import 'services/history_plus_banner_preferences.dart';
+import 'services/password_recovery_session.dart';
 import 'services/pending_registration_preferences.dart';
 import 'services/saved_participants_cache.dart';
 import 'services/image_picker_wrapper.dart';
@@ -34,8 +35,18 @@ BillRemoteDataSource billRemoteDataSource(Ref ref) =>
     BillRemoteDataSource(ref.watch(supabaseClientProvider));
 
 @Riverpod(keepAlive: true)
+PasswordRecoverySession passwordRecoverySession(Ref ref) =>
+    throw UnimplementedError(
+      'passwordRecoverySessionProvider must be overridden in main() with a '
+      'pre-warmed PasswordRecoverySession instance. See _bootstrap().',
+    );
+
+@Riverpod(keepAlive: true)
 AuthRemoteDataSource authRemoteDataSource(Ref ref) =>
-    AuthRemoteDataSource(ref.watch(supabaseClientProvider));
+    AuthRemoteDataSource(
+      ref.watch(supabaseClientProvider),
+      ref.watch(passwordRecoverySessionProvider),
+    );
 
 @Riverpod(keepAlive: true)
 IBillRepository billRepository(Ref ref) =>
