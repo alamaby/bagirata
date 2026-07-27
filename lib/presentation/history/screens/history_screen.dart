@@ -19,6 +19,7 @@ import '../../insights/providers/monthly_spending_insight_provider.dart';
 import '../../settings/providers/preferences_providers.dart';
 import '../../shared/widgets/plus_info_icon.dart';
 import '../providers/history_filter_notifier.dart';
+import '../providers/history_filter_state.dart';
 import '../providers/history_list_notifier.dart';
 import '../providers/history_plus_banner_notifier.dart';
 
@@ -78,8 +79,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final currencies = summary?.availableCurrencies ?? <String>[];
     final hasSummary = summary != null && summary.totalBillCount > 0;
     final hasItems = items.isNotEmpty;
-    final canSortNominal =
-        filter.currencyCode != null || currencies.length == 1;
 
     return Scaffold(
       body: SafeArea(
@@ -123,9 +122,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     onRemoveStatus: () => ref
                         .read(historyFilterProvider.notifier)
                         .setPaymentStatus(null),
-                    onRemoveCurrency: () => ref
-                        .read(historyFilterProvider.notifier)
-                        .setCurrencyCode(null),
+                    onRemoveCurrency: () {
+                      final current = ref.read(historyFilterProvider);
+                      final normalized = normalizeHistoryFilter(
+                        current.copyWith(currencyCode: null),
+                        currencies,
+                      );
+                      ref
+                          .read(historyFilterProvider.notifier)
+                          .apply(normalized);
+                    },
                     onReset: () =>
                         ref.read(historyFilterProvider.notifier).reset(),
                   ),
@@ -348,11 +354,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         initialFilter: draft,
         currencies: currencies,
         onApply: (applied) {
-          final normalized = applied.isAmountSort &&
-                  applied.currencyCode == null &&
-                  currencies.length == 1
-              ? applied.copyWith(currencyCode: currencies.single)
-              : applied;
+          final normalized = normalizeHistoryFilter(applied, currencies);
           ref.read(historyFilterProvider.notifier).apply(normalized);
         },
       ),
@@ -680,12 +682,12 @@ class _FilterSheetState extends State<_FilterSheet> {
                       label: l10n.historyStatusAll,
                       selected: _draft.currencyCode == null,
                       onSelected: () => setState(
-                        () => _draft = _draft.copyWith(
-                          currencyCode: null,
-                          sort: widget.currencies.length > 1 && _draft.isAmountSort
-                              ? HistorySort.newest
-                              : _draft.sort,
-                        ),
+                        () {
+                          _draft = normalizeHistoryFilter(
+                            _draft.copyWith(currencyCode: null),
+                            widget.currencies,
+                          );
+                        },
                       ),
                     ),
                     ...widget.currencies.map(

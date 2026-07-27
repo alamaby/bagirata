@@ -13,6 +13,7 @@ import '../../../domain/entities/history_summary.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
 import '../../insights/providers/monthly_spending_insight_provider.dart';
 import 'history_filter_notifier.dart';
+import 'history_filter_state.dart';
 
 part 'history_list_notifier.freezed.dart';
 part 'history_list_notifier.g.dart';
@@ -35,11 +36,18 @@ abstract class HistoryListState with _$HistoryListState {
 
 @riverpod
 class HistoryListNotifier extends _$HistoryListNotifier {
+  /// Cached summary. Persisted across `build()` invocations so that amount-sort
+  /// normalization sees the same currency list as before the filter change.
+  HistorySummary? _lastSummary;
+
   @override
   HistoryListState build() {
     ref.watch(historyFilterProvider);
     ref.watch(ocrCreditStatusProvider);
-    state = const HistoryListState(isLoadingInitial: true);
+    state = HistoryListState(
+      isLoadingInitial: true,
+      summary: _lastSummary,
+    );
     _loadFirstPage();
     return state;
   }
@@ -122,6 +130,7 @@ class HistoryListNotifier extends _$HistoryListNotifier {
     final repo = ref.read(billRepositoryProvider);
     final result = await repo.getHistorySummary(createdAfter: createdAfter);
     if (result is Success<HistorySummary>) {
+      _lastSummary = result.data;
       state = state.copyWith(summary: result.data);
     }
   }
@@ -140,6 +149,7 @@ class HistoryListNotifier extends _$HistoryListNotifier {
       planCode: creditStatus?.planCode,
     );
     if (historyDays <= 0) {
+      _lastSummary = null;
       state = state.copyWith(items: [], hasMore: false, summary: null);
       return true;
     }
@@ -154,24 +164,17 @@ class HistoryListNotifier extends _$HistoryListNotifier {
     }
 
     final availableCurrencies =
-        state.summary?.availableCurrencies ?? const <String>[];
-    final effectiveCurrencyCode = filter.currencyCode ??
-        (filter.isAmountSort && availableCurrencies.length == 1
-            ? availableCurrencies.single
-            : null);
-    final effectiveSort =
-        filter.isAmountSort && effectiveCurrencyCode == null
-            ? HistorySort.newest
-            : filter.sort;
+        _lastSummary?.availableCurrencies ?? const <String>[];
+    final normalized = normalizeHistoryFilter(filter, availableCurrencies);
 
     final repo = ref.read(billRepositoryProvider);
     final result = await repo.listHistoryBillsPage(
       createdAfter: createdAfter,
       limit: 25,
-      sort: _sortValue(effectiveSort),
-      currencyCode: effectiveCurrencyCode,
-      paymentStatus: filter.paymentStatus != null
-          ? _statusValue(filter.paymentStatus!)
+      sort: _sortValue(normalized.sort),
+      currencyCode: normalized.currencyCode,
+      paymentStatus: normalized.paymentStatus != null
+          ? _statusValue(normalized.paymentStatus!)
           : null,
       cursorSortValue: cursor?.sortValue,
       cursorCreatedAt: cursor?.createdAt,

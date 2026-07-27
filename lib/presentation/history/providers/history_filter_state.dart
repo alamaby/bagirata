@@ -21,3 +21,15 @@ abstract class HistoryFilterState with _$HistoryFilterState {
 
   bool get hasActiveFilters => paymentStatus != null || currencyCode != null;
 }
+
+HistoryFilterState normalizeHistoryFilter(
+  HistoryFilterState filter,
+  List<String> availableCurrencies,
+) {
+  if (!filter.isAmountSort) return filter;
+  if (filter.currencyCode != null) return filter;
+  if (availableCurrencies.length == 1) {
+    return filter.copyWith(currencyCode: availableCurrencies.single);
+  }
+  return filter.copyWith(sort: HistorySort.newest);
+}

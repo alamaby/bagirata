@@ -1,3 +1,4 @@
+import 'package:bagistruk/domain/entities/bill_payment_status.dart';
 import 'package:bagistruk/domain/entities/history_summary.dart';
 import 'package:bagistruk/domain/entities/ocr_credit_status.dart';
 import 'package:bagistruk/l10n/generated/app_l10n.dart';
@@ -321,202 +322,82 @@ void main() {
   });
 
   group('HistoryScreen filter normalization', () {
-    final freeStatus = OcrCreditStatus(
-      planCode: 'free',
-      balance: 5,
-      monthlyAllowance: 10,
-      adsEnabled: true,
-      plusFeaturesEnabled: false,
-    );
-
-    const singleCurrencySummary = HistorySummary(
-      totalBillCount: 3,
-      availableCurrencies: ['IDR'],
-      outstanding: [],
-    );
-
-    const multiCurrencySummary = HistorySummary(
-      totalBillCount: 3,
-      availableCurrencies: ['IDR', 'USD'],
-      outstanding: [],
-    );
-
-    const emptySummary = HistorySummary(
-      totalBillCount: 0,
-      availableCurrencies: [],
-      outstanding: [],
-    );
-
-    /// Returns a [ProviderContainer] pre-configured for filter tests.
-    ProviderContainer makeContainer({
-      required HistorySummary summary,
-    }) {
-      return ProviderContainer(
-        overrides: [
-          historyListProvider.overrideWithValue(
-            HistoryListState(
-              isLoadingInitial: false,
-              summary: summary,
-            ),
-          ),
-          ocrCreditStatusProvider.overrideWithValue(
-            AsyncValue.data(freeStatus),
-          ),
-          currencyPrefProvider.overrideWithValue('IDR'),
-          monthlySpendingInsightProvider.overrideWithValue(
-            AsyncValue.data(null),
-          ),
-        ],
-      );
-    }
-
-    testWidgets('amount sort applied on single-currency normalizes to IDR', (
-      tester,
-    ) async {
-      // Test the normalisation logic directly: single currency + amount sort
-      // without explicit filter should produce currencyCode: IDR.
-      const draft = HistoryFilterState(
-        sort: HistorySort.amountAsc,
-      );
+    test('single currency normalizes amount sort to that currency', () {
+      const filter = HistoryFilterState(sort: HistorySort.amountAsc);
       const currencies = ['IDR'];
-      final normalized = draft.isAmountSort &&
-              draft.currencyCode == null &&
-              currencies.length == 1
-          ? draft.copyWith(currencyCode: currencies.single)
-          : draft;
+      final normalized = normalizeHistoryFilter(filter, currencies);
       expect(normalized.currencyCode, 'IDR');
       expect(normalized.sort, HistorySort.amountAsc);
     });
 
-    testWidgets('amount sort on multi-currency without filter stays null', (
-      tester,
-    ) async {
-      const draft = HistoryFilterState(
-        sort: HistorySort.amountAsc,
-      );
+    test('multi-currency with amount sort and null currency falls back to newest', () {
+      const filter = HistoryFilterState(sort: HistorySort.amountAsc);
       const currencies = ['IDR', 'USD'];
-      final normalized = draft.isAmountSort &&
-              draft.currencyCode == null &&
-              currencies.length == 1
-          ? draft.copyWith(currencyCode: currencies.single)
-          : draft;
+      final normalized = normalizeHistoryFilter(filter, currencies);
       expect(normalized.currencyCode, isNull);
-      expect(normalized.sort, HistorySort.amountAsc);
+      expect(normalized.sort, HistorySort.newest);
     });
 
-    testWidgets('non-amount sort on single-currency keeps null', (tester) async {
-      const draft = HistoryFilterState(
-        sort: HistorySort.newest,
+    test('empty currencies with amount sort falls back to newest', () {
+      const filter = HistoryFilterState(sort: HistorySort.amountDesc);
+      const currencies = <String>[];
+      final normalized = normalizeHistoryFilter(filter, currencies);
+      expect(normalized.currencyCode, isNull);
+      expect(normalized.sort, HistorySort.newest);
+    });
+
+    test('non-amount sort keeps filter unchanged', () {
+      const filter = HistoryFilterState(sort: HistorySort.newest);
+      const currencies = ['IDR'];
+      final normalized = normalizeHistoryFilter(filter, currencies);
+      expect(normalized.currencyCode, isNull);
+      expect(normalized.sort, HistorySort.newest);
+    });
+
+    test('amount sort with explicit currency keeps that currency', () {
+      const filter = HistoryFilterState(
+        sort: HistorySort.amountDesc,
+        currencyCode: 'USD',
+      );
+      const currencies = ['IDR', 'USD'];
+      final normalized = normalizeHistoryFilter(filter, currencies);
+      expect(normalized.currencyCode, 'USD');
+      expect(normalized.sort, HistorySort.amountDesc);
+    });
+
+    test('removing currency from multi-currency amount sort falls back to newest', () {
+      const filter = HistoryFilterState(
+        sort: HistorySort.amountAsc,
+        currencyCode: 'IDR',
+      );
+      const currencies = ['IDR', 'USD'];
+      final afterRemove =
+          normalizeHistoryFilter(filter.copyWith(currencyCode: null), currencies);
+      expect(afterRemove.currencyCode, isNull);
+      expect(afterRemove.sort, HistorySort.newest);
+    });
+
+    test('removing currency from single-currency amount sort keeps that currency', () {
+      const filter = HistoryFilterState(
+        sort: HistorySort.amountAsc,
+        currencyCode: 'IDR',
       );
       const currencies = ['IDR'];
-      final normalized = draft.isAmountSort &&
-              draft.currencyCode == null &&
-              currencies.length == 1
-          ? draft.copyWith(currencyCode: currencies.single)
-          : draft;
-      expect(normalized.currencyCode, isNull);
+      final afterRemove =
+          normalizeHistoryFilter(filter.copyWith(currencyCode: null), currencies);
+      expect(afterRemove.currencyCode, 'IDR');
+      expect(afterRemove.sort, HistorySort.amountAsc);
     });
 
-    testWidgets('isAmountSort getter works correctly', (tester) async {
-      expect(
-        const HistoryFilterState(sort: HistorySort.amountAsc).isAmountSort,
-        isTrue,
-      );
-      expect(
-        const HistoryFilterState(sort: HistorySort.amountDesc).isAmountSort,
-        isTrue,
-      );
-      expect(
-        const HistoryFilterState(sort: HistorySort.newest).isAmountSort,
-        isFalse,
-      );
-      expect(
-        const HistoryFilterState(sort: HistorySort.oldest).isAmountSort,
-        isFalse,
-      );
-      expect(
-        const HistoryFilterState(sort: HistorySort.titleAsc).isAmountSort,
-        isFalse,
-      );
-    });
-
-    test('screen canSortNominal with single currency is true', () {
-      final container = makeContainer(summary: singleCurrencySummary);
-      container.dispose();
-      final filter = const HistoryFilterState();
-      expect(filter.currencyCode, isNull);
-      expect(
-        singleCurrencySummary.availableCurrencies.length == 1,
-        isTrue,
-      );
-      expect(
-        filter.currencyCode != null ||
-            singleCurrencySummary.availableCurrencies.length == 1,
-        isTrue,
-      );
-    });
-
-    test('screen canSortNominal with multi-currency is false', () {
-      final container = makeContainer(summary: multiCurrencySummary);
-      container.dispose();
-      final filter = const HistoryFilterState();
-      expect(filter.currencyCode, isNull);
-      expect(
-        multiCurrencySummary.availableCurrencies.length == 1,
-        isFalse,
-      );
-      expect(
-        filter.currencyCode != null ||
-            multiCurrencySummary.availableCurrencies.length == 1,
-        isFalse,
-      );
-    });
-
-    test('screen canSortNominal with empty currencies is false', () {
-      final container = makeContainer(summary: emptySummary);
-      container.dispose();
-      final filter = const HistoryFilterState();
-      expect(filter.currencyCode, isNull);
-      expect(
-        emptySummary.availableCurrencies.length == 1,
-        isFalse,
-      );
-      expect(
-        filter.currencyCode != null ||
-            emptySummary.availableCurrencies.length == 1,
-        isFalse,
-      );
-    });
-
-    testWidgets('apply amount sort on multi-currency resets to newest', (
-      tester,
-    ) async {
-      // Simulate the "Semua" tap handler in _FilterSheet:
-      // multi-currency + draft.isAmountSort + currency set to null → sort to newest
-      const draft = HistoryFilterState(
+    test('payment status preserved through normalization', () {
+      const filter = HistoryFilterState(
         sort: HistorySort.amountAsc,
-        currencyCode: 'IDR',
+        paymentStatus: BillPaymentStatus.unpaid,
       );
-      const currencies = ['IDR', 'USD'];
-      final afterClear = draft.copyWith(
-        currencyCode: null,
-        sort: currencies.length > 1 && draft.isAmountSort
-            ? HistorySort.newest
-            : draft.sort,
-      );
-      expect(afterClear.currencyCode, isNull);
-      expect(afterClear.sort, HistorySort.newest);
-    });
-
-    testWidgets('apply amount sort with currency filter preserves sort', (
-      tester,
-    ) async {
-      const applied = HistoryFilterState(
-        sort: HistorySort.amountDesc,
-        currencyCode: 'IDR',
-      );
-      expect(applied.isAmountSort, isTrue);
-      expect(applied.currencyCode, 'IDR');
+      const currencies = ['IDR'];
+      final normalized = normalizeHistoryFilter(filter, currencies);
+      expect(normalized.paymentStatus, BillPaymentStatus.unpaid);
+      expect(normalized.currencyCode, 'IDR');
     });
   });
 }
