@@ -227,6 +227,17 @@ class AuthRemoteDataSource {
   /// callback so the router can route the user to `/reset-password` even
   /// when the corresponding `AuthChangeEvent.passwordRecovery` has already
   /// fired before `runApp`.
+  ///
+  /// Error handling rules:
+  /// - On success: mark recovery active for `type=recovery` URIs.
+  /// - On failure:
+  ///   - If URI was already consumed by DeepLinkHandler (flow_state_not_found /
+  ///     already_used), treat as success ONLY if recovery flag is already
+  ///     active AND a Supabase session exists. This prevents double-consume
+  ///     from being treated as fresh recovery.
+  ///   - If token is expired/invalid (otp_expired), clear recovery flag and
+  ///     propagate failure so router routes to login with expired reason.
+  ///   - Other errors are propagated.
   Future<void> recoverSessionFromUri(Uri uri) async {
     final raw = uri.toString();
     final isRecovery = raw.contains('type=recovery');
@@ -236,18 +247,35 @@ class AuthRemoteDataSource {
         await _recovery.markActive();
       }
     } on AuthException catch (e) {
-      // `flow_state_not_found` / `otp_expired` raise here when the URI has
-      // already been consumed by `DeepLinkHandler` in `main()`. Surface
-      // any other failure but do not crash the cold start path.
+      // Distinguish between "already consumed" (safe to swallow if we already
+      // have a valid recovery session) vs genuine failures like expired tokens.
       final msg = e.message.toLowerCase();
+
+      // Genuine failures that should NOT activate recovery and should bubble
+      // up so the router can show expired error.
+      if (msg.contains('otp_expired') || msg.contains('invalid')) {
+        if (isRecovery) await _recovery.clear();
+        rethrow;
+      }
+
+      // Already consumed by DeepLinkHandler on cold start.
+      // Only treat as success if we already have an active recovery flag
+      // AND a current Supabase session. This prevents a stale/already-consumed
+      // URI from reactivating a cleared flag.
       final alreadyConsumed =
           msg.contains('flow_state') ||
-          msg.contains('otp_expired') ||
           msg.contains('already');
+
       if (alreadyConsumed) {
-        if (isRecovery) await _recovery.markActive();
-        return;
+        if (isRecovery &&
+            _recovery.isActive &&
+            _auth.currentSession != null) {
+          return;
+        }
+        rethrow;
       }
+
+      // Unknown auth error - propagate.
       rethrow;
     }
   }

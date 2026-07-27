@@ -18,25 +18,24 @@ import 'password_recovery_session.dart';
 /// `ProviderScope` mounts). Without this, the router's redirect runs
 /// against `initialLocation: /scan` and loses the recovery context.
 class DeepLinkHandler {
-  DeepLinkHandler._({PasswordRecoverySession? recovery})
-    : _recovery = recovery;
+  DeepLinkHandler._(this._recovery);
+  final PasswordRecoverySession _recovery;
 
   static DeepLinkHandler? _instance;
 
-  /// Lazily creates the singleton. The optional [recovery] is captured on
-  /// first call; later calls re-use the same instance, so passing it from
-  /// `main()` after Supabase is initialized is the supported flow.
+  /// Lazily creates the singleton. The [recovery] session is captured on
+  /// first call; later calls re-use the same instance.
   static DeepLinkHandler get instance =>
-      _instance ??= DeepLinkHandler._();
+      _instance ??= DeepLinkHandler._(_BootstrapOnlyRecovery());
 
-  /// One-shot setter used by `main._bootstrap()` to inject the
-  /// pre-warmed [PasswordRecoverySession]. Subsequent calls are ignored.
-  static void configure({PasswordRecoverySession? recovery}) {
-    _instance = DeepLinkHandler._(recovery: recovery);
+  /// One-shot setter used by `main()` to inject the
+  /// pre-warmed [PasswordRecoverySession]. Must be called before any
+  /// link processing.
+  static void configure(PasswordRecoverySession recovery) {
+    _instance = DeepLinkHandler._(recovery);
   }
 
   final _appLinks = AppLinks();
-  PasswordRecoverySession? _recovery;
   StreamSubscription<Uri>? _sub;
 
   /// Process the initial link that cold-started the app (if any).
@@ -86,9 +85,13 @@ class DeepLinkHandler {
         // `AuthChangeEvent.passwordRecovery` stream event alone is too
         // late: it fires before `ProviderScope` rebuilds and the
         // [authStateProvider] seed misses the flag.
-        await _recovery?.markActive();
+        await _recovery.markActive();
       }
     } catch (e) {
+      // On failure, clear any partial recovery flag to avoid stale state.
+      if (raw.contains('type=recovery')) {
+        await _recovery.clear();
+      }
       AppLogger.warn('DeepLinkHandler: getSessionFromUrl failed', e);
     }
   }
@@ -100,5 +103,36 @@ class DeepLinkHandler {
   void dispose() {
     _sub?.cancel();
     _sub = null;
+  }
+}
+
+/// Stand-in recovery session used only if [configure] is never called.
+/// Prevents NPE during tests or edge-case bootstrap.
+class _BootstrapOnlyRecovery implements PasswordRecoverySession {
+  PasswordRecoverySession? _inner;
+
+  _BootstrapOnlyRecovery([this._inner]);
+
+  Future<PasswordRecoverySession> _delegate() async {
+    return _inner ??= await PasswordRecoverySession.create();
+  }
+
+  @override
+  bool get isActive {
+    final inner = _inner;
+    if (inner != null) return inner.isActive;
+    return false;
+  }
+
+  @override
+  Future<void> markActive() async {
+    final inner = await _delegate();
+    await inner.markActive();
+  }
+
+  @override
+  Future<void> clear() async {
+    final inner = await _delegate();
+    await inner.clear();
   }
 }

@@ -95,25 +95,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
 
-    // Safety net: kalau sampai sini tanpa recovery session (race dengan auth
-    // stream, atau token keburu expire), redirect ke login dengan banner
-    // yang sesuai. Gate utama ada di router redirect — ini cuma fallback.
-    final authSnap = switch (ref.watch(authStateProvider)) {
-      AsyncData(:final value) => value,
-      _ => null,
-    };
-    if (authSnap != null && !authSnap.isPasswordRecovery) {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return;
-        // Recovery flag lives in SharedPreferences; clear it so the user
-        // is not stuck in a loop bouncing back to /reset-password on the
-        // next cold start.
-        await ref.read(authRepositoryProvider).clearPasswordRecovery();
-        if (mounted) {
-          context.go('${Routes.login}?reason=reset_expired');
-        }
-      });
-    }
+    // Router is the single authority for recovery routing.
+    // This screen assumes the router has already verified the recovery
+    // session. If the token is invalid/expired, the router will bounce
+    // to /login?reason=reset_expired before this screen renders.
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.resetPasswordScreenTitle)),

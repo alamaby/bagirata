@@ -101,17 +101,28 @@ GoRouter appRouter(Ref ref) {
       final isSignedIn = snap?.userId != null && !isAnon;
 
       // ── Password-recovery session ────────────────────────────────────
-      // The `type=recovery` deep link is consumed in `main()` by
-      // `DeepLinkHandler.handleInitialLink()` before GoRouter mounts, so
-      // the router starts from `initialLocation: /scan` instead of the
-      // callback URI. We re-read the persistent recovery flag here and
-      // pull the user to `/reset-password` ourselves. This gate must run
-      // BEFORE every other entry-point gate (legal, onboarding, history
-      // paywall) so a user mid-recovery does not get bounced to onboarding
-      // or paywall screens that would discard the recovery session.
+      // Single source of truth: persistent recovery flag from
+      // PasswordRecoverySession (via IAuthRepository). The snapshot field
+      // AuthSnapshot.isPasswordRecovery is NOT used for routing because it
+      // can be stale (stream event already fired before ProviderScope mounted
+      // on cold start, or stream event fires after redirect runs on warm start).
+      // This gate must run BEFORE every other entry-point gate (legal,
+      // onboarding, history paywall) so a user mid-recovery does not get
+      // bounced to onboarding or paywall screens that would discard the
+      // recovery session.
       final isRecoveryActive = ref.read(authRepositoryProvider).isPasswordRecovery;
-      if (isRecoveryActive && loc != Routes.resetPassword) {
-        return Routes.resetPassword;
+
+      if (isRecoveryActive) {
+        // Recovery session is active: user MUST be on /reset-password.
+        if (loc != Routes.resetPassword) {
+          return Routes.resetPassword;
+        }
+        // Already on /reset-password → no redirect, let the screen handle it.
+      } else if (loc == Routes.resetPassword) {
+        // No active recovery session but user is on /reset-password.
+        // This happens when the token expired or someone navigated manually.
+        // Bounce to login with expired reason.
+        return '${Routes.login}?reason=reset_expired';
       }
 
       final goingToProtected = loc.startsWith(Routes.history);
@@ -183,15 +194,6 @@ GoRouter appRouter(Ref ref) {
             state.matchedLocation != Routes.postLoginWelcome) {
           return Routes.onboarding;
         }
-      }
-
-      // Reset-password form is only reachable while a Supabase password-recovery
-      // session is active. If the user somehow lands here without one (deep
-      // link token already expired, or someone navigated manually), bounce
-      // them to /login so they can request a fresh reset link.
-      if (loc == Routes.resetPassword &&
-          !(snap?.isPasswordRecovery ?? false)) {
-        return '${Routes.login}?reason=reset_expired';
       }
 
       return null;

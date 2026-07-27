@@ -28,7 +28,12 @@ import 'l10n/generated/app_l10n_id.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final initError = await _bootstrap();
+  // Create recovery session FIRST so DeepLinkHandler can use it during
+  // initial link processing (which happens inside _bootstrap).
+  final recovery = await PasswordRecoverySession.create();
+  DeepLinkHandler.configure(recovery);
+
+  final initError = await _bootstrap(recovery);
 
   if (initError != null) {
     final l10n = _resolveStartupL10n();
@@ -36,10 +41,6 @@ Future<void> main() async {
     return;
   }
 
-  final recovery = await PasswordRecoverySession.create();
-  // Inject the recovery session into the deep-link handler so the cold-start
-  // path can stamp the persistent recovery flag before ProviderScope mounts.
-  DeepLinkHandler.configure(recovery: recovery);
   runApp(
     ProviderScope(
       overrides: [passwordRecoverySessionProvider.overrideWithValue(recovery)],
@@ -54,7 +55,7 @@ AppL10n _resolveStartupL10n() {
       : AppL10nEn();
 }
 
-Future<String?> _bootstrap() async {
+Future<String?> _bootstrap(PasswordRecoverySession recovery) async {
   // Initialize Intl default locale and date symbols for all locales we may
   // switch to at runtime.
   Intl.defaultLocale = AppFormat.locale;
@@ -111,6 +112,8 @@ Future<String?> _bootstrap() async {
     // Deep link callback: if the app was cold-started by a Supabase
     // email confirmation / password-reset link, process the callback
     // before anonymous sign-in so the verified session takes precedence.
+    // The recovery session is already injected into DeepLinkHandler via
+    // main() so it can stamp the persistent flag immediately.
     await DeepLinkHandler.instance.handleInitialLink();
     // Start listening for links arriving while the app is already open.
     DeepLinkHandler.instance.listen();
