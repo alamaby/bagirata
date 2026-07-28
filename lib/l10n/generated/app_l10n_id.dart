@@ -1191,6 +1191,10 @@ class AppL10nId extends AppL10n {
   }
 
   @override
+  String get billSplitParticipantBarHint =>
+      'Tekan lama peserta untuk menghapus';
+
+  @override
   String get participantPhoneLabel => 'Nomor (opsional)';
 
   @override

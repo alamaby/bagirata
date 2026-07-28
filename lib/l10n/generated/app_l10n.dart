@@ -2171,6 +2171,12 @@ abstract class AppL10n {
   /// **'Gagal hapus partisipan: {message}'**
   String billSplitRemoveParticipantFailed(String message);
 
+  /// No description provided for @billSplitParticipantBarHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Tekan lama peserta untuk menghapus'**
+  String get billSplitParticipantBarHint;
+
   /// No description provided for @participantPhoneLabel.
   ///
   /// In id, this message translates to:

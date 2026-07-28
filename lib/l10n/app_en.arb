@@ -525,6 +525,7 @@
   },
   "billSplitRemoveParticipantConfirm": "Remove",
   "billSplitRemoveParticipantFailed": "Failed to remove participant: {message}",
+  "billSplitParticipantBarHint": "Long-press a participant to remove",
   "@billSplitRemoveParticipantFailed": {
     "placeholders": { "message": { "type": "String" } }
   },

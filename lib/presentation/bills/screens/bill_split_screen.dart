@@ -162,124 +162,21 @@ class _SplitBody extends ConsumerWidget {
   }
 
   Future<void> _addParticipant(BuildContext context, WidgetRef ref) async {
-    // Owned by the method (not the builder) so they are disposed exactly once
-    // when the dialog closes. Creating them inside `builder` leaked a pair of
-    // TextEditingControllers on every open.
     final nameCtrl = TextEditingController();
     final phoneCtrl = TextEditingController();
     final result =
-        await showDialog<({String name, String? phone})>(
-          context: context,
-          builder: (ctx) {
-            final l10n = AppL10n.of(ctx);
-            return StatefulBuilder(
-              builder: (ctx, setLocal) {
-                bool importing = false;
-
-                Future<void> pickContact() async {
-                  if (importing) return;
-                  setLocal(() => importing = true);
-                  try {
-                    final picker = FlutterNativeContactPicker();
-                    final contact = await picker.selectPhoneNumber();
-                    if (contact == null || !ctx.mounted) return;
-                    final phone = contact.selectedPhoneNumber != null
-                        ? PhoneFormatter.normalize(
-                            contact.selectedPhoneNumber!,
-                          )
-                        : null;
-                    setLocal(() {
-                      if (nameCtrl.text.isEmpty && contact.fullName != null) {
-                        nameCtrl.text = contact.fullName!;
-                      }
-                      if (phone != null && phoneCtrl.text.isEmpty) {
-                        phoneCtrl.text = phone;
-                      }
-                    });
-                  } catch (_) {
-                    if (ctx.mounted) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(content: Text(l10n.participantImportFailed)),
-                      );
-                    }
-                  } finally {
-                    if (ctx.mounted) setLocal(() => importing = false);
-                  }
-                }
-
-                return AlertDialog(
-                  title: Text(l10n.billSplitAddPersonTitle),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ParticipantSuggestionChips(
-                          onSelected: (participant) {
-                            setLocal(() {
-                              nameCtrl.text = participant.name;
-                              if (participant.phone.isNotEmpty) {
-                                phoneCtrl.text = participant.phone;
-                              }
-                            });
-                          },
-                        ),
-                        TextField(
-                          controller: nameCtrl,
-                          autofocus: true,
-                          decoration: InputDecoration(
-                            hintText: l10n.billSplitNameHint,
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            icon: importing
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.contacts_outlined, size: 18),
-                            label: Text(l10n.participantImportFromContacts),
-                            onPressed: importing ? null : pickContact,
-                          ),
-                        ),
-                        TextField(
-                          controller: phoneCtrl,
-                          decoration: InputDecoration(
-                            labelText: l10n.participantPhoneLabel,
-                          ),
-                          keyboardType: TextInputType.phone,
-                        ),
-                      ],
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(l10n.cancelAction),
-                    ),
-                    FilledButton(
-                      onPressed: () => Navigator.pop(ctx, (
-                        name: nameCtrl.text,
-                        phone: phoneCtrl.text.trim().isEmpty
-                            ? null
-                            : phoneCtrl.text.trim(),
-                      )),
-                      child: Text(l10n.billSplitAdd),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        ).whenComplete(() {
-          nameCtrl.dispose();
-          phoneCtrl.dispose();
-        });
+        await showModalBottomSheet<({String name, String? phone})>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => _AddPersonSheet(
+        nameCtrl: nameCtrl,
+        phoneCtrl: phoneCtrl,
+      ),
+    ).whenComplete(() {
+      nameCtrl.dispose();
+      phoneCtrl.dispose();
+    });
     if (result == null) return;
     if (result.name.trim().isEmpty) return;
     final err = await _notifier(
@@ -523,8 +420,154 @@ class _ItemRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ],
-            ),
+                ],
+              ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AddPersonSheet extends StatefulWidget {
+  const _AddPersonSheet({
+    required this.nameCtrl,
+    required this.phoneCtrl,
+  });
+
+  final TextEditingController nameCtrl;
+  final TextEditingController phoneCtrl;
+
+  @override
+  State<_AddPersonSheet> createState() => _AddPersonSheetState();
+}
+
+class _AddPersonSheetState extends State<_AddPersonSheet> {
+  bool _importing = false;
+
+  Future<void> _pickContact() async {
+    if (_importing) return;
+    setState(() => _importing = true);
+    try {
+      final picker = FlutterNativeContactPicker();
+      final contact = await picker.selectPhoneNumber();
+      if (contact == null || !mounted) return;
+      final phone = contact.selectedPhoneNumber != null
+          ? PhoneFormatter.normalize(contact.selectedPhoneNumber!)
+          : null;
+      setState(() {
+        if (widget.nameCtrl.text.isEmpty && contact.fullName != null) {
+          widget.nameCtrl.text = contact.fullName!;
+        }
+        if (phone != null && widget.phoneCtrl.text.isEmpty) {
+          widget.phoneCtrl.text = phone;
+        }
+      });
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).participantImportFailed)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 16.h + viewInsets),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.billSplitAddPersonTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              SizedBox(height: 16.h),
+              TextField(
+                controller: widget.nameCtrl,
+                decoration: InputDecoration(
+                  labelText: l10n.billSplitNameHint,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: widget.phoneCtrl,
+                      decoration: InputDecoration(
+                        labelText: l10n.participantPhoneLabel,
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.phone,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Semantics(
+                    label: l10n.participantImportFromContacts,
+                    child: IconButton(
+                      icon: _importing
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.contacts_outlined),
+                      tooltip: l10n.participantImportFromContacts,
+                      onPressed: _importing ? null : _pickContact,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              ParticipantSuggestionChips(
+                onSelected: (participant) {
+                  setState(() {
+                    widget.nameCtrl.text = participant.name;
+                    if (participant.phone.isNotEmpty) {
+                      widget.phoneCtrl.text = participant.phone;
+                    }
+                  });
+                },
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.cancelAction),
+                  ),
+                  SizedBox(width: 8.w),
+                  FilledButton(
+                    onPressed: () {
+                      Navigator.of(context).pop((
+                        name: widget.nameCtrl.text,
+                        phone: widget.phoneCtrl.text.trim().isEmpty
+                            ? null
+                            : widget.phoneCtrl.text.trim(),
+                      ));
+                    },
+                    child: Text(l10n.billSplitAdd),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -602,14 +645,46 @@ class _ParticipantBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppL10n.of(context);
     return Material(
       elevation: 8,
       color: scheme.surface,
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 108.h,
-          child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (participants.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(left: 16.w, top: 6.h),
+                child: Semantics(
+                  label: l10n.billSplitParticipantBarHint,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 12.r,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      SizedBox(width: 4.w),
+                      Flexible(
+                        child: Text(
+                          l10n.billSplitParticipantBarHint,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            SizedBox(
+              height: 108.h,
+              child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Scrollable participants area — takes whatever space is left
@@ -634,11 +709,13 @@ class _ParticipantBar extends StatelessWidget {
                     return Center(
                       child: GestureDetector(
                         onLongPress: () => onRemove(p),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            active
-                                ? avatar
+                        child: Semantics(
+                          label: l10n.billSplitParticipantBarHint,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              active
+                                  ? avatar
                                       .animate(
                                         key: ValueKey('avatar-${p.id}-active'),
                                         onPlay: (c) => c.repeat(reverse: true),
@@ -649,28 +726,29 @@ class _ParticipantBar extends StatelessWidget {
                                         duration: 700.ms,
                                         curve: Curves.easeInOut,
                                       )
-                                : avatar
+                                  : avatar
                                       .animate(
                                         key: ValueKey('avatar-${p.id}-idle'),
                                       )
                                       .fadeIn(duration: 200.ms),
-                            SizedBox(height: 4.h),
-                            SizedBox(
-                              width: 60.w,
-                              child: Text(
-                                p.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 11.sp,
-                                  fontWeight: active
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
+                              SizedBox(height: 4.h),
+                              SizedBox(
+                                width: 60.w,
+                                child: Text(
+                                  p.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontWeight: active
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -687,10 +765,12 @@ class _ParticipantBar extends StatelessWidget {
             ],
           ),
         ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
+  }
 
 class _AddButton extends StatelessWidget {
   const _AddButton({required this.onTap});

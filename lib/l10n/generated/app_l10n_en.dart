@@ -1191,6 +1191,10 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get billSplitParticipantBarHint =>
+      'Long-press a participant to remove';
+
+  @override
   String get participantPhoneLabel => 'Phone (optional)';
 
   @override

@@ -525,6 +525,7 @@
   },
   "billSplitRemoveParticipantConfirm": "Hapus",
   "billSplitRemoveParticipantFailed": "Gagal hapus partisipan: {message}",
+  "billSplitParticipantBarHint": "Tekan lama peserta untuk menghapus",
   "@billSplitRemoveParticipantFailed": {
     "placeholders": { "message": { "type": "String" } }
   },

@@ -12,7 +12,7 @@ import '../../../core/router/routes.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
-import '../../settings/widgets/currency_picker_dialog.dart';
+import '../../settings/widgets/currency_picker_sheet.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../../shared/widgets/plus_info_icon.dart';
 import '../providers/bill_review_notifier.dart';
@@ -132,7 +132,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
   }
 
   Future<void> _onPickCurrency(String current) async {
-    final code = await showCurrencyPickerDialog(context, current);
+    final code = await showCurrencyPickerSheet(context, current);
     if (code == null) return;
     _notifier.setCurrency(code);
   }

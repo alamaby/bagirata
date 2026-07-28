@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../core/format/currency_formatter.dart';
 import '../../../l10n/generated/app_l10n.dart';
 
-Future<String?> showCurrencyPickerDialog(BuildContext context, String current) {
-  return showDialog<String>(
+Future<String?> showCurrencyPickerSheet(BuildContext context, String current) {
+  return showModalBottomSheet<String>(
     context: context,
-    builder: (ctx) => _CurrencyPickerDialog(current: current),
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (ctx) => _CurrencyPickerSheet(current: current),
   );
 }
 
-class _CurrencyPickerDialog extends StatefulWidget {
-  const _CurrencyPickerDialog({required this.current});
-
+class _CurrencyPickerSheet extends StatefulWidget {
+  const _CurrencyPickerSheet({required this.current});
   final String current;
 
   @override
-  State<_CurrencyPickerDialog> createState() => _CurrencyPickerDialogState();
+  State<_CurrencyPickerSheet> createState() => _CurrencyPickerSheetState();
 }
 
-class _CurrencyPickerDialogState extends State<_CurrencyPickerDialog> {
+class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
   final _searchController = TextEditingController();
   String _query = '';
 
@@ -32,25 +34,32 @@ class _CurrencyPickerDialogState extends State<_CurrencyPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
-    final filtered = CurrencyFormatter.definitions
-        .where(
-          (definition) => CurrencyFormatter.matchesQuery(definition, _query),
-        )
-        .toList(growable: false);
+    final definitions = CurrencyFormatter.definitions;
+    final filtered = definitions.where(
+      (d) => CurrencyFormatter.matchesQuery(d, _query),
+    ).toList(growable: false);
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
 
-    return AlertDialog(
-      title: Text(l10n.currencyLabel),
-      contentPadding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
-      content: SizedBox(
-        width: double.maxFinite,
-        height: MediaQuery.sizeOf(context).height * 0.62,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, viewInsets),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              padding: EdgeInsets.fromLTRB(24.w, 8.h, 24.w, 8.h),
+              child: Text(
+                l10n.currencyLabel,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: TextField(
                 controller: _searchController,
-                autofocus: true,
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.search),
@@ -66,15 +75,17 @@ class _CurrencyPickerDialogState extends State<_CurrencyPickerDialog> {
                         ),
                   hintText: l10n.currencySearchHint,
                   border: const OutlineInputBorder(),
+                  isDense: true,
                 ),
                 onChanged: (value) => setState(() => _query = value),
               ),
             ),
-            Expanded(
+            SizedBox(height: 8.h),
+            Flexible(
               child: filtered.isEmpty
                   ? Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: EdgeInsets.all(24.w),
                         child: Text(
                           l10n.currencySearchEmpty,
                           textAlign: TextAlign.center,
@@ -82,21 +93,23 @@ class _CurrencyPickerDialogState extends State<_CurrencyPickerDialog> {
                       ),
                     )
                   : ListView.builder(
+                      shrinkWrap: true,
                       itemCount: filtered.length,
                       itemBuilder: (context, index) {
-                        final definition = filtered[index];
+                        final d = filtered[index];
                         return RadioListTile<String>(
-                          value: definition.code,
+                          value: d.code,
                           groupValue: widget.current,
                           onChanged: (v) => Navigator.of(context).pop(v),
                           title: Text(
-                            definition.displayName,
+                            d.displayName,
                             overflow: TextOverflow.ellipsis,
                           ),
                         );
                       },
                     ),
             ),
+            SizedBox(height: 8.h),
           ],
         ),
       ),

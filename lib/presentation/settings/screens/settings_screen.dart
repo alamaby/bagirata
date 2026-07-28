@@ -27,9 +27,9 @@ import '../../shared/widgets/plus_info_icon.dart';
 import '../providers/profile_notifier.dart';
 import '../providers/settings_actions.dart';
 import '../widgets/confirm_dialog.dart';
-import '../widgets/currency_picker_dialog.dart';
+import '../widgets/currency_picker_sheet.dart';
 import '../widgets/edit_name_sheet.dart';
-import '../widgets/language_picker_dialog.dart';
+import '../widgets/language_picker_sheet.dart';
 import '../widgets/theme_picker_dialog.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -421,7 +421,7 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
   }
 
   Future<void> _onPickCurrency(BuildContext context, String current) async {
-    final code = await showCurrencyPickerDialog(context, current);
+    final code = await showCurrencyPickerSheet(context, current);
     if (code == null || code == current) return;
     final res = await ref.read(profileProvider.notifier).updateCurrency(code);
     if (!context.mounted) return;
@@ -430,7 +430,7 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
   }
 
   Future<void> _onPickLanguage(BuildContext context, String current) async {
-    final code = await showLanguagePickerDialog(context, current);
+    final code = await showLanguagePickerSheet(context, current);
     if (code == null || code == current) return;
     final res = await ref.read(profileProvider.notifier).updateLanguage(code);
     if (!context.mounted) return;
