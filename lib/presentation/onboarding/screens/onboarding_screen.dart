@@ -4,7 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
+import '../../../data/providers.dart';
 import '../../../l10n/generated/app_l10n.dart';
+import '../../settings/providers/preferences_providers.dart';
 import '../providers/onboarding_notifier.dart';
 
 class _OnboardingSlide {
@@ -42,13 +44,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Refresh app config so a recently-disabled promo takes effect
+    // without requiring an app restart.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appConfigProvider.notifier).refresh();
+    });
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  List<_OnboardingSlide> _slides(String title1, String body1,
-      String title2, String body2, String title3, String body3) {
+  List<_OnboardingSlide> _slides({
+    required String title1,
+    required String body1,
+    required String title2,
+    required String body2,
+    required String title3,
+    required String body3,
+    required bool showPromo,
+    required String promoTitle,
+    required String promoBody,
+  }) {
     return [
       _OnboardingSlide(
         imageAsset: _assetPaths[0],
@@ -65,12 +86,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         title: title3,
         body: body3,
       ),
+      if (showPromo)
+        _OnboardingSlide(
+          imageAsset: 'assets/images/onboarding/onboarding_promo.png',
+          title: promoTitle,
+          body: promoBody,
+        ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
+    final appConfig = ref.watch(appConfigProvider).value;
+    final locale = ref.watch(localePrefProvider).languageCode;
+    final showPromo = appConfig != null &&
+        appConfig.promoOnboardingEnabled &&
+        appConfig.hasCompletePromoOnboardingCopy;
+    final promoTitle = showPromo
+        ? (locale == 'id'
+            ? appConfig.promoOnboardingTitleId
+            : appConfig.promoOnboardingTitleEn)
+        : '';
+    final promoBody = showPromo
+        ? (locale == 'id'
+            ? appConfig.promoOnboardingBodyId
+            : appConfig.promoOnboardingBodyEn)
+        : '';
+    final lastIndex = showPromo ? 3 : 2;
 
     return PopScope(
       canPop: !_busy,
@@ -85,7 +128,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   children: [
                     SmoothPageIndicator(
                       controller: _controller,
-                      count: 3,
+                      count: showPromo ? 4 : 3,
                       effect: ExpandingDotsEffect(
                         activeDotColor: Theme.of(context).colorScheme.primary,
                         dotColor: Theme.of(context).colorScheme.outlineVariant,
@@ -112,9 +155,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       : null,
                   onPageChanged: (i) => setState(() => _index = i),
                   children: _slides(
-                    l10n.onboardingTitle1, l10n.onboardingBody1,
-                    l10n.onboardingTitle2, l10n.onboardingBody2,
-                    l10n.onboardingTitle3, l10n.onboardingBody3,
+                    title1: l10n.onboardingTitle1,
+                    body1: l10n.onboardingBody1,
+                    title2: l10n.onboardingTitle2,
+                    body2: l10n.onboardingBody2,
+                    title3: l10n.onboardingTitle3,
+                    body3: l10n.onboardingBody3,
+                    showPromo: showPromo,
+                    promoTitle: promoTitle,
+                    promoBody: promoBody,
                   ).map((s) => _page(s.title, s.body, s.imageAsset)).toList(),
                 ),
               ),
@@ -125,7 +174,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: FilledButton(
                     onPressed: _busy
                         ? null
-                        : _index == 2
+                        : _index == lastIndex
                             ? _finish
                             : () => _controller.nextPage(
                                   duration: const Duration(milliseconds: 300),
@@ -143,7 +192,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                           )
                         : Text(
-                            _index == 2
+                            _index == lastIndex
                                 ? (widget.isReplay
                                     ? l10n.onboardingReplayFinish
                                     : l10n.onboardingFinish)
