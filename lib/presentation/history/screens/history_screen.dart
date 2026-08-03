@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +21,6 @@ import '../../insights/providers/monthly_spending_insight_provider.dart';
 import '../../settings/providers/preferences_providers.dart';
 import '../../shared/widgets/plus_info_icon.dart';
 import '../providers/history_filter_notifier.dart';
-import '../providers/history_filter_state.dart';
 import '../providers/history_list_notifier.dart';
 import '../providers/history_plus_banner_notifier.dart';
 
@@ -33,6 +34,16 @@ class HistoryScreen extends ConsumerStatefulWidget {
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   final _scrollController = ScrollController();
 
+  /// Currently selected Monthly Insight month (first day of the month).
+  DateTime _selectedInsightMonth = DateTime(
+    DateTime.now().year,
+    DateTime.now().month,
+  );
+
+  /// Explicitly chosen insight currency; `null` falls back to the default
+  /// profile currency or the first available currency.
+  String? _selectedInsightCurrency;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +55,61 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Resolves the effective insight currency. Keeps the user's choice while it
+  /// remains available, otherwise prefers the default profile currency and
+  /// finally the first available currency.
+  String _effectiveInsightCurrency(
+    List<String> currencies,
+    String defaultCurrency,
+  ) {
+    if (currencies.isEmpty) return defaultCurrency;
+    final selected = _selectedInsightCurrency;
+    if (selected != null && currencies.contains(selected)) return selected;
+    if (currencies.contains(defaultCurrency)) return defaultCurrency;
+    return currencies.first;
+  }
+
+  bool _isFutureMonth(DateTime month) {
+    final now = DateTime(DateTime.now().year, DateTime.now().month);
+    return month.year > now.year ||
+        (month.year == now.year && month.month > now.month);
+  }
+
+  /// Next is only reachable from a strictly earlier month (never the current
+  /// or a future month).
+  bool _canGoNextMonth(DateTime month) {
+    final now = DateTime(DateTime.now().year, DateTime.now().month);
+    return month.year < now.year ||
+        (month.year == now.year && month.month < now.month);
+  }
+
+  /// Whether [month] overlaps the Plus/Free history visibility window.
+  bool _canReachMonth(DateTime month, {required String? planCode}) {
+    final cutoff = PlusFeatureLimits.historyCutoff(planCode: planCode);
+    if (cutoff == null) return false;
+    final lastDayUtc = DateTime.utc(month.year, month.month + 1, 0);
+    final cutoffUtc = DateTime.utc(cutoff.year, cutoff.month, cutoff.day);
+    return lastDayUtc.isAfter(cutoffUtc);
+  }
+
+  void _previousInsightMonth({required String? planCode}) {
+    final prev = DateTime(
+      _selectedInsightMonth.year,
+      _selectedInsightMonth.month - 1,
+    );
+    if (!_canReachMonth(prev, planCode: planCode)) return;
+    setState(() => _selectedInsightMonth = prev);
+  }
+
+  void _nextInsightMonth() {
+    final next = DateTime(
+      _selectedInsightMonth.year,
+      _selectedInsightMonth.month + 1,
+    );
+    if (_isFutureMonth(next)) return;
+    setState(() => _selectedInsightMonth = next);
   }
 
   void _onScroll() {
@@ -73,12 +139,20 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final isBannerDismissed =
         bannerState is AsyncData<bool> && bannerState.value;
     final bannerReady = bannerState is AsyncData<bool>;
-    final monthlyInsight = ref.watch(monthlySpendingInsightProvider);
     final items = historyState.items;
     final summary = historyState.summary;
     final currencies = summary?.availableCurrencies ?? <String>[];
     final hasSummary = summary != null && summary.totalBillCount > 0;
     final hasItems = items.isNotEmpty;
+    final selectedCurrency = _effectiveInsightCurrency(
+      currencies,
+      defaultCurrency,
+    );
+    final monthlyInsight = ref.watch(
+      monthlySpendingInsightProvider(
+        (month: _selectedInsightMonth, currencyCode: selectedCurrency),
+      ),
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -113,7 +187,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 ],
               ),
               if (summary != null)
-                SliverToBoxAdapter(child: _SummaryCards(summary: summary)),
+                SliverToBoxAdapter(
+                  child: _SummaryCards(
+                    summary: summary,
+                    defaultCurrency: defaultCurrency,
+                  ),
+                ),
               if (filter.hasActiveFilters && hasItems)
                 SliverToBoxAdapter(
                   child: _ActiveFilterChips(
@@ -167,7 +246,20 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   child: _MonthlyInsightSection(
                     isPlus: isPlus,
                     insight: monthlyInsight,
-                    currency: insightCurrency,
+                    month: _selectedInsightMonth,
+                    currency: selectedCurrency,
+                    availableCurrencies: currencies,
+                    canGoNext: _canGoNextMonth(_selectedInsightMonth),
+                    canGoPrevious: _canReachMonth(
+                      _selectedInsightMonth,
+                      planCode: planCode,
+                    ),
+                    onPreviousMonth: () =>
+                        _previousInsightMonth(planCode: planCode),
+                    onNextMonth: _nextInsightMonth,
+                    onCurrencyChanged: (code) => setState(
+                      () => _selectedInsightCurrency = code,
+                    ),
                   ),
                 ),
               if (filter.hasActiveFilters && hasItems)
@@ -819,19 +911,35 @@ class _MonthlyInsightSection extends StatelessWidget {
   const _MonthlyInsightSection({
     required this.isPlus,
     required this.insight,
+    required this.month,
     required this.currency,
+    required this.availableCurrencies,
+    required this.canGoNext,
+    required this.canGoPrevious,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onCurrencyChanged,
   });
   final bool isPlus;
   final AsyncValue<MonthlySpendingInsight?> insight;
-  final NumberFormat currency;
+  final DateTime month;
+  final String currency;
+  final List<String> availableCurrencies;
+  final bool canGoNext;
+  final bool canGoPrevious;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final ValueChanged<String> onCurrencyChanged;
 
   @override
   Widget build(BuildContext context) {
-    if (!isPlus)
+    final currencyFormat = CurrencyFormatter.of(currency);
+    if (!isPlus) {
       return _InsightShell(
         locked: true,
-        child: _LockedInsightPreview(currency: currency),
+        child: _LockedInsightPreview(currency: currencyFormat),
       );
+    }
     return insight.when(
       loading: () => _InsightShell(
         child: Padding(
@@ -844,9 +952,13 @@ class _MonthlyInsightSection extends StatelessWidget {
                 child: const CircularProgressIndicator(strokeWidth: 2),
               ),
               SizedBox(width: 12.w),
-              Text(
-                AppL10n.of(context).monthlyInsightLoading,
-                style: TextStyle(fontSize: 13.sp),
+              Expanded(
+                child: Text(
+                  AppL10n.of(context).monthlyInsightLoading,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13.sp),
+                ),
               ),
             ],
           ),
@@ -866,13 +978,25 @@ class _MonthlyInsightSection extends StatelessWidget {
         ),
       ),
       data: (data) {
-        if (data == null || !data.isPlus)
+        if (data == null || !data.isPlus) {
           return _InsightShell(
             locked: true,
-            child: _LockedInsightPreview(currency: currency),
+            child: _LockedInsightPreview(currency: currencyFormat),
           );
+        }
         return _InsightShell(
-          child: _MonthlyInsightCard(insight: data, currency: currency),
+          child: _MonthlyInsightCard(
+            insight: data,
+            month: month,
+            currency: currencyFormat,
+            selectedCurrency: currency,
+            availableCurrencies: availableCurrencies,
+            canGoNext: canGoNext,
+            canGoPrevious: canGoPrevious,
+            onPreviousMonth: onPreviousMonth,
+            onNextMonth: onNextMonth,
+            onCurrencyChanged: onCurrencyChanged,
+          ),
         );
       },
     );
@@ -957,16 +1081,38 @@ class _LockedInsightPreview extends StatelessWidget {
 }
 
 class _MonthlyInsightCard extends StatelessWidget {
-  const _MonthlyInsightCard({required this.insight, required this.currency});
+  const _MonthlyInsightCard({
+    required this.insight,
+    required this.month,
+    required this.currency,
+    required this.selectedCurrency,
+    required this.availableCurrencies,
+    required this.canGoNext,
+    required this.canGoPrevious,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onCurrencyChanged,
+  });
   final MonthlySpendingInsight insight;
+  final DateTime month;
   final NumberFormat currency;
+  final String selectedCurrency;
+  final List<String> availableCurrencies;
+  final bool canGoNext;
+  final bool canGoPrevious;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final ValueChanged<String> onCurrencyChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final month = DateFormat.MMMM().format(insight.monthStart);
+    final monthLabel = DateFormat.MMMM(
+      AppFormat.intlLocaleOf(Localizations.localeOf(context)),
+    ).format(month);
     final mom = insight.monthOverMonthPercent;
+    final showCurrencySelector = availableCurrencies.length > 1;
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: Column(
@@ -974,26 +1120,77 @@ class _MonthlyInsightCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.insights, color: scheme.primary, size: 22.r),
-              SizedBox(width: 8.w),
+              IconButton(
+                tooltip: l10n.monthlyInsightPreviousMonth,
+                onPressed: canGoPrevious ? onPreviousMonth : null,
+                icon: const Icon(Icons.chevron_left),
+              ),
               Expanded(
-                child: Text(
-                  l10n.monthlyInsightTitle,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.insights,
+                          color: scheme.primary,
+                          size: 20.r,
+                        ),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            l10n.monthlyInsightTitle,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        _SmallPlusPill(color: scheme.primary),
+                      ],
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      l10n.monthlyInsightMonth(monthLabel, month.year),
+                      style: TextStyle(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              _SmallPlusPill(color: scheme.primary),
+              IconButton(
+                tooltip: l10n.monthlyInsightNextMonth,
+                onPressed: canGoNext ? onNextMonth : null,
+                icon: const Icon(Icons.chevron_right),
+              ),
             ],
           ),
-          SizedBox(height: 2.h),
-          Text(
-            l10n.monthlyInsightMonth(month),
-            style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12.sp),
-          ),
-          SizedBox(height: 14.h),
+          if (showCurrencySelector) ...[
+            SizedBox(height: 10.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 4.h,
+              children: availableCurrencies.map(
+                (code) => ChoiceChip(
+                  label: Text(code),
+                  selected: code == selectedCurrency,
+                  showCheckmark: false,
+                  onSelected: (_) => onCurrencyChanged(code),
+                  visualDensity: VisualDensity.compact,
+                  selectedColor: scheme.primaryContainer,
+                  labelStyle: TextStyle(
+                    fontSize: 12.sp,
+                    color: code == selectedCurrency
+                        ? scheme.onPrimaryContainer
+                        : null,
+                  ),
+                ),
+              ).toList(growable: false),
+            ),
+          ],
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
@@ -1603,16 +1800,96 @@ class _HistoryAccessBanner extends StatelessWidget {
   }
 }
 
-class _SummaryCards extends StatelessWidget {
-  const _SummaryCards({required this.summary});
+class _SummaryCards extends StatefulWidget {
+  const _SummaryCards({
+    required this.summary,
+    required this.defaultCurrency,
+  });
   final HistorySummary summary;
+  final String defaultCurrency;
+
+  @override
+  State<_SummaryCards> createState() => _SummaryCardsState();
+}
+
+class _SummaryCardsState extends State<_SummaryCards> {
+  static const _autoRotateInterval = Duration(seconds: 4);
+  static const _pageDuration = Duration(milliseconds: 300);
+
+  final PageController _controller = PageController();
+  Timer? _timer;
+  bool _userInteracting = false;
+  int _currentPage = 0;
+  late List<OutstandingByCurrency> _ordered;
+
+  bool get _isCarousel => _ordered.length > 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _ordered = _orderOutstanding();
+    _startAutoRotate();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SummaryCards oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.summary.outstanding != widget.summary.outstanding) {
+      _ordered = _orderOutstanding();
+      _startAutoRotate();
+      if (_currentPage >= _ordered.length) {
+        _currentPage = 0;
+        _controller.jumpToPage(0);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Default currency first, then remaining currencies alphabetically.
+  List<OutstandingByCurrency> _orderOutstanding() {
+    final list = [...widget.summary.outstanding];
+    list.sort((a, b) {
+      if (a.currency == widget.defaultCurrency) return -1;
+      if (b.currency == widget.defaultCurrency) return 1;
+      return a.currency.compareTo(b.currency);
+    });
+    return list;
+  }
+
+  void _startAutoRotate() {
+    _timer?.cancel();
+    _timer = null;
+    if (!_isCarousel) return;
+    if (WidgetsBinding
+        .instance
+        .platformDispatcher
+        .accessibilityFeatures
+        .disableAnimations) {
+      return;
+    }
+    _timer = Timer.periodic(_autoRotateInterval, (_) {
+      if (!mounted || _userInteracting || !_controller.hasClients) return;
+      final current = _controller.page?.round() ?? 0;
+      final next = current >= _ordered.length - 1 ? 0 : current + 1;
+      _controller.animateToPage(
+        next,
+        duration: _pageDuration,
+        curve: Curves.easeOut,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final totalBills = summary.totalBillCount;
-    final outstandingText = _formatOutstanding(summary.outstanding);
+    final totalBills = widget.summary.totalBillCount;
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
       child: Row(
@@ -1627,41 +1904,146 @@ class _SummaryCards extends StatelessWidget {
             ),
           ),
           SizedBox(width: 12.w),
-          Expanded(
-            child: _StatCard(
-              label: l10n.historyOutstanding,
-              value: outstandingText,
-              icon: Icons.account_balance_wallet_outlined,
-              color: scheme.tertiaryContainer,
-              onColor: scheme.onTertiaryContainer,
-            ),
-          ),
+          Expanded(child: _buildOutstandingCard(context)),
         ],
       ),
     );
   }
 
-  static String _formatOutstanding(List<OutstandingByCurrency> outstanding) {
-    if (outstanding.isEmpty) return CurrencyFormatter.of('IDR').format(0);
-    return outstanding
-        .map((o) => CurrencyFormatter.of(o.currency).format(o.amount))
-        .join('\n');
+  Widget _buildOutstandingCard(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final outstanding = _ordered;
+
+    if (outstanding.isEmpty) {
+      final zero = CurrencyFormatter.of(widget.defaultCurrency).format(0);
+      return _StatCard(
+        label: l10n.historyOutstanding,
+        value: zero,
+        icon: Icons.account_balance_wallet_outlined,
+        color: scheme.tertiaryContainer,
+        onColor: scheme.onTertiaryContainer,
+      );
+    }
+
+    if (!_isCarousel) {
+      final entry = outstanding.first;
+      final entryFormat = CurrencyFormatter.of(entry.currency);
+      return _StatCard(
+        label: l10n.historyOutstanding,
+        value: entryFormat.format(entry.amount),
+        icon: Icons.account_balance_wallet_outlined,
+        color: scheme.tertiaryContainer,
+        onColor: scheme.onTertiaryContainer,
+      );
+    }
+
+    return _StatCardShell(
+      label: l10n.historyOutstanding,
+      icon: Icons.account_balance_wallet_outlined,
+      color: scheme.tertiaryContainer,
+      onColor: scheme.onTertiaryContainer,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification is ScrollStartNotification &&
+                    notification.dragDetails != null) {
+                  setState(() => _userInteracting = true);
+                } else if (notification is ScrollEndNotification) {
+                  setState(() => _userInteracting = false);
+                  _startAutoRotate();
+                }
+                return false;
+              },
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: outstanding.length,
+                onPageChanged: (page) => setState(() => _currentPage = page),
+                itemBuilder: (context, index) {
+                  final entry = outstanding[index];
+                  final entryFormat = CurrencyFormatter.of(entry.currency);
+                  return Semantics(
+                    label:
+                        '${l10n.historyOutstanding}: '
+                        '${entryFormat.format(entry.amount)}. '
+                        '${l10n.historyOutstandingCarouselPage(index + 1, outstanding.length)}.',
+                    child: _CardValueText(
+                      value: entryFormat.format(entry.amount),
+                      color: scheme.onTertiaryContainer,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          if (_isCarousel)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  outstanding.length,
+                  (i) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: EdgeInsets.symmetric(horizontal: 2.w),
+                    width: _currentPage == i ? 8.w : 5.w,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: _currentPage == i
+                          ? scheme.onTertiaryContainer
+                          : scheme.onTertiaryContainer.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(999.r),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
-class _StatCard extends StatelessWidget {
-  const _StatCard({
+/// Single-line scaled value shown inside a summary stat card.
+class _CardValueText extends StatelessWidget {
+  const _CardValueText({required this.value, required this.color});
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        value,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700, color: color),
+      ),
+    );
+  }
+}
+
+/// Stat card shell. Both summary cards share this exact structure and a fixed
+/// value area so they always have the same height — regardless of whether the
+/// outstanding side shows a single value, a carousel, or an empty state.
+class _StatCardShell extends StatelessWidget {
+  const _StatCardShell({
     required this.label,
-    required this.value,
     required this.icon,
     required this.color,
     required this.onColor,
+    required this.child,
   });
   final String label;
-  final String value;
   final IconData icon;
   final Color color;
   final Color onColor;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -1692,18 +2074,35 @@ class _StatCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 6.h),
-          Text(
-            value,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w700,
-              color: onColor,
-            ),
-          ),
+          SizedBox(height: 40.h, child: child),
         ],
       ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.onColor,
+  });
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final Color onColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return _StatCardShell(
+      label: label,
+      icon: icon,
+      color: color,
+      onColor: onColor,
+      child: _CardValueText(value: value, color: onColor),
     );
   }
 }

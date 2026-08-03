@@ -642,6 +642,7 @@ class _FakeProfileRemoteDataSource implements ProfileRemoteDataSource {
 
   @override
   Future<Map<String, dynamic>> getMonthlySpendingInsight({
+    required DateTime month,
     required String currencyCode,
   }) =>
       throw UnimplementedError();

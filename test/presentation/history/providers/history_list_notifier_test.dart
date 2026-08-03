@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bagistruk/core/error/failure.dart';
 import 'package:bagistruk/core/error/result.dart';
 import 'package:bagistruk/data/providers.dart';
@@ -29,6 +31,13 @@ class FakeBillRepository implements IBillRepository {
   /// When non-null, `getHistorySummary` returns this result.
   HistorySummary? summary;
 
+  /// When true, the next `listHistoryBillsPage` call returns a failure.
+  bool failNextPage = false;
+
+  /// When non-null, every `listHistoryBillsPage` call awaits this hook before
+  /// responding, letting tests control response ordering (overlapping refresh).
+  Future<void> Function(ListHistoryCall call)? gateFor;
+
   /// Recorded `getHistorySummary` invocations.
   int summaryCalls = 0;
 
@@ -54,6 +63,14 @@ class FakeBillRepository implements IBillRepository {
       cursorId: cursorId,
     );
     calls.add(call);
+    final gate = gateFor;
+    if (gate != null) {
+      await gate(call);
+    }
+    if (failNextPage) {
+      failNextPage = false;
+      return Result.failure(Failure.unknown('boom', null));
+    }
     final responder = this.responder;
     if (responder == null) {
       return const Result.success(
@@ -209,9 +226,7 @@ void main() {
         ocrCreditStatusProvider.overrideWithValue(
           const AsyncValue.data(_plusStatus),
         ),
-        monthlySpendingInsightProvider.overrideWithValue(
-          const AsyncValue.data(null),
-        ),
+        monthlySpendingInsightProvider.overrideWith((ref, query) async => null),
       ],
     );
   });
@@ -445,6 +460,163 @@ void main() {
       expect(fakeRepo.calls.length, 1);
       expect(fakeRepo.calls.first.cursorId, isNull);
       expect(fakeRepo.calls.first.sort, 'oldest');
+    });
+  });
+
+  group('HistoryListNotifier refresh', () {
+    Future<HistoryListState> listenAndSettle() async {
+      final sub = container.listen(historyListProvider, (_, _) {});
+      addTearDown(sub.close);
+      await settleFirstPage();
+      return sub.read();
+    }
+
+    test('refresh replaces items without deduplicating against stale ids', () async {
+      fakeRepo.summary = const HistorySummary(
+        totalBillCount: 2,
+        availableCurrencies: ['IDR'],
+        outstanding: [],
+      );
+      fakeRepo.responder = (call) => HistoryBillPage(
+        bills: [
+          _bill(
+            id: call.cursorId ?? 'b1',
+            currency: 'IDR',
+            amount: 1000,
+            createdAt: DateTime.utc(2026, 7, 1),
+          ),
+          _bill(
+            id: call.cursorId == null ? 'b2' : 'b${call.cursorId}2',
+            currency: 'IDR',
+            amount: 2000,
+            createdAt: DateTime.utc(2026, 7, 2),
+          ),
+        ],
+        hasMore: false,
+      );
+
+      final state = await listenAndSettle();
+      expect(state.items, hasLength(2));
+
+      await container.read(historyListProvider.notifier).refresh();
+      await settleFirstPage();
+
+      final after = container.read(historyListProvider);
+      expect(after.items, hasLength(2));
+      expect(after.items.map((b) => b.id), ['b1', 'b2']);
+    });
+
+    test('failed refresh keeps existing items', () async {
+      fakeRepo.summary = const HistorySummary(
+        totalBillCount: 2,
+        availableCurrencies: ['IDR'],
+        outstanding: [],
+      );
+      fakeRepo.responder = (call) => HistoryBillPage(
+        bills: [
+          _bill(
+            id: 'keep-me',
+            currency: 'IDR',
+            amount: 1000,
+            createdAt: DateTime.utc(2026, 7, 1),
+          ),
+        ],
+        hasMore: false,
+      );
+
+      final state = await listenAndSettle();
+      expect(state.items, hasLength(1));
+
+      fakeRepo.failNextPage = true;
+      await container.read(historyListProvider.notifier).refresh();
+      await settleFirstPage();
+
+      final after = container.read(historyListProvider);
+      expect(after.items, hasLength(1));
+      expect(after.items.single.id, 'keep-me');
+      expect(after.initialFailure, isNull);
+    });
+
+    test('loadMore is blocked while a refresh is in flight', () async {
+      fakeRepo.summary = const HistorySummary(
+        totalBillCount: 50,
+        availableCurrencies: ['IDR'],
+        outstanding: [],
+      );
+      fakeRepo.responder = (call) => HistoryBillPage(
+        bills: [
+          _bill(
+            id: call.cursorId ?? 'first',
+            currency: 'IDR',
+            amount: 1000,
+            createdAt: DateTime.utc(2026, 7, 1),
+          ),
+        ],
+        hasMore: call.cursorId == null,
+        nextCursor: call.cursorId == null
+            ? _cursorFor('first', DateTime.utc(2026, 7, 1), 'newest')
+            : null,
+      );
+
+      await listenAndSettle();
+      fakeRepo.calls.clear();
+
+      final refreshFuture = container
+          .read(historyListProvider.notifier)
+          .refresh();
+      await container.read(historyListProvider.notifier).loadMore();
+      await refreshFuture;
+
+      // The in-flight refresh is the only page request; loadMore was skipped.
+      expect(fakeRepo.calls.length, 1);
+    });
+
+    test('overlapping refreshes: latest response wins', () async {
+      fakeRepo.summary = const HistorySummary(
+        totalBillCount: 1,
+        availableCurrencies: ['IDR'],
+        outstanding: [],
+      );
+      final gateA = Completer<void>();
+      final gateB = Completer<void>();
+      final gates = [gateA, gateB];
+      var gateIndex = 0;
+      fakeRepo.responder = (call) => HistoryBillPage(
+        bills: [
+          _bill(
+            id: call.cursorId ?? 'pending',
+            currency: 'IDR',
+            amount: 1000,
+            createdAt: DateTime.utc(2026, 7, 1),
+          ),
+        ],
+        hasMore: false,
+      );
+
+      await listenAndSettle();
+      fakeRepo.calls.clear();
+      fakeRepo.gateFor = (call) {
+        return gates[gateIndex++].future;
+      };
+
+      final first = container.read(historyListProvider.notifier).refresh();
+      final second = container.read(historyListProvider.notifier).refresh();
+
+      // Complete the second (newer) request first, then the stale one.
+      gateB.complete();
+      await second;
+      await settleFirstPage();
+      expect(
+        container.read(historyListProvider).items.single.id,
+        'pending',
+      );
+
+      gateA.complete();
+      await first;
+      await settleFirstPage();
+
+      // The stale response must not overwrite the newer state.
+      expect(container.read(historyListProvider).items.single.id, 'pending');
     });
   });
 }

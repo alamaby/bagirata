@@ -64,7 +64,11 @@ abstract interface class IProfileRepository {
   Future<Result<OcrCreditStatus>> getOcrCreditStatus();
 
   /// Reads Plus-gated monthly spending insight for the active user.
+  ///
+  /// [month] selects the period (only the month is used; the day is ignored)
+  /// and is grouped by bill saved date (`created_at`) on the database.
   Future<Result<MonthlySpendingInsight>> getMonthlySpendingInsight({
+    required DateTime month,
     required String currencyCode,
   });
 

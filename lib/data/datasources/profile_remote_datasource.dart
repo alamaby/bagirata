@@ -157,6 +157,7 @@ class ProfileRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> getMonthlySpendingInsight({
+    required DateTime month,
     required String currencyCode,
   }) async {
     final uid = currentUserId;
@@ -166,10 +167,21 @@ class ProfileRemoteDataSource {
     final row = await _client
         .rpc<Map<String, dynamic>>(
           'get_monthly_spending_insight',
-          params: {'p_user_id': uid, 'p_currency_code': currencyCode},
+          params: {
+            'p_user_id': uid,
+            'p_month': _monthParam(month),
+            'p_currency_code': currencyCode,
+          },
         )
         .single();
     return Map<String, dynamic>.from(row as Map);
+  }
+
+  /// Formats [month] as a date-only string (`YYYY-MM-DD`) normalized to the
+  /// first day of its month, matching the RPC's PostgreSQL `DATE` parameter.
+  static String _monthParam(DateTime month) {
+    final m = DateTime.utc(month.year, month.month);
+    return m.toIso8601String().substring(0, 10);
   }
 
   Future<void> touchLastActive() async {

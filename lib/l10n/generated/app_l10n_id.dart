@@ -861,6 +861,11 @@ class AppL10nId extends AppL10n {
   String get historyOutstanding => 'Piutang outstanding';
 
   @override
+  String historyOutstandingCarouselPage(int current, int total) {
+    return '$current dari $total';
+  }
+
+  @override
   String get historyEmptyMessage =>
       'Belum ada bill tersimpan.\nMulai scan struk dari tab Scan.';
 
@@ -985,8 +990,8 @@ class AppL10nId extends AppL10n {
   String get monthlyInsightTitle => 'Insight bulanan';
 
   @override
-  String monthlyInsightMonth(String month) {
-    return 'Pengeluaran $month';
+  String monthlyInsightMonth(String month, int year) {
+    return 'Pengeluaran $month $year';
   }
 
   @override
@@ -1000,7 +1005,13 @@ class AppL10nId extends AppL10n {
       'Lihat total bulanan, tren, piutang outstanding, dan merchant terbesar dengan Plus.';
 
   @override
-  String get monthlyInsightTotal => 'Bulan ini';
+  String get monthlyInsightPreviousMonth => 'Bulan sebelumnya';
+
+  @override
+  String get monthlyInsightNextMonth => 'Bulan berikutnya';
+
+  @override
+  String get monthlyInsightTotal => 'Total';
 
   @override
   String get monthlyInsightAverage => 'Rata-rata bill';

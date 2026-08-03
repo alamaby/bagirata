@@ -13,7 +13,6 @@ import '../../../domain/entities/history_summary.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
 import '../../insights/providers/monthly_spending_insight_provider.dart';
 import 'history_filter_notifier.dart';
-import 'history_filter_state.dart';
 
 part 'history_list_notifier.freezed.dart';
 part 'history_list_notifier.g.dart';
@@ -40,6 +39,11 @@ class HistoryListNotifier extends _$HistoryListNotifier {
   /// normalization sees the same currency list as before the filter change.
   HistorySummary? _lastSummary;
 
+  /// Monotonically increasing generation for first-page loads (initial load,
+  /// filter change, and manual refresh). Responses whose captured id no longer
+  /// matches are stale and must not overwrite newer state.
+  int _firstPageRequestId = 0;
+
   @override
   HistoryListState build() {
     ref.watch(historyFilterProvider);
@@ -53,43 +57,65 @@ class HistoryListNotifier extends _$HistoryListNotifier {
   }
 
   Future<void> _loadFirstPage() async {
+    final requestId = ++_firstPageRequestId;
     state = state.copyWith(
       isLoadingInitial: true,
       initialFailure: null,
       loadMoreFailure: null,
     );
-    final success = await _fetchPage(cursor: null, append: false);
-    if (success) {
-      state = state.copyWith(isLoadingInitial: false);
-    } else {
-      state = state.copyWith(
-        isLoadingInitial: false,
-        initialFailure: Failure.unknown('Initial load failed', null),
-      );
-    }
+    final success = await _fetchPage(
+      cursor: null,
+      append: false,
+      requestId: requestId,
+    );
+    if (requestId != _firstPageRequestId) return;
+    state = state.copyWith(
+      isLoadingInitial: false,
+      initialFailure: success
+          ? null
+          : const Failure.unknown('Initial load failed', null),
+    );
   }
 
   Future<void> refresh() async {
+    final requestId = ++_firstPageRequestId;
     state = state.copyWith(
       isLoadingInitial: true,
       initialFailure: null,
       loadMoreFailure: null,
     );
-    await _fetchPage(cursor: null, append: false);
+    final success = await _fetchPage(
+      cursor: null,
+      append: false,
+      requestId: requestId,
+    );
+    if (requestId != _firstPageRequestId) return;
     state = state.copyWith(isLoadingInitial: false);
+    if (success) {
+      ref.invalidate(monthlySpendingInsightProvider);
+    }
   }
 
   Future<void> loadMore() async {
-    if (state.isLoadingMore || !state.hasMore || state.nextCursor == null) {
+    if (state.isLoadingMore ||
+        state.isLoadingInitial ||
+        !state.hasMore ||
+        state.nextCursor == null) {
       return;
     }
+    final generation = _firstPageRequestId;
     state = state.copyWith(isLoadingMore: true, loadMoreFailure: null);
-    final success = await _fetchPage(cursor: state.nextCursor!, append: true);
+    final success = await _fetchPage(
+      cursor: state.nextCursor!,
+      append: true,
+      requestId: generation,
+    );
+    if (generation != _firstPageRequestId) return;
     state = state.copyWith(
       isLoadingMore: false,
       loadMoreFailure: success
           ? null
-          : Failure.unknown('Load more failed', null),
+          : const Failure.unknown('Load more failed', null),
     );
   }
 
@@ -111,7 +137,7 @@ class HistoryListNotifier extends _$HistoryListNotifier {
     return true;
   }
 
-  Future<void> _updateSummary() async {
+  Future<void> _updateSummary({int? requestId}) async {
     final creditStatusAsync = ref.read(ocrCreditStatusProvider);
     final creditStatus = switch (creditStatusAsync) {
       AsyncData(:final value) => value,
@@ -129,6 +155,7 @@ class HistoryListNotifier extends _$HistoryListNotifier {
 
     final repo = ref.read(billRepositoryProvider);
     final result = await repo.getHistorySummary(createdAfter: createdAfter);
+    if (requestId != null && requestId != _firstPageRequestId) return;
     if (result is Success<HistorySummary>) {
       _lastSummary = result.data;
       state = state.copyWith(summary: result.data);
@@ -138,6 +165,7 @@ class HistoryListNotifier extends _$HistoryListNotifier {
   Future<bool> _fetchPage({
     required HistoryCursor? cursor,
     required bool append,
+    int? requestId,
   }) async {
     final filter = ref.read(historyFilterProvider);
     final creditStatusAsync = ref.read(ocrCreditStatusProvider);
@@ -182,13 +210,16 @@ class HistoryListNotifier extends _$HistoryListNotifier {
     );
 
     if (result is ResultFailure) return false;
+    if (requestId != null && requestId != _firstPageRequestId) return true;
 
     final data = (result as Success<HistoryBillPage>).data;
-    final existingIds = state.items.map((b) => b.id).toSet();
+    final existingIds = append
+        ? state.items.map((b) => b.id).toSet()
+        : const <String>{};
     final newItems = data.bills
         .where((b) => !existingIds.contains(b.id))
         .toList();
-    final updatedItems = append ? [...state.items, ...newItems] : newItems;
+    final updatedItems = append ? [...state.items, ...newItems] : data.bills;
     state = state.copyWith(
       items: updatedItems,
       nextCursor: data.nextCursor,
@@ -196,7 +227,7 @@ class HistoryListNotifier extends _$HistoryListNotifier {
     );
 
     if (!append) {
-      await _updateSummary();
+      await _updateSummary(requestId: requestId);
     }
 
     return true;

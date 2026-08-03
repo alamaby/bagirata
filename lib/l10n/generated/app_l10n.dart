@@ -1601,6 +1601,12 @@ abstract class AppL10n {
   /// **'Piutang outstanding'**
   String get historyOutstanding;
 
+  /// No description provided for @historyOutstandingCarouselPage.
+  ///
+  /// In id, this message translates to:
+  /// **'{current} dari {total}'**
+  String historyOutstandingCarouselPage(int current, int total);
+
   /// No description provided for @historyEmptyMessage.
   ///
   /// In id, this message translates to:
@@ -1820,8 +1826,8 @@ abstract class AppL10n {
   /// No description provided for @monthlyInsightMonth.
   ///
   /// In id, this message translates to:
-  /// **'Pengeluaran {month}'**
-  String monthlyInsightMonth(String month);
+  /// **'Pengeluaran {month} {year}'**
+  String monthlyInsightMonth(String month, int year);
 
   /// No description provided for @monthlyInsightLoading.
   ///
@@ -1841,10 +1847,22 @@ abstract class AppL10n {
   /// **'Lihat total bulanan, tren, piutang outstanding, dan merchant terbesar dengan Plus.'**
   String get monthlyInsightLockedSubtitle;
 
+  /// No description provided for @monthlyInsightPreviousMonth.
+  ///
+  /// In id, this message translates to:
+  /// **'Bulan sebelumnya'**
+  String get monthlyInsightPreviousMonth;
+
+  /// No description provided for @monthlyInsightNextMonth.
+  ///
+  /// In id, this message translates to:
+  /// **'Bulan berikutnya'**
+  String get monthlyInsightNextMonth;
+
   /// No description provided for @monthlyInsightTotal.
   ///
   /// In id, this message translates to:
-  /// **'Bulan ini'**
+  /// **'Total'**
   String get monthlyInsightTotal;
 
   /// No description provided for @monthlyInsightAverage.

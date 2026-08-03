@@ -862,6 +862,11 @@ class AppL10nEn extends AppL10n {
   String get historyOutstanding => 'Outstanding';
 
   @override
+  String historyOutstandingCarouselPage(int current, int total) {
+    return '$current of $total';
+  }
+
+  @override
   String get historyEmptyMessage =>
       'No saved bills yet.\nStart scanning a receipt from the Scan tab.';
 
@@ -985,8 +990,8 @@ class AppL10nEn extends AppL10n {
   String get monthlyInsightTitle => 'Monthly insight';
 
   @override
-  String monthlyInsightMonth(String month) {
-    return '$month spending';
+  String monthlyInsightMonth(String month, int year) {
+    return 'Spending in $month $year';
   }
 
   @override
@@ -1000,7 +1005,13 @@ class AppL10nEn extends AppL10n {
       'See monthly totals, trends, outstanding amount, and top merchants with Plus.';
 
   @override
-  String get monthlyInsightTotal => 'This month';
+  String get monthlyInsightPreviousMonth => 'Previous month';
+
+  @override
+  String get monthlyInsightNextMonth => 'Next month';
+
+  @override
+  String get monthlyInsightTotal => 'Total';
 
   @override
   String get monthlyInsightAverage => 'Average bill';

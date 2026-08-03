@@ -355,6 +355,13 @@
   "historyLoadingMessage": "Loading history…",
   "historyTotalBills": "Total bills",
   "historyOutstanding": "Outstanding",
+  "historyOutstandingCarouselPage": "{current} of {total}",
+  "@historyOutstandingCarouselPage": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
   "historyEmptyMessage": "No saved bills yet.\nStart scanning a receipt from the Scan tab.",
   "historyWindowFree": "Free history",
   "historyWindowPlus": "Plus history",
@@ -426,14 +433,19 @@
   "historyStatusSettled": "Paid",
   "applyAction": "Apply",
   "monthlyInsightTitle": "Monthly insight",
-  "monthlyInsightMonth": "{month} spending",
+  "monthlyInsightMonth": "Spending in {month} {year}",
   "@monthlyInsightMonth": {
-    "placeholders": { "month": { "type": "String" } }
+    "placeholders": {
+      "month": { "type": "String" },
+      "year": { "type": "int" }
+    }
   },
   "monthlyInsightLoading": "Loading monthly insight...",
   "monthlyInsightError": "Could not load monthly insight.",
   "monthlyInsightLockedSubtitle": "See monthly totals, trends, outstanding amount, and top merchants with Plus.",
-  "monthlyInsightTotal": "This month",
+  "monthlyInsightPreviousMonth": "Previous month",
+  "monthlyInsightNextMonth": "Next month",
+  "monthlyInsightTotal": "Total",
   "monthlyInsightAverage": "Average bill",
   "monthlyInsightBills": "Bills",
   "monthlyInsightOutstanding": "Outstanding",

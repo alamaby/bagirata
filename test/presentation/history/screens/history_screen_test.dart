@@ -1,5 +1,6 @@
 import 'package:bagistruk/domain/entities/bill_payment_status.dart';
 import 'package:bagistruk/domain/entities/history_summary.dart';
+import 'package:bagistruk/domain/entities/monthly_spending_insight.dart';
 import 'package:bagistruk/domain/entities/ocr_credit_status.dart';
 import 'package:bagistruk/l10n/generated/app_l10n.dart';
 import 'package:bagistruk/presentation/credits/providers/ocr_credit_status_provider.dart';
@@ -14,6 +15,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _emptyHistoryState = HistoryListState(isLoadingInitial: false);
@@ -34,7 +36,8 @@ final _nonEmptyHistoryState = HistoryListState(
 );
 
 void main() {
-  setUp(() {
+  setUp(() async {
+    await initializeDateFormatting();
     SharedPreferences.setMockInitialValues({});
     dotenv.testLoad(
       mergeWith: {
@@ -62,9 +65,7 @@ void main() {
             AsyncValue.data(creditStatus),
           ),
           currencyPrefProvider.overrideWithValue('IDR'),
-          monthlySpendingInsightProvider.overrideWithValue(
-            AsyncValue.data(null),
-          ),
+          monthlySpendingInsightProvider.overrideWith((ref, query) async => null),
         ],
         child: MaterialApp(
           locale: locale,
@@ -232,9 +233,7 @@ void main() {
             AsyncValue.data(creditStatus),
           ),
           currencyPrefProvider.overrideWithValue('USD'),
-          monthlySpendingInsightProvider.overrideWithValue(
-            AsyncValue.data(null),
-          ),
+          monthlySpendingInsightProvider.overrideWith((ref, query) async => null),
         ],
         child: MaterialApp(
           locale: const Locale('en'),
@@ -398,6 +397,210 @@ void main() {
       final normalized = normalizeHistoryFilter(filter, currencies);
       expect(normalized.paymentStatus, BillPaymentStatus.unpaid);
       expect(normalized.currencyCode, 'IDR');
+    });
+  });
+
+  group('HistoryScreen summary carousel', () {
+    Widget buildAppWithInsight({
+      required HistoryListState listState,
+      required MonthlySpendingInsight? insight,
+    }) {
+      return ProviderScope(
+        overrides: [
+          historyListProvider.overrideWithValue(listState),
+          ocrCreditStatusProvider.overrideWithValue(
+            const AsyncValue.data(
+              OcrCreditStatus(
+                planCode: 'plus',
+                balance: 10,
+                monthlyAllowance: 50,
+                adsEnabled: false,
+                plusFeaturesEnabled: true,
+              ),
+            ),
+          ),
+          currencyPrefProvider.overrideWithValue('IDR'),
+          monthlySpendingInsightProvider.overrideWith(
+            (ref, query) async => insight,
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('id'),
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+          home: ScreenUtilInit(
+            designSize: const Size(393, 852),
+            child: const HistoryScreen(),
+          ),
+        ),
+      );
+    }
+
+    const multiSummary = HistorySummary(
+      totalBillCount: 3,
+      availableCurrencies: ['IDR', 'USD'],
+      outstanding: [
+        OutstandingByCurrency(currency: 'IDR', amount: 80001),
+        OutstandingByCurrency(currency: 'USD', amount: 156000),
+      ],
+    );
+
+    final multiState = HistoryListState(
+      isLoadingInitial: false,
+      summary: multiSummary,
+    );
+
+    testWidgets('shows one outstanding currency per page and swipes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildAppWithInsight(listState: multiState, insight: null),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.textContaining('80.001'), findsOneWidget);
+      expect(find.byType(PageView), findsOneWidget);
+
+      await tester.drag(find.byType(PageView), const Offset(-300, 0));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('156,000'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('auto-rotates between currencies', (tester) async {
+      await tester.pumpWidget(
+        buildAppWithInsight(listState: multiState, insight: null),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.textContaining('80.001'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 350));
+
+      expect(find.textContaining('156,000'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('single currency renders without a carousel', (tester) async {
+      final state = HistoryListState(
+        isLoadingInitial: false,
+        summary: const HistorySummary(
+          totalBillCount: 3,
+          availableCurrencies: ['IDR'],
+          outstanding: [
+            OutstandingByCurrency(currency: 'IDR', amount: 80001),
+          ],
+        ),
+      );
+      await tester.pumpWidget(
+        buildAppWithInsight(listState: state, insight: null),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.textContaining('80.001'), findsOneWidget);
+      expect(find.byType(PageView), findsNothing);
+
+      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(find.textContaining('80.001'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('empty outstanding shows zero without a carousel', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildAppWithInsight(listState: _nonEmptyHistoryState, insight: null),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.textContaining('Rp'), findsAtLeastNWidgets(1));
+      expect(find.byType(PageView), findsNothing);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  });
+
+  group('HistoryScreen monthly insight controls', () {
+    final plusStatus = OcrCreditStatus(
+      planCode: 'plus',
+      balance: 10,
+      monthlyAllowance: 50,
+      adsEnabled: false,
+      plusFeaturesEnabled: true,
+    );
+
+    final insight = MonthlySpendingInsight(
+      planCode: 'plus',
+      isPlus: true,
+      monthStart: DateTime(2026, 8),
+      totalAmount: 99914,
+      billCount: 2,
+      averageBillAmount: 49957,
+      previousMonthTotal: 0,
+      monthOverMonthPercent: null,
+      outstandingAmount: 80001,
+      topMerchants: const [],
+      monthlyTrend: const [],
+    );
+
+    Widget buildApp(MonthlySpendingInsight data) {
+      return ProviderScope(
+        overrides: [
+          historyListProvider.overrideWithValue(_nonEmptyHistoryState),
+          ocrCreditStatusProvider.overrideWithValue(AsyncValue.data(plusStatus)),
+          currencyPrefProvider.overrideWithValue('IDR'),
+          monthlySpendingInsightProvider.overrideWith(
+            (ref, query) async => data,
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('id'),
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
+          home: ScreenUtilInit(
+            designSize: const Size(393, 852),
+            child: const HistoryScreen(),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('previous month navigates; next is disabled at current month', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildApp(insight));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Pengeluaran Agustus 2026'), findsOneWidget);
+
+      final nextButton = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.chevron_right),
+      );
+      expect(nextButton.onPressed, isNull);
+
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.text('Pengeluaran Juli 2026'), findsOneWidget);
+
+      final nextAfterBack = tester.widget<IconButton>(
+        find.widgetWithIcon(IconButton, Icons.chevron_right),
+      );
+      expect(nextAfterBack.onPressed, isNotNull);
+
+      await tester.pumpWidget(const SizedBox.shrink());
     });
   });
 }
