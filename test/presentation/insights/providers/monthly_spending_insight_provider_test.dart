@@ -103,6 +103,13 @@ class _FakeProfileRepository implements IProfileRepository {
 
   @override
   Future<Result<void>> touchLastActive() async => const Result.success(null);
+
+  @override
+  Future<Result<void>> updateOnboardingPreferences({
+    required String currencyCode,
+    required String languageCode,
+  }) async =>
+      const Result.success(null);
 }
 
 const _plusStatus = OcrCreditStatus(

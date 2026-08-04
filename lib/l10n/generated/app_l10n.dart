@@ -3023,6 +3023,42 @@ abstract class AppL10n {
   /// **'Lewati'**
   String get onboardingSkip;
 
+  /// No description provided for @onboardingPreferencesTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Atur preferensi'**
+  String get onboardingPreferencesTitle;
+
+  /// No description provided for @onboardingPreferencesBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Pilih bahasa dan mata uang default untuk aplikasi.'**
+  String get onboardingPreferencesBody;
+
+  /// No description provided for @onboardingPreferencesLanguage.
+  ///
+  /// In id, this message translates to:
+  /// **'Bahasa aplikasi'**
+  String get onboardingPreferencesLanguage;
+
+  /// No description provided for @onboardingPreferencesCurrency.
+  ///
+  /// In id, this message translates to:
+  /// **'Mata uang default'**
+  String get onboardingPreferencesCurrency;
+
+  /// No description provided for @onboardingPreferencesChangeLater.
+  ///
+  /// In id, this message translates to:
+  /// **'Keduanya bisa diubah nanti di Pengaturan.'**
+  String get onboardingPreferencesChangeLater;
+
+  /// No description provided for @onboardingPreferencesSaveError.
+  ///
+  /// In id, this message translates to:
+  /// **'Preferensi gagal disimpan. Coba lagi.'**
+  String get onboardingPreferencesSaveError;
+
   /// No description provided for @onboardingTitle1.
   ///
   /// In id, this message translates to:

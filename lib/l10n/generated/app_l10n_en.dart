@@ -1683,6 +1683,27 @@ class AppL10nEn extends AppL10n {
   String get onboardingSkip => 'Skip';
 
   @override
+  String get onboardingPreferencesTitle => 'Set your preferences';
+
+  @override
+  String get onboardingPreferencesBody =>
+      'Choose your default app language and currency.';
+
+  @override
+  String get onboardingPreferencesLanguage => 'App language';
+
+  @override
+  String get onboardingPreferencesCurrency => 'Default currency';
+
+  @override
+  String get onboardingPreferencesChangeLater =>
+      'You can change both later in Settings.';
+
+  @override
+  String get onboardingPreferencesSaveError =>
+      'Could not save preferences. Please try again.';
+
+  @override
   String get onboardingTitle1 => 'Scan receipt';
 
   @override

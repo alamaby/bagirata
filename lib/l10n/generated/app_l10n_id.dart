@@ -1682,6 +1682,27 @@ class AppL10nId extends AppL10n {
   String get onboardingSkip => 'Lewati';
 
   @override
+  String get onboardingPreferencesTitle => 'Atur preferensi';
+
+  @override
+  String get onboardingPreferencesBody =>
+      'Pilih bahasa dan mata uang default untuk aplikasi.';
+
+  @override
+  String get onboardingPreferencesLanguage => 'Bahasa aplikasi';
+
+  @override
+  String get onboardingPreferencesCurrency => 'Mata uang default';
+
+  @override
+  String get onboardingPreferencesChangeLater =>
+      'Keduanya bisa diubah nanti di Pengaturan.';
+
+  @override
+  String get onboardingPreferencesSaveError =>
+      'Preferensi gagal disimpan. Coba lagi.';
+
+  @override
   String get onboardingTitle1 => 'Scan struk';
 
   @override

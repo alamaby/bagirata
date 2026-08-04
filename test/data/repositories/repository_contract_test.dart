@@ -320,6 +320,25 @@ void main() {
         expect(dataSource.updateFieldsCalls.length, 2);
       },
     );
+
+    test('updateOnboardingPreferences writes both fields', () async {
+      // Arrange
+      const currencyCode = 'USD';
+      const languageCode = 'en';
+
+      // Act
+      final result = await repository.updateOnboardingPreferences(
+        currencyCode: currencyCode,
+        languageCode: languageCode,
+      );
+
+      // Assert
+      expect(result.isSuccess, isTrue);
+      expect(dataSource.updateFieldsCalls.length, 1);
+      final call = dataSource.updateFieldsCalls.first;
+      expect(call['default_currency'], currencyCode);
+      expect(call['language_pref'], languageCode);
+    });
   });
 
   group('AuthRepositoryImpl', () {
@@ -448,11 +467,11 @@ void main() {
       expect(calls, 2);
     });
 
-    test('invalidate clears cache and forces refetch', () async {
-      var version = 1;
-      dataSource.readAllCallback = () async => [
-        {'key': 'legal.terms_version', 'value': version++},
-      ];
+test('invalidate clears cache and forces refetch', () async {
+       var version = 1;
+       dataSource.readAllCallback = () async => [
+         {'key': 'legal.terms_version', 'value': version++},
+       ];
 
       final first = await repository.getConfig();
       repository.invalidate();
@@ -661,4 +680,15 @@ class _FakeProfileRemoteDataSource implements ProfileRemoteDataSource {
 
   @override
   Future<void> touchLastActive() async {}
+
+  @override
+  Future<void> updateOnboardingPreferences({
+    required String currencyCode,
+    required String languageCode,
+  }) async {
+    updateFields({
+      'default_currency': currencyCode,
+      'language_pref': languageCode,
+    });
+  }
 }
