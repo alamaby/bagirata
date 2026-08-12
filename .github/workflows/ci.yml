@@ -28,7 +28,7 @@ jobs:
           # Pin the SDK so CI generates byte-identical .g.dart output to the
           # committed files (Dart 3.11.5). Newer stable SDKs (Dart 3.12+)
           # emit different codegen output and break the freshness check.
-          version: 3.41.9
+          flutter-version: 3.41.9
           cache: true
 
       - name: Create CI environment file
