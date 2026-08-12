@@ -111,7 +111,7 @@ class DeepLinkHandler {
 class _BootstrapOnlyRecovery implements PasswordRecoverySession {
   PasswordRecoverySession? _inner;
 
-  _BootstrapOnlyRecovery([this._inner]);
+  _BootstrapOnlyRecovery();
 
   Future<PasswordRecoverySession> _delegate() async {
     return _inner ??= await PasswordRecoverySession.create();

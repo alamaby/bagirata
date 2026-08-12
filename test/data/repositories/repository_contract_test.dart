@@ -680,15 +680,4 @@ class _FakeProfileRemoteDataSource implements ProfileRemoteDataSource {
 
   @override
   Future<void> touchLastActive() async {}
-
-  @override
-  Future<void> updateOnboardingPreferences({
-    required String currencyCode,
-    required String languageCode,
-  }) async {
-    updateFields({
-      'default_currency': currencyCode,
-      'language_pref': languageCode,
-    });
-  }
 }

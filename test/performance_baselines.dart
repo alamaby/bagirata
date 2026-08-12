@@ -14,10 +14,12 @@ import 'package:bagistruk/core/format/currency_formatter.dart';
 import 'package:bagistruk/core/format/device_locale_defaults.dart';
 import 'package:bagistruk/core/format/phone_formatter.dart';
 import 'package:bagistruk/domain/entities/transfer_bank_info.dart';
+import 'package:bagistruk/l10n/generated/app_l10n_en.dart';
 import 'package:bagistruk/presentation/auth/widgets/auth_validators.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  final l10n = AppL10nEn();
   group('Performance baselines', () {
     test('PhoneFormatter.normalize throughput', () {
       final sw = Stopwatch()..start();
@@ -71,8 +73,8 @@ void main() {
     test('validateEmail + validatePassword throughput', () {
       final sw = Stopwatch()..start();
       for (var i = 0; i < 10000; i++) {
-        validateEmail('user$i@example.com');
-        validatePassword('password$i');
+        validateEmail('user$i@example.com', l10n);
+        validatePassword('password$i', l10n);
       }
       sw.stop();
       print('validators_x_10k: ${sw.elapsedMilliseconds} ms');

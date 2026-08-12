@@ -7,7 +7,6 @@ import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
 import '../../../l10n/generated/app_l10n.dart';
-import '../providers/auth_providers.dart';
 import '../utils/auth_messages.dart';
 import '../widgets/auth_text_field.dart';
 

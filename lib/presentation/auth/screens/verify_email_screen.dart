@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
-import '../../../data/services/pending_registration_preferences.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../utils/auth_messages.dart';
 

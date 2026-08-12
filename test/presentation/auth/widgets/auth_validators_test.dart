@@ -1,4 +1,3 @@
-import 'package:bagistruk/l10n/generated/app_l10n.dart';
 import 'package:bagistruk/l10n/generated/app_l10n_en.dart';
 import 'package:bagistruk/presentation/auth/widgets/auth_validators.dart';
 import 'package:flutter_test/flutter_test.dart';

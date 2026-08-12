@@ -412,7 +412,7 @@ ListTile(
     // language + currency are saved or fail together in a single UPDATE.
     setState(() => _submitting = true);
     final currency = (_selectedCurrency ?? ref.read(currencyPrefProvider))!;
-    final language = (_selectedLanguage ?? ref.read(localePrefProvider).languageCode)!;
+    final language = _selectedLanguage ?? ref.read(localePrefProvider).languageCode;
     final prefs = await ref
         .read(profileProvider.notifier)
         .updateOnboardingPreferences(
