@@ -483,6 +483,8 @@ testWidgets('currency tile is present and tappable',
         of: find.text('Mata uang default').last,
         matching: find.byType(ListTile),
       );
+      await tester.ensureVisible(currencyTileFinder);
+      await tester.pumpAndSettle();
       await tester.tap(currencyTileFinder);
       await tester.pumpAndSettle();
 

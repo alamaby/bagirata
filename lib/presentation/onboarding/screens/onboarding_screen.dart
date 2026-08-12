@@ -334,52 +334,62 @@ ListTile(
 
   Widget _page(String title, String body, String imageAsset) {
     final scheme = Theme.of(context).colorScheme;
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(height: 24.h),
-          Semantics(
-            image: true,
-            label: title,
-            child: Image.asset(
-              imageAsset,
-              height: 250.h,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => Icon(
-                Icons.image_not_supported_outlined,
-                size: 100.r,
-                color: scheme.primary,
-              ),
+    // ConstrainedBox(minHeight) makes the Column fill the viewport so
+    // MainAxisAlignment.center actually centers the content vertically;
+    // scrolling still kicks in on short screens.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 24.h),
+                Semantics(
+                  image: true,
+                  label: title,
+                  child: Image.asset(
+                    imageAsset,
+                    height: 250.h,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => Icon(
+                      Icons.image_not_supported_outlined,
+                      size: 100.r,
+                      color: scheme.primary,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40.w),
+                  child: Text(
+                    body,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 24.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
-                color: scheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          SizedBox(height: 16.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40.w),
-            child: Text(
-              body,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
