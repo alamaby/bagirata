@@ -3,34 +3,67 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../utils/app_logger.dart';
 import 'ad_config.dart';
 
 class AdService {
   const AdService._();
 
   static bool _initialized = false;
+  static final Completer<void> _readyCompleter = Completer<void>();
+
+  /// Completes once the UMP consent request and
+  /// `MobileAds.instance.initialize()` have finished — or immediately when
+  /// ads are disabled. Consumers must await this (with their own timeout)
+  /// before issuing the first ad load of the process: loads issued before
+  /// the SDK is ready can be dropped silently by the AdMob SDK (no
+  /// `onAdLoaded`, no `onAdFailedToLoad`), which is why the cold-start scan
+  /// banner never loaded for existing users (see
+  /// `plans/2026-09-03-scan-banner-ad-rca-fix.md`).
+  static Future<void> get ready => _readyCompleter.future;
+
+  /// Whether [ready] has completed.
+  static bool get isReady => _readyCompleter.isCompleted;
 
   static Future<void> initialize() async {
-    if (_initialized || !AdConfig.adsEnabled) return;
-    _initialized = true;
-
-    // In debug builds, register the test device so the AdMob SDK serves
-    // test creatives. Note: in google_mobile_ads v8 there is no public
-    // API to force the EEA geography — the consent form will only show
-    // on devices whose actual region is regulated. No-op in release.
-    if (kDebugMode) {
-      await MobileAds.instance.updateRequestConfiguration(
-        // Empty list lets AdMob auto-detect debug devices via the
-        // `adb shell setprop debug.firebase.analytics.app` flag or by
-        // the device's build flavor. Supplying a placeholder string
-        // like `'TEST-DEVICE-HASH'` makes the SDK try to look it up,
-        // fail, and log spurious warnings at every ad request.
-        RequestConfiguration(testDeviceIds: const <String>[]),
-      );
+    if (_initialized || _readyCompleter.isCompleted) return;
+    if (!AdConfig.adsEnabled) {
+      _completeReady();
+      return;
     }
+    _initialized = true;
+    final stopwatch = Stopwatch()..start();
+    try {
+      // In debug builds, register the test device so the AdMob SDK serves
+      // test creatives. Note: in google_mobile_ads v8 there is no public
+      // API to force the EEA geography — the consent form will only show
+      // on devices whose actual region is regulated. No-op in release.
+      if (kDebugMode) {
+        await MobileAds.instance.updateRequestConfiguration(
+          // Empty list lets AdMob auto-detect debug devices via the
+          // `adb shell setprop debug.firebase.analytics.app` flag or by
+          // the device's build flavor. Supplying a placeholder string
+          // like `'TEST-DEVICE-HASH'` makes the SDK try to look it up,
+          // fail, and log spurious warnings at every ad request.
+          RequestConfiguration(testDeviceIds: const <String>[]),
+        );
+      }
 
-    await _requestConsent();
-    await MobileAds.instance.initialize();
+      await _requestConsent();
+      await MobileAds.instance.initialize();
+    } catch (e, st) {
+      // Best effort: a failed init must never deadlock ad consumers. The
+      // GMA SDK can still self-initialize on the first ad request.
+      AppLogger.warn('AdService init failed; ads proceed best-effort', e, st);
+    } finally {
+      stopwatch.stop();
+      AppLogger.log('AdService ready in ${stopwatch.elapsedMilliseconds}ms');
+      _completeReady();
+    }
+  }
+
+  static void _completeReady() {
+    if (!_readyCompleter.isCompleted) _readyCompleter.complete();
   }
 
   static Future<void> _requestConsent() async {
