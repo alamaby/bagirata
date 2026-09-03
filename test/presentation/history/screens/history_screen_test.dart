@@ -582,25 +582,62 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Pengeluaran Agustus 2026'), findsOneWidget);
+      // The screen initializes `_selectedInsightMonth` from `DateTime.now()`.
+      // Assert the header matches that dynamic month (immune to calendar
+      // rollover) plus navigation state, rather than a hard-coded label.
+      final now = DateTime(DateTime.now().year, DateTime.now().month);
+      expect(find.text('Pengeluaran ${formatMonthLabel(now)}'), findsOneWidget);
 
       final nextButton = tester.widget<IconButton>(
         find.widgetWithIcon(IconButton, Icons.chevron_right),
       );
       expect(nextButton.onPressed, isNull);
 
+      final beforeTexts = find
+          .byType(Text)
+          .evaluate()
+          .map((e) => (e.widget as Text).data)
+          .toSet();
+
       await tester.tap(find.byIcon(Icons.chevron_left));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('Pengeluaran Juli 2026'), findsOneWidget);
+      final prevMonth = DateTime(now.year, now.month - 1, 1);
+      expect(find.text('Pengeluaran ${formatMonthLabel(prevMonth)}'),
+          findsOneWidget);
+
+      final afterTexts = find
+          .byType(Text)
+          .evaluate()
+          .map((e) => (e.widget as Text).data)
+          .toSet();
+      expect(beforeTexts, isNot(equals(afterTexts)));
 
       final nextAfterBack = tester.widget<IconButton>(
         find.widgetWithIcon(IconButton, Icons.chevron_right),
       );
       expect(nextAfterBack.onPressed, isNotNull);
 
-      await tester.pumpWidget(const SizedBox.shrink());
-    });
+       await tester.pumpWidget(const SizedBox.shrink());
+     });
   });
+}
+
+String formatMonthLabel(DateTime m) {
+  const idMonths = <int, String>{
+    1: 'Januari',
+    2: 'Februari',
+    3: 'Maret',
+    4: 'April',
+    5: 'Mei',
+    6: 'Juni',
+    7: 'Juli',
+    8: 'Agustus',
+    9: 'September',
+    10: 'Oktober',
+    11: 'November',
+    12: 'Desember',
+  };
+  return '${idMonths[m.month]} ${m.year}';
 }
