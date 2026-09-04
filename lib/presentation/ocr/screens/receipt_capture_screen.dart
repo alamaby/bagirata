@@ -18,6 +18,7 @@ import '../../settings/providers/profile_notifier.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../providers/ocr_notifier.dart';
 import '../providers/scan_draft_notifier.dart';
+import '../providers/shared_auto_scan_provider.dart';
 import '../utils/ocr_messages.dart';
 import '../widgets/receipt_preview_component.dart';
 
@@ -39,6 +40,44 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
   // Tanpa ini ada delay terlihat: bytes loading + downscale (~ratusan ms)
   // berjalan sebelum OcrNotifier sempat set state ke processing.
   bool _starting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Share-to-scan: a share intent set the pending flag before routing
+    // here. Run after first paint — the router gates (legal / onboarding /
+    // welcome) already resolved since this screen is actually visible.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeAutoScan());
+  }
+
+  /// Fires the one-shot auto-scan requested by an Android share intent.
+  /// No-op when there is no pending request, the draft is empty, or a
+  /// scan is already running.
+  Future<void> _maybeAutoScan() async {
+    if (!mounted) return;
+    final request = ref.read(sharedAutoScanProvider);
+    if (!request.pending) return;
+    ref.read(sharedAutoScanProvider.notifier).consume();
+    if (!mounted) return;
+    if (ref.read(scanDraftProvider).images.isEmpty) return;
+    final state = ref.read(ocrProvider);
+    if (_starting || state is OcrProcessing) {
+      // Rare: user tapped Scan manually in the same frame the share
+      // landed. Their manual scan wins; drop the auto request.
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(
+            AppL10n.of(context).shareImagesAdded(request.imageCount),
+          ),
+        ),
+      );
+    await _process();
+  }
 
   Future<void> _addFromGallery() async {
     await ref.read(scanDraftProvider.notifier).pickFromGallery();

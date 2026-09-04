@@ -1,7 +1,7 @@
 name: bagistruk
 description: "BagiStruk — split-bill app with multi-photo OCR via Supabase Edge Functions."
 publish_to: 'none'
-version: 0.28.4+72
+version: 0.29.0+73
 
 environment:
   sdk: ^3.11.5
@@ -38,6 +38,10 @@ dependencies:
   # OCR pipeline support
   image_picker: ^1.1.2
   image: ^4.3.0
+  # Android share target ("Scan receipt" activity-alias): receives images
+  # shared from other apps (SEND / SEND_MULTIPLE) into the scan draft.
+  # Wrapped in ISharedMediaService so it can be mocked / swapped later.
+  receive_sharing_intent: ^1.9.0
   # Device fingerprint signals for the anti-abuse gate. Read-only access
   # to non-PII hardware fields (Android version, SDK, brand, model,
   # hardware) — no IMEI, Android ID, serial, MAC, or advertising ID.

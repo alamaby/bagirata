@@ -62,6 +62,29 @@
                     android:path="/callback"/>
             </intent-filter>
         </activity>
+        <!-- Share target "Scan receipt": appears in the Android share sheet
+             when the user shares images. Routes SEND / SEND_MULTIPLE into
+             MainActivity (singleTop), where receive_sharing_intent picks the
+             files up. A separate activity-alias (instead of filters on the
+             activity) gives the share entry its own label without renaming
+             the launcher icon. -->
+        <activity-alias
+            android:name=".ScanReceipt"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="Scan receipt"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity-alias>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

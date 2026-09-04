@@ -30,6 +30,10 @@
   "scanCameraContinuePrompt": "Foto lagi untuk struk panjang?",
   "scanCameraTakeAnother": "Foto Lagi",
   "scanCameraDone": "Selesai",
+  "shareImagesAdded": "{count} foto dari bagikan ditambahkan. Memulai pindaian...",
+  "@shareImagesAdded": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "scanNotReceiptTitle": "Foto bukan struk",
   "scanNotReceiptHint": "Gambar yang dipilih sepertinya bukan struk. Coba foto struk yang jelas.",
   "scanPreparingSessionFailed": "Gagal siapkan sesi: {message}",

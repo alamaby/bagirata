@@ -27,6 +27,7 @@ import 'services/pending_registration_preferences.dart';
 import 'services/saved_participants_cache.dart';
 import 'services/image_picker_wrapper.dart';
 import 'services/ocr_service.dart';
+import 'services/shared_media_service.dart';
 
 part 'providers.g.dart';
 
@@ -122,6 +123,12 @@ class AppConfigNotifier extends _$AppConfigNotifier {
 
 @Riverpod(keepAlive: true)
 IImagePicker imagePicker(Ref ref) => ImagePickerAdapter(ImagePicker());
+
+/// Receives images shared from other Android apps into the scan draft.
+/// Concrete plugin is injectable for tests via
+/// `sharedMediaServiceProvider.overrideWithValue(...)`.
+@Riverpod(keepAlive: true)
+ISharedMediaService sharedMediaService(Ref ref) => SharedMediaService();
 
 @Riverpod(keepAlive: true)
 Future<HistoryPlusBannerPreferences> historyPlusBannerPreferences(Ref ref) =>

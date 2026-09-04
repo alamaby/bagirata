@@ -46,6 +46,19 @@ class ScanDraftNotifier extends _$ScanDraftNotifier {
     return shot;
   }
 
+  /// Appends images received via Android share (`SEND` / `SEND_MULTIPLE`)
+  /// to the draft. Entries whose path is already in the draft are skipped
+  /// so a cold-start initial intent followed by the same stream event does
+  /// not duplicate images. Returns the number of images actually added.
+  int addSharedFiles(List<XFile> files) {
+    if (files.isEmpty) return 0;
+    final known = state.images.map((f) => f.path).toSet();
+    final fresh = files.where((f) => known.add(f.path)).toList();
+    if (fresh.isEmpty) return 0;
+    state = ScanDraftState(images: [...state.images, ...fresh]);
+    return fresh.length;
+  }
+
   void removeAt(int index) {
     if (index < 0 || index >= state.images.length) return;
     final next = [...state.images]..removeAt(index);

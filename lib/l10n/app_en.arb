@@ -30,6 +30,10 @@
   "scanCameraContinuePrompt": "Take another photo for this long receipt?",
   "scanCameraTakeAnother": "Take another",
   "scanCameraDone": "Done",
+  "shareImagesAdded": "{count} shared photo(s) added. Starting scan...",
+  "@shareImagesAdded": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "scanNotReceiptTitle": "Not a receipt",
   "scanNotReceiptHint": "The selected image doesn't look like a receipt. Try a clear photo of a receipt.",
   "scanPreparingSessionFailed": "Could not prepare session: {message}",

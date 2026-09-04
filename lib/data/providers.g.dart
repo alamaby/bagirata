@@ -734,6 +734,65 @@ final class ImagePickerProvider
 
 String _$imagePickerHash() => r'9b74f9f7be3e39f55705d805e70af42fbabf20bc';
 
+/// Receives images shared from other Android apps into the scan draft.
+/// Concrete plugin is injectable for tests via
+/// `sharedMediaServiceProvider.overrideWithValue(...)`.
+
+@ProviderFor(sharedMediaService)
+const sharedMediaServiceProvider = SharedMediaServiceProvider._();
+
+/// Receives images shared from other Android apps into the scan draft.
+/// Concrete plugin is injectable for tests via
+/// `sharedMediaServiceProvider.overrideWithValue(...)`.
+
+final class SharedMediaServiceProvider
+    extends
+        $FunctionalProvider<
+          ISharedMediaService,
+          ISharedMediaService,
+          ISharedMediaService
+        >
+    with $Provider<ISharedMediaService> {
+  /// Receives images shared from other Android apps into the scan draft.
+  /// Concrete plugin is injectable for tests via
+  /// `sharedMediaServiceProvider.overrideWithValue(...)`.
+  const SharedMediaServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'sharedMediaServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$sharedMediaServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<ISharedMediaService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ISharedMediaService create(Ref ref) {
+    return sharedMediaService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ISharedMediaService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ISharedMediaService>(value),
+    );
+  }
+}
+
+String _$sharedMediaServiceHash() =>
+    r'848ebbf015cd34048c37d819165c270bbaf38be6';
+
 @ProviderFor(historyPlusBannerPreferences)
 const historyPlusBannerPreferencesProvider =
     HistoryPlusBannerPreferencesProvider._();

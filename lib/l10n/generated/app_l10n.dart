@@ -241,6 +241,12 @@ abstract class AppL10n {
   /// **'Selesai'**
   String get scanCameraDone;
 
+  /// No description provided for @shareImagesAdded.
+  ///
+  /// In id, this message translates to:
+  /// **'{count} foto dari bagikan ditambahkan. Memulai pindaian...'**
+  String shareImagesAdded(int count);
+
   /// No description provided for @scanNotReceiptTitle.
   ///
   /// In id, this message translates to:

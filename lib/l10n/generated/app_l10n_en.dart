@@ -88,6 +88,11 @@ class AppL10nEn extends AppL10n {
   String get scanCameraDone => 'Done';
 
   @override
+  String shareImagesAdded(int count) {
+    return '$count shared photo(s) added. Starting scan...';
+  }
+
+  @override
   String get scanNotReceiptTitle => 'Not a receipt';
 
   @override
