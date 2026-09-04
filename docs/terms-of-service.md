@@ -1,6 +1,6 @@
 # Terms of Service — BagiStruk
 
-**Effective date:** 2026-07-22
+**Effective date:** 2026-09-04
 
 These Terms explain the basic rules for using BagiStruk. This document is provided for product transparency and should be reviewed for legal compliance before publication.
 
@@ -28,7 +28,7 @@ Paid subscriptions and one-time OCR credit packs, when available, are processed 
 
 ## 4. User Content
 
-You are responsible for receipt photos, bill data, participant names, and any other content you enter or upload. Do not upload content that is illegal, abusive, harmful, or violates another person's rights.
+You are responsible for receipt photos, bill data, participant names, and any other content you enter, upload, or share from other apps. Do not upload content that is illegal, abusive, harmful, or violates another person's rights. By sharing images from another app into BagiStruk, you confirm you have the right to use those images for receipt scanning.
 
 ## 5. OCR Accuracy
 
@@ -108,7 +108,7 @@ Indonesia
 
 # Syarat dan Ketentuan — BagiStruk
 
-**Tanggal berlaku:** 2026-07-10
+**Tanggal berlaku:** 2026-09-04
 
 Syarat ini menjelaskan aturan dasar penggunaan BagiStruk. Dokumen ini disediakan untuk transparansi produk dan sebaiknya ditinjau kembali untuk kepatuhan hukum sebelum dipublikasikan.
 
@@ -136,7 +136,7 @@ Subscription berbayar dan paket credit OCR sekali beli, jika tersedia, diproses 
 
 ## 4. Konten Pengguna
 
-Anda bertanggung jawab atas foto struk, data tagihan, nama peserta, dan konten lain yang dimasukkan atau diunggah. Jangan unggah konten yang ilegal, abusif, berbahaya, atau melanggar hak orang lain.
+Anda bertanggung jawab atas foto struk, data tagihan, nama peserta, dan konten lain yang dimasukkan, diunggah, atau dibagikan dari aplikasi lain. Jangan unggah konten yang ilegal, abusif, berbahaya, atau melanggar hak orang lain. Dengan membagikan gambar dari aplikasi lain ke BagiStruk, Anda menyatakan berhak menggunakan gambar tersebut untuk pemindaian struk.
 
 ## 5. Akurasi OCR
 

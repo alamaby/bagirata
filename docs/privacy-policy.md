@@ -1,6 +1,6 @@
 # Privacy Policy — BagiStruk
 
-**Effective date:** 2026-07-22
+**Effective date:** 2026-09-04
 
 This policy explains how BagiStruk collects, uses, stores, and deletes data. This document is provided for product transparency and should be reviewed for legal compliance before publication.
 
@@ -31,27 +31,28 @@ For Indonesian users, you may lodge a complaint with the Ministry of Communicati
 - Google Sign-In data: when you sign in with Google, we receive authentication tokens from Google through Supabase Auth. We do not receive your Google password.
 - Profile preferences: display name, default currency, language preference, and theme preference.
 - App activity metadata: `last_active_at`, used to understand when an account was last active and to support inactivity cleanup.
-- Receipt photos: images you choose or capture for OCR processing.
+- Receipt photos: images you choose, capture, or share from other apps via the Android share sheet (Share → Scan receipt) for OCR processing.
 - Bill data: merchant names, receipt dates, items, quantities, prices, taxes, service charges, participants, split assignments, settlement status, deleted-bill recovery metadata, exports generated on device, and optional transfer bank information used in settlement messages.
 - **Participant contact info**: when you import a participant using the Android system Contact Picker, only the name and phone number of the single contact you explicitly select are stored on our server as part of the bill. We do not access, read, or upload your full address book. No contacts permission is required.
 - OCR credit data: plan/entitlement status, Plus trial start/end/consumption metadata, monthly credit grants, credit usage, and audit records needed to enforce scan limits and feature access.
 - Google Play Billing data when purchases are available: product IDs, purchase tokens, order IDs, subscription status/expiry, and verification responses needed to grant Plus access or OCR credit packs.
 - Support and reminder data: email address and inactivity reminder timestamps when reminders are sent.
 - Operational alert data: limited diagnostic details such as request ID, user ID, OCR provider, model, currency, hint, error status, and error message may be sent to the operator by email when OCR provider configuration, quota, or service issues need attention.
-- Basic technical data sent by app/framework/network services, such as device and request metadata needed for diagnostics and security. For anonymous anti-abuse, we may store a server-side HMAC hash derived from coarse request signals; we do not store the raw IP address or raw device fingerprint for this purpose.
+- Basic technical data sent by app/framework/network services, such as device and request metadata needed for diagnostics and security. For anonymous anti-abuse, we compute a server-side HMAC hash from coarse, non-PII request signals — Android release version, SDK level, brand, model, hardware, screen size in logical pixels, device pixel ratio, and time-zone name (falling back to IP address, user agent, client info, and accept-language when those signals are unavailable). We store only the hash; we do not store the raw IP address or raw device signals for this purpose.
 - Advertising data when ads are enabled: advertising identifiers such as the Android Advertising ID, device/ad interaction data, approximate location inferred by ad services, and consent status used by Google Mobile Ads / AdMob for ad delivery, frequency capping, fraud prevention, and measurement.
 
 ## Permissions Used
 
 - **Camera**: to capture receipt photos.
 - **Photos / media access**: to pick receipt photos from the gallery.
+- **Shared images (no permission required)**: when you share images to BagiStruk from another app (Share → Scan receipt), Android delivers those images to the app via the `SEND` / `SEND_MULTIPLE` share intent. Only the images you explicitly share are received; no broad media-read permission is needed for this flow.
 - **Contacts** (no permission required): when you tap "Import from contacts" while adding a participant, the Android system Contact Picker opens. We receive only the name and phone number of the single contact you explicitly select. We do not access, read, or store your full address book. No `READ_CONTACTS` permission is requested.
 - **Internet / network state**: to communicate with Supabase and OCR services.
 
 ## How We Use Data
 
 - To authenticate users and keep sessions active.
-- To process receipt photos and extract bill information.
+- To process receipt photos and extract bill information, including images you share from other apps via the Android share sheet.
 - To save, display, edit, split, settle, share, export, delete, and restore bills when the feature is available.
 - To preserve anonymous data when a user upgrades to a registered account.
 - To enforce OCR credit limits and feature access, including anonymous, Free, Plus, history windows, export access, deleted-bill recovery, per-bill currency override, transfer bank information, and monthly insights.
@@ -70,7 +71,7 @@ We process your personal data on the following legal bases, in line with Article
 
 - **Account data, authentication, and bill data** — to perform the contract you entered with us by creating an account (Art. 6(1)(b) GDPR / Pasal 23 UU PDP).
 - **Receipt photos and OCR processing** — with your explicit consent each time you submit a scan (Art. 6(1)(a) GDPR). Scans submitted before withdrawal of consent will have been processed.
-- **Marketing emails and promotional communications** — with your prior opt-in consent only (Art. 6(1)(a) GDPR / Pasal 23 UU PDP). You can withdraw this consent at any time from Profile & Settings, or via the unsubscribe link in any marketing email we send.
+- **Marketing emails and promotional communications** — with your prior opt-in consent only (Art. 6(1)(a) GDPR / Pasal 23 UU PDP). The opt-in and welcome marker are recorded only after you confirm your email address. You can withdraw this consent at any time from Profile & Settings, or via the unsubscribe link in any marketing email we send.
 - **Personalized advertising** — with your consent given through Google's User Messaging Platform (UMP) when required by applicable law (Art. 6(1)(a) GDPR / ePrivacy Directive). We do not personalize ads for users who do not give consent.
 - **Basic technical, security, and anti-abuse data** — on the basis of our legitimate interest in keeping the service secure and preventing abuse (Art. 6(1)(f) GDPR).
 - **Inactivity reminders and account cleanup notifications** — on the basis of our legitimate interest in keeping account records accurate (Art. 6(1)(f) GDPR).
@@ -175,7 +176,7 @@ Indonesia
 
 # Kebijakan Privasi — BagiStruk
 
-**Tanggal berlaku:** 2026-07-22
+**Tanggal berlaku:** 2026-09-04
 
 Kebijakan ini menjelaskan bagaimana BagiStruk mengumpulkan, menggunakan, menyimpan, dan menghapus data. Dokumen ini disediakan untuk transparansi produk dan sebaiknya ditinjau kembali untuk kepatuhan hukum sebelum dipublikasikan.
 
@@ -206,27 +207,28 @@ Untuk pengguna di Indonesia, Anda dapat mengajukan keluhan ke Kementerian Komuni
 - Data Google Sign-In: saat Anda login dengan Google, kami menerima token autentikasi melalui Supabase Auth. Kami tidak menerima password Google Anda.
 - Preferensi profil: nama tampilan, mata uang default, bahasa, dan tema.
 - Metadata aktivitas aplikasi: `last_active_at`, digunakan untuk mengetahui kapan akun terakhir aktif dan mendukung pembersihan akun tidak aktif.
-- Foto struk: gambar yang Anda pilih atau ambil untuk pemrosesan OCR.
+- Foto struk: gambar yang Anda pilih, ambil, atau bagikan dari aplikasi lain melalui share sheet Android (Share → Scan receipt) untuk pemrosesan OCR.
 - Data tagihan: nama merchant, tanggal struk, item, jumlah, harga, pajak, service, peserta, pembagian item, status pembayaran, metadata pemulihan bill terhapus, export yang dibuat di perangkat, dan info bank transfer opsional untuk pesan settlement.
 - **Info kontak peserta**: ketika Anda mengimpor peserta menggunakan Android system Contact Picker, hanya nama dan nomor telepon dari satu kontak yang Anda pilih secara eksplisit yang disimpan di server kami sebagai bagian dari tagihan. Kami tidak mengakses, membaca, atau mengunggah buku alamat lengkap Anda. Tidak diperlukan izin kontak.
 - Data credit OCR: status plan/entitlement, metadata mulai/akhir/pemakaian trial Plus, grant credit bulanan, penggunaan credit, dan audit yang dibutuhkan untuk menerapkan batas scan dan akses fitur.
 - Data Google Play Billing saat pembelian tersedia: product ID, purchase token, order ID, status/expiry subscription, dan respons verifikasi yang dibutuhkan untuk memberi akses Plus atau paket credit OCR.
 - Data dukungan dan reminder: alamat email dan timestamp reminder tidak aktif saat reminder dikirim.
 - Data alert operasional: detail diagnostik terbatas seperti request ID, user ID, penyedia OCR, model, currency, hint, status error, dan pesan error dapat dikirim ke operator melalui email saat masalah konfigurasi, quota, atau layanan penyedia OCR perlu ditangani.
-- Data teknis dasar dari app/framework/network service, seperti metadata perangkat dan request yang dibutuhkan untuk diagnostik dan keamanan. Untuk anti-abuse pengguna anonim, kami dapat menyimpan hash HMAC sisi server yang diturunkan dari sinyal request terbatas; kami tidak menyimpan alamat IP mentah atau fingerprint perangkat mentah untuk tujuan ini.
+- Data teknis dasar dari app/framework/network service, seperti metadata perangkat dan request yang dibutuhkan untuk diagnostik dan keamanan. Untuk anti-abuse pengguna anonim, kami menghitung hash HMAC sisi server dari sinyal request terbatas yang non-PII — versi rilis Android, level SDK, brand, model, hardware, ukuran layar dalam logical pixel, device pixel ratio, dan nama zona waktu (dengan fallback ke alamat IP, user agent, info klien, dan accept-language bila sinyal tersebut tidak tersedia). Kami hanya menyimpan hash-nya; kami tidak menyimpan alamat IP mentah atau sinyal perangkat mentah untuk tujuan ini.
 - Data iklan saat iklan diaktifkan: identifier iklan seperti Android Advertising ID, data perangkat/interaksi iklan, perkiraan lokasi yang disimpulkan layanan iklan, dan status consent yang digunakan Google Mobile Ads / AdMob untuk penayangan iklan, pembatasan frekuensi, pencegahan fraud, dan pengukuran.
 
 ## Izin Yang Digunakan
 
 - **Kamera**: untuk mengambil foto struk.
 - **Akses foto / media**: untuk memilih foto struk dari galeri.
+- **Gambar yang dibagikan (tidak perlu izin)**: ketika Anda membagikan gambar ke BagiStruk dari aplikasi lain (Share → Scan receipt), Android mengirimkan gambar tersebut ke aplikasi melalui share intent `SEND` / `SEND_MULTIPLE`. Hanya gambar yang Anda bagikan secara eksplisit yang diterima; tidak diperlukan izin baca media yang luas untuk alur ini.
 - **Kontak** (tidak perlu izin): ketika Anda memilih "Import dari kontak" saat menambahkan peserta, Android system Contact Picker akan terbuka. Kami hanya menerima nama dan nomor telepon dari satu kontak yang Anda pilih secara eksplisit. Kami tidak mengakses, membaca, atau menyimpan buku alamat lengkap Anda. Izin `READ_CONTACTS` tidak diminta.
 - **Internet / status jaringan**: untuk berkomunikasi dengan Supabase dan layanan OCR.
 
 ## Cara Kami Menggunakan Data
 
 - Mengautentikasi pengguna dan menjaga sesi tetap aktif.
-- Memproses foto struk dan mengekstrak informasi tagihan.
+- Memproses foto struk dan mengekstrak informasi tagihan, termasuk gambar yang Anda bagikan dari aplikasi lain melalui share sheet Android.
 - Menyimpan, menampilkan, mengedit, membagi, menyelesaikan, membagikan, mengekspor, menghapus, dan memulihkan tagihan saat fitur tersedia.
 - Mempertahankan data anonim saat pengguna upgrade ke akun terdaftar.
 - Menerapkan batas credit OCR dan akses fitur, termasuk batas pengguna anonim, Free, Plus, jendela History, akses export, pemulihan bill terhapus, penggantian currency per bill, info bank transfer, dan insight bulanan.
@@ -245,7 +247,7 @@ Kami memproses data pribadi Anda berdasarkan dasar hukum berikut, sesuai Pasal 6
 
 - **Data akun, autentikasi, dan data tagihan** — untuk pelaksanaan kontrak yang Anda sepakati saat membuat akun (Pasal 6(1)(b) GDPR / Pasal 23 UU PDP).
 - **Foto struk dan pemrosesan OCR** — dengan persetujuan eksplisit Anda setiap kali Anda mengirim pindaian (Pasal 6(1)(a) GDPR). Pindaian yang dikirim sebelum penarikan persetujuan tetap akan diproses.
-- **Email promosi dan komunikasi pemasaran** — hanya dengan persetujuan opt-in Anda (Pasal 6(1)(a) GDPR / Pasal 23 UU PDP). Anda dapat menarik persetujuan ini kapan saja dari Profil & Pengaturan, atau melalui link unsubscribe di email pemasaran apa pun.
+- **Email promosi dan komunikasi pemasaran** — hanya dengan persetujuan opt-in Anda (Pasal 6(1)(a) GDPR / Pasal 23 UU PDP). Opt-in dan penanda welcome dicatat hanya setelah Anda mengonfirmasi alamat email. Anda dapat menarik persetujuan ini kapan saja dari Profil & Pengaturan, atau melalui link unsubscribe di email pemasaran apa pun.
 - **Iklan yang dipersonalisasi** — dengan persetujuan Anda melalui Google User Messaging Platform (UMP) bila diwajibkan hukum yang berlaku (Pasal 6(1)(a) GDPR / ePrivacy Directive). Kami tidak mempersonalisasi iklan untuk pengguna yang tidak memberikan persetujuan.
 - **Data teknis, keamanan, dan anti-penyalahgunaan** — berdasarkan kepentingan sah kami untuk menjaga layanan tetap aman dan mencegah fraud (Pasal 6(1)(f) GDPR).
 - **Reminder tidak aktif dan notifikasi pembersihan akun** — berdasarkan kepentingan sah kami dalam memelihara catatan akun yang akurat (Pasal 6(1)(f) GDPR).
