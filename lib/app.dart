@@ -77,6 +77,9 @@ class _BagiStrukAppState extends ConsumerState<BagiStrukApp>
   /// go into the scan draft, the router lands on /scan, and the scan
   /// screen auto-runs the OCR pipeline once visible (after any legal /
   /// onboarding gates).
+  ///
+  /// If reading fails, the initial intent is deliberately NOT acknowledged
+  /// so the next launch retries instead of silently dropping the share.
   Future<void> _consumeInitialSharedMedia() async {
     try {
       final service = ref.read(sharedMediaServiceProvider);
@@ -106,7 +109,13 @@ class _BagiStrukAppState extends ConsumerState<BagiStrukApp>
     final added = ref.read(scanDraftProvider.notifier).addSharedFiles(images);
     if (added <= 0) return;
     ref.read(sharedAutoScanProvider.notifier).request(added);
-    ref.read(appRouterProvider).go(Routes.scan);
+    final router = ref.read(appRouterProvider);
+    // The share is an explicit "scan this" action, so navigating away from
+    // wherever the user was (e.g. /review) is intended. Skip only the
+    // redundant hop when already on the scan tab.
+    if (router.state.matchedLocation != Routes.scan) {
+      router.go(Routes.scan);
+    }
   }
 
   @override

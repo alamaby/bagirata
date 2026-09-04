@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -47,25 +49,46 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
     // Share-to-scan: a share intent set the pending flag before routing
     // here. Run after first paint — the router gates (legal / onboarding /
     // welcome) already resolved since this screen is actually visible.
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeAutoScan());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_maybeAutoScanGuarded()),
+    );
+  }
+
+  /// Error boundary for the fire-and-forget post-frame trigger: a throw
+  /// here (e.g. provider read after dispose) must not become an unhandled
+  /// async error that crashes the app in release mode.
+  Future<void> _maybeAutoScanGuarded() async {
+    try {
+      await _maybeAutoScan();
+    } catch (_) {
+      if (!mounted) return;
+      ref.read(sharedAutoScanProvider.notifier).consume();
+    }
   }
 
   /// Fires the one-shot auto-scan requested by an Android share intent.
   /// No-op when there is no pending request, the draft is empty, or a
-  /// scan is already running.
+  /// scan is already running (the flag stays pending and is retried when
+  /// the OCR state returns to idle — see the `ocrProvider` listener in
+  /// `build`).
   Future<void> _maybeAutoScan() async {
     if (!mounted) return;
     final request = ref.read(sharedAutoScanProvider);
     if (!request.pending) return;
-    ref.read(sharedAutoScanProvider.notifier).consume();
-    if (!mounted) return;
-    if (ref.read(scanDraftProvider).images.isEmpty) return;
-    final state = ref.read(ocrProvider);
-    if (_starting || state is OcrProcessing) {
-      // Rare: user tapped Scan manually in the same frame the share
-      // landed. Their manual scan wins; drop the auto request.
+    if (ref.read(scanDraftProvider).images.isEmpty) {
+      // Draft was cleared (e.g. user removed all photos) before we ran —
+      // drop the stale request instead of scanning nothing.
+      ref.read(sharedAutoScanProvider.notifier).consume();
       return;
     }
+    final state = ref.read(ocrProvider);
+    if (_starting || state is OcrProcessing) {
+      // A manual scan won the race. Keep the flag pending; the OCR
+      // listener retries once the pipeline is idle again.
+      return;
+    }
+    ref.read(sharedAutoScanProvider.notifier).consume();
+    if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -370,6 +393,14 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
               ),
             ),
           );
+      }
+      // Share-to-scan retry: a pending auto-scan deferred because a manual
+      // scan was running gets its chance once the pipeline is idle again.
+      // `_maybeAutoScan` early-returns when nothing is pending, so this is
+      // cheap on every other OCR transition.
+      if ((next is OcrSuccess && prev is OcrProcessing) ||
+          (next is OcrFailure && prev is OcrProcessing)) {
+        unawaited(_maybeAutoScanGuarded());
       }
     });
     final state = ref.watch(ocrProvider);
