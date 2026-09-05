@@ -68,24 +68,28 @@ class ProfileNotifier extends _$ProfileNotifier {
     return res;
   }
 
-  /// Saves the currency and language chosen during onboarding in one atomic
-  /// call and patches the local profile only on success, so both
-  /// `currencyPrefProvider` and `localePrefProvider` update together.
+  /// Saves the currency, language, and theme chosen during onboarding in
+  /// one atomic call and patches the local profile only on success, so
+  /// `currencyPrefProvider`, `localePrefProvider`, and `themeModePrefProvider`
+  /// update together.
   Future<Result<void>> updateOnboardingPreferences({
     required String currencyCode,
     required String languageCode,
+    required String themeMode,
   }) async {
     final res = await ref
         .read(profileRepositoryProvider)
         .updateOnboardingPreferences(
           currencyCode: currencyCode,
           languageCode: languageCode,
+          themeMode: themeMode,
         );
     if (res is Success<void>) {
       _patch(
         (p) => p.copyWith(
           defaultCurrency: currencyCode,
           languagePref: languageCode,
+          themePref: themeMode,
         ),
       );
     }

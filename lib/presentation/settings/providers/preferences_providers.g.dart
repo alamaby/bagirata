@@ -96,7 +96,78 @@ final class ThemeModePrefProvider
   }
 }
 
-String _$themeModePrefHash() => r'3204d49d90e4364ba64a4c48e33d05da7942d1fb';
+String _$themeModePrefHash() => r'11bebe37d4f9bf74fa7c2c817675e6906463085b';
+
+/// Transient theme override for live preview. Set by the onboarding theme
+/// picker; cleared on pop / successful persist / replay-finish so it never
+/// outlives the flow that created it. Null means "no preview, use the
+/// profile value".
+
+@ProviderFor(ThemePreview)
+const themePreviewProvider = ThemePreviewProvider._();
+
+/// Transient theme override for live preview. Set by the onboarding theme
+/// picker; cleared on pop / successful persist / replay-finish so it never
+/// outlives the flow that created it. Null means "no preview, use the
+/// profile value".
+final class ThemePreviewProvider
+    extends $NotifierProvider<ThemePreview, ThemeMode?> {
+  /// Transient theme override for live preview. Set by the onboarding theme
+  /// picker; cleared on pop / successful persist / replay-finish so it never
+  /// outlives the flow that created it. Null means "no preview, use the
+  /// profile value".
+  const ThemePreviewProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'themePreviewProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$themePreviewHash();
+
+  @$internal
+  @override
+  ThemePreview create() => ThemePreview();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ThemeMode? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ThemeMode?>(value),
+    );
+  }
+}
+
+String _$themePreviewHash() => r'930dc825330c6df00e208f64b05ea80fd91009c0';
+
+/// Transient theme override for live preview. Set by the onboarding theme
+/// picker; cleared on pop / successful persist / replay-finish so it never
+/// outlives the flow that created it. Null means "no preview, use the
+/// profile value".
+
+abstract class _$ThemePreview extends $Notifier<ThemeMode?> {
+  ThemeMode? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<ThemeMode?, ThemeMode?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ThemeMode?, ThemeMode?>,
+              ThemeMode?,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
 
 @ProviderFor(currencyPref)
 const currencyPrefProvider = CurrencyPrefProvider._();

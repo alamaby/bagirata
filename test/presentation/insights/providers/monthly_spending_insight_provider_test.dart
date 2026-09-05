@@ -108,6 +108,7 @@ class _FakeProfileRepository implements IProfileRepository {
   Future<Result<void>> updateOnboardingPreferences({
     required String currencyCode,
     required String languageCode,
+    required String themeMode,
   }) async =>
       const Result.success(null);
 }

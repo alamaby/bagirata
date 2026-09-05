@@ -53,11 +53,13 @@ class ProfileRepositoryImpl implements IProfileRepository {
   Future<Result<void>> updateOnboardingPreferences({
     required String currencyCode,
     required String languageCode,
+    required String themeMode,
   }) =>
       guardAsync(
         () => _ds.updateFields({
           'default_currency': currencyCode,
           'language_pref': languageCode,
+          'theme_pref': themeMode,
         }),
       );
 

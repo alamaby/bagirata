@@ -321,15 +321,17 @@ void main() {
       },
     );
 
-    test('updateOnboardingPreferences writes both fields', () async {
+    test('updateOnboardingPreferences writes all three fields', () async {
       // Arrange
       const currencyCode = 'USD';
       const languageCode = 'en';
+      const themeMode = 'dark';
 
       // Act
       final result = await repository.updateOnboardingPreferences(
         currencyCode: currencyCode,
         languageCode: languageCode,
+        themeMode: themeMode,
       );
 
       // Assert
@@ -338,6 +340,7 @@ void main() {
       final call = dataSource.updateFieldsCalls.first;
       expect(call['default_currency'], currencyCode);
       expect(call['language_pref'], languageCode);
+      expect(call['theme_pref'], themeMode);
     });
   });
 

@@ -382,11 +382,13 @@ class MockIProfileRepository extends _i1.Mock
   _i3.Future<_i5.Result<void>> updateOnboardingPreferences({
     required String? currencyCode,
     required String? languageCode,
+    required String? themeMode,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#updateOnboardingPreferences, [], {
               #currencyCode: currencyCode,
               #languageCode: languageCode,
+              #themeMode: themeMode,
             }),
             returnValue: _i3.Future<_i5.Result<void>>.value(
               _i6.dummyValue<_i5.Result<void>>(
@@ -394,6 +396,7 @@ class MockIProfileRepository extends _i1.Mock
                 Invocation.method(#updateOnboardingPreferences, [], {
                   #currencyCode: currencyCode,
                   #languageCode: languageCode,
+                  #themeMode: themeMode,
                 }),
               ),
             ),

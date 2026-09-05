@@ -18,13 +18,15 @@ abstract interface class IProfileRepository {
   Future<Result<void>> updateLanguage(String code);
 
   /// Writes the onboarding default preferences in a single UPDATE so
-  /// currency and language are saved or fail together.
+  /// currency, language, and theme are saved or fail together.
   ///
-  /// [currencyCode] must be one of the supported ISO-4217 currencies and
-  /// [languageCode] must be `id` or `en`.
+  /// [currencyCode] must be one of the supported ISO-4217 currencies,
+  /// [languageCode] must be `id` or `en`, and [themeMode] must be
+  /// `light`, `dark`, or `system`.
   Future<Result<void>> updateOnboardingPreferences({
     required String currencyCode,
     required String languageCode,
+    required String themeMode,
   });
 
   /// [mode] must be `light`, `dark`, or `system`.

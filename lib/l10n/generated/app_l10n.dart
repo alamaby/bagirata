@@ -3038,7 +3038,7 @@ abstract class AppL10n {
   /// No description provided for @onboardingPreferencesBody.
   ///
   /// In id, this message translates to:
-  /// **'Pilih bahasa dan mata uang default untuk aplikasi.'**
+  /// **'Pilih bahasa, mata uang default, dan tema untuk aplikasi.'**
   String get onboardingPreferencesBody;
 
   /// No description provided for @onboardingPreferencesLanguage.
@@ -3053,10 +3053,16 @@ abstract class AppL10n {
   /// **'Mata uang default'**
   String get onboardingPreferencesCurrency;
 
+  /// No description provided for @onboardingPreferencesTheme.
+  ///
+  /// In id, this message translates to:
+  /// **'Tema aplikasi'**
+  String get onboardingPreferencesTheme;
+
   /// No description provided for @onboardingPreferencesChangeLater.
   ///
   /// In id, this message translates to:
-  /// **'Keduanya bisa diubah nanti di Pengaturan.'**
+  /// **'Semuanya bisa diubah nanti di Pengaturan.'**
   String get onboardingPreferencesChangeLater;
 
   /// No description provided for @onboardingPreferencesSaveError.

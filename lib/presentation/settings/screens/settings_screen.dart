@@ -30,7 +30,7 @@ import '../widgets/confirm_dialog.dart';
 import '../widgets/currency_picker_sheet.dart';
 import '../widgets/edit_name_sheet.dart';
 import '../widgets/language_picker_sheet.dart';
-import '../widgets/theme_picker_dialog.dart';
+import '../widgets/theme_picker_sheet.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -296,7 +296,7 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
           leading: const Icon(Icons.brightness_6_outlined),
           title: Text(l10n.themeLabel),
           trailing: Text(
-            _themeLabel(l10n, profile.themePref),
+            themeModeLabel(l10n, profile.themePref),
             style: theme.textTheme.bodyMedium,
           ),
           onTap: () => _onPickTheme(context, profile.themePref),
@@ -376,12 +376,6 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
     );
   }
 
-  String _themeLabel(AppL10n l10n, String pref) => switch (pref) {
-    'light' => l10n.themeLight,
-    'dark' => l10n.themeDark,
-    _ => l10n.themeSystem,
-  };
-
   Future<void> _onChangeName(BuildContext context) async {
     final next = await showEditNameSheet(context, profile.displayName ?? '');
     if (next == null || next.trim().isEmpty) return;
@@ -439,7 +433,7 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
   }
 
   Future<void> _onPickTheme(BuildContext context, String current) async {
-    final mode = await showThemePickerDialog(context, current);
+    final mode = await showThemePickerSheet(context, current);
     if (mode == null || mode == current) return;
     final res = await ref.read(profileProvider.notifier).updateTheme(mode);
     if (!context.mounted) return;

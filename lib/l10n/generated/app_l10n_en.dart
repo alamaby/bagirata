@@ -1692,7 +1692,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get onboardingPreferencesBody =>
-      'Choose your default app language and currency.';
+      'Choose your default app language, currency, and theme.';
 
   @override
   String get onboardingPreferencesLanguage => 'App language';
@@ -1701,8 +1701,11 @@ class AppL10nEn extends AppL10n {
   String get onboardingPreferencesCurrency => 'Default currency';
 
   @override
+  String get onboardingPreferencesTheme => 'App theme';
+
+  @override
   String get onboardingPreferencesChangeLater =>
-      'You can change both later in Settings.';
+      'You can change them later in Settings.';
 
   @override
   String get onboardingPreferencesSaveError =>

@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Fake repository that returns a fixed [AppConfig] without Supabase.
@@ -56,6 +57,9 @@ class _ControllableAppConfigNotifier extends AppConfigNotifier {
 
 /// Fake [IProfileRepository] returning canned responses without DB.
 class _FakeProfileRepository implements IProfileRepository {
+  String? lastOnboardingCurrency;
+  String? lastOnboardingLanguage;
+  String? lastOnboardingTheme;
   @override
   Future<Result<UserProfile>> getCurrentProfile() async =>
       Result.success(const UserProfile(
@@ -138,8 +142,13 @@ class _FakeProfileRepository implements IProfileRepository {
   Future<Result<void>> updateOnboardingPreferences({
     required String currencyCode,
     required String languageCode,
-  }) async =>
-      Result.success(null);
+    required String themeMode,
+  }) async {
+    lastOnboardingCurrency = currencyCode;
+    lastOnboardingLanguage = languageCode;
+    lastOnboardingTheme = themeMode;
+    return Result.success(null);
+  }
 }
 
 /// Fake notifier returning a fixed [UserProfile] without hitting the DB.
@@ -162,7 +171,15 @@ String _finishLabel(WidgetTester tester) {
   return AppL10n.of(ctx).onboardingFinish;
 }
 
-Widget _buildApp({
+class _Harness {
+  _Harness(this.app, this.container, this.profileRepo, this.router);
+  final Widget app;
+  final ProviderContainer container;
+  final _FakeProfileRepository profileRepo;
+  final GoRouter router;
+}
+
+_Harness _buildHarness({
   required bool promoEnabled,
   String titleId = 'Promo ID Title',
   String titleEn = 'Promo EN Title',
@@ -170,6 +187,7 @@ Widget _buildApp({
   String bodyEn = 'Promo EN Body',
   Locale locale = const Locale('id'),
   bool isReplay = false,
+  String themePref = 'system',
 }) {
   final config = AppConfig(
     termsVersion: 1,
@@ -180,17 +198,17 @@ Widget _buildApp({
     promoOnboardingBodyId: bodyId,
     promoOnboardingBodyEn: bodyEn,
   );
-  final profile = const UserProfile(
+  final profile = UserProfile(
     id: 'test-user',
     defaultCurrency: 'IDR',
     languagePref: 'id',
-    themePref: 'system',
+    themePref: themePref,
     isAnonymous: false,
     onboardingCompletedAt: null,
     onboardingVersion: 1,
   );
-
-  return ProviderScope(
+  final repo = _FakeProfileRepository();
+  final container = ProviderContainer(
     overrides: [
       appConfigProvider.overrideWith(
         () => _FakeAppConfigNotifier(config),
@@ -199,23 +217,73 @@ Widget _buildApp({
         _FakeAppConfigRepository(config),
       ),
       localePrefProvider.overrideWithValue(locale),
-      profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+      profileRepositoryProvider.overrideWithValue(repo),
       profileProvider.overrideWith(
         () => _FakeProfileNotifier(profile),
       ),
     ],
-    child: MaterialApp(
-      locale: locale,
-      localizationsDelegates: AppL10n.localizationsDelegates,
-      supportedLocales: AppL10n.supportedLocales,
-      home: ScreenUtilInit(
-        designSize: const Size(393, 852),
-        builder: (context, _) =>
+  );
+
+  // Minimal GoRouter so `_finish()` → `context.go(Routes.scan)` has a
+  // target. The stub pages are irrelevant — tests only assert repo calls.
+  // Replay starts from /settings-stub so `context.pop()` has somewhere
+  // to return to; first-run starts directly on /onboarding.
+  final router = GoRouter(
+    initialLocation: isReplay ? '/settings-stub' : '/onboarding',
+    routes: [
+      GoRoute(
+        path: '/settings-stub',
+        builder: (_, _) => const Scaffold(body: Text('settings-stub')),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (_, _) =>
             OnboardingScreen(isReplay: isReplay),
+      ),
+      GoRoute(
+        path: '/scan',
+        builder: (_, _) => const Scaffold(body: Text('scan-stub')),
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+
+  final app = UncontrolledProviderScope(
+    container: container,
+    child: ScreenUtilInit(
+      designSize: const Size(393, 852),
+      builder: (context, _) => MaterialApp.router(
+        locale: locale,
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        routerConfig: router,
       ),
     ),
   );
+  return _Harness(app, container, repo, router);
 }
+
+/// Backwards-compatible helper for tests that only need the widget.
+Widget _buildApp({
+  required bool promoEnabled,
+  String titleId = 'Promo ID Title',
+  String titleEn = 'Promo EN Title',
+  String bodyId = 'Promo ID Body',
+  String bodyEn = 'Promo EN Body',
+  Locale locale = const Locale('id'),
+  bool isReplay = false,
+  String themePref = 'system',
+}) =>
+    _buildHarness(
+      promoEnabled: promoEnabled,
+      titleId: titleId,
+      titleEn: titleEn,
+      bodyId: bodyId,
+      bodyEn: bodyEn,
+      locale: locale,
+      isReplay: isReplay,
+      themePref: themePref,
+    ).app;
 
 /// Helper to advance the PageView to the next slide by tapping the Next
 /// button. Uses the l10n label so the test survives l10n copy changes.
@@ -351,10 +419,16 @@ void main() {
 
     testWidgets('Skip button hidden in replay mode even with promo',
         (tester) async {
-      await tester.pumpWidget(_buildApp(
+      final harness = _buildHarness(
         promoEnabled: true,
         isReplay: true,
-      ));
+      );
+      addTearDown(harness.container.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+
+      // Replay starts on /settings-stub; push /onboarding like Settings does.
+      harness.router.push('/onboarding');
       await tester.pumpAndSettle();
 
       final l10n = AppL10n.of(tester.element(find.byType(OnboardingScreen)));
@@ -387,36 +461,57 @@ void main() {
         promoOnboardingBodyEn: 'Body',
       );
 
+      final profile = const UserProfile(
+        id: 'test-user',
+        defaultCurrency: 'IDR',
+        languagePref: 'id',
+        themePref: 'system',
+        isAnonymous: false,
+        onboardingCompletedAt: null,
+        onboardingVersion: 1,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          appConfigProvider.overrideWith(
+            () => _ControllableAppConfigNotifier(completer),
+          ),
+          appConfigRepositoryProvider.overrideWithValue(
+            _FakeAppConfigRepository(lateConfig),
+          ),
+          localePrefProvider.overrideWithValue(const Locale('id')),
+          profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
+          profileProvider.overrideWith(
+            () => _FakeProfileNotifier(profile),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = GoRouter(
+        initialLocation: '/onboarding',
+        routes: [
+          GoRoute(
+            path: '/onboarding',
+            builder: (_, _) => const OnboardingScreen(),
+          ),
+          GoRoute(
+            path: '/scan',
+            builder: (_, _) => const Scaffold(body: Text('scan-stub')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
       await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            appConfigProvider.overrideWith(
-              () => _ControllableAppConfigNotifier(completer),
-            ),
-            appConfigRepositoryProvider.overrideWithValue(
-              _FakeAppConfigRepository(lateConfig),
-            ),
-            localePrefProvider.overrideWithValue(const Locale('id')),
-            profileRepositoryProvider.overrideWithValue(_FakeProfileRepository()),
-            profileProvider.overrideWith(
-              () => _FakeProfileNotifier(const UserProfile(
-                id: 'test-user',
-                defaultCurrency: 'IDR',
-                languagePref: 'id',
-                themePref: 'system',
-                isAnonymous: false,
-                onboardingCompletedAt: null,
-                onboardingVersion: 1,
-              )),
-            ),
-          ],
-          child: MaterialApp(
-            locale: const Locale('id'),
-            localizationsDelegates: AppL10n.localizationsDelegates,
-            supportedLocales: AppL10n.supportedLocales,
-            home: ScreenUtilInit(
-              designSize: const Size(393, 852),
-              child: const OnboardingScreen(),
+        UncontrolledProviderScope(
+          container: container,
+          child: ScreenUtilInit(
+            designSize: const Size(393, 852),
+            builder: (context, _) => MaterialApp.router(
+              locale: const Locale('id'),
+              localizationsDelegates: AppL10n.localizationsDelegates,
+              supportedLocales: AppL10n.supportedLocales,
+              routerConfig: router,
             ),
           ),
         ),
@@ -443,15 +538,18 @@ void main() {
   });
 
   group('OnboardingScreen — preference slide', () {
-    testWidgets('preference slide is first and shows language and currency',
+    testWidgets('preference slide is first and shows all three options',
         (tester) async {
       await tester.pumpWidget(_buildApp(promoEnabled: false));
       await tester.pumpAndSettle();
 
       expect(find.text('Atur preferensi'), findsOneWidget);
+      expect(find.text('Pilih bahasa, mata uang default, dan tema untuk aplikasi.'),
+          findsOneWidget);
       expect(find.text('Bahasa aplikasi'), findsOneWidget);
       expect(find.text('Mata uang default'), findsOneWidget);
-      expect(find.text('Keduanya bisa diubah nanti di Pengaturan.'),
+      expect(find.text('Tema aplikasi'), findsOneWidget);
+      expect(find.text('Semuanya bisa diubah nanti di Pengaturan.'),
           findsOneWidget);
     });
 
@@ -499,6 +597,132 @@ testWidgets('currency tile is present and tappable',
       // The top-right skip ("Lewati") is present during first run, even on
       // the new preference slide.
       expect(find.text('Lewati'), findsOneWidget);
+    });
+  });
+
+  group('OnboardingScreen — theme picker', () {
+    testWidgets('theme tile shows current value with system subtitle',
+        (tester) async {
+      await tester.pumpWidget(_buildApp(promoEnabled: false));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tema aplikasi'), findsOneWidget);
+      // Default profile theme is 'system' → tile subtitle shows "Ikuti Sistem".
+      final tile = find.ancestor(
+        of: find.text('Tema aplikasi'),
+        matching: find.byType(ListTile),
+      );
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(of: tile, matching: find.text('Ikuti Sistem')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('theme sheet lists all three modes', (tester) async {
+      await tester.pumpWidget(_buildApp(promoEnabled: false));
+      await tester.pumpAndSettle();
+
+      final tile = find.ancestor(
+        of: find.text('Tema aplikasi'),
+        matching: find.byType(ListTile),
+      );
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tema Tampilan'), findsOneWidget);
+      expect(find.text('Ikuti Sistem'), findsWidgets);
+      expect(find.text('Terang'), findsOneWidget);
+      expect(find.text('Gelap'), findsOneWidget);
+    });
+
+    testWidgets('picking dark previews ThemeMode.dark immediately',
+        (tester) async {
+      final harness = _buildHarness(promoEnabled: false);
+      addTearDown(harness.container.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+
+      final tile = find.ancestor(
+        of: find.text('Tema aplikasi'),
+        matching: find.byType(ListTile),
+      );
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gelap'));
+      await tester.pumpAndSettle();
+
+      // Selection is local + preview provider, before any DB write.
+      expect(harness.container.read(themePreviewProvider), ThemeMode.dark);
+      expect(
+        harness.container.read(themeModePrefProvider),
+        ThemeMode.dark,
+      );
+      // Subtitle on the tile reflects the choice.
+      expect(find.text('Gelap'), findsWidgets);
+    });
+
+    testWidgets('Skip persists theme with language and currency',
+        (tester) async {
+      final harness = _buildHarness(promoEnabled: false);
+      addTearDown(harness.container.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+
+      // Pick dark theme first.
+      final themeTile = find.ancestor(
+        of: find.text('Tema aplikasi'),
+        matching: find.byType(ListTile),
+      );
+      await tester.ensureVisible(themeTile);
+      await tester.pumpAndSettle();
+      await tester.tap(themeTile);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gelap'));
+      await tester.pumpAndSettle();
+
+      // Skip runs the same `_finish()` path (persist + complete).
+      await tester.tap(find.text('Lewati'));
+      await tester.pumpAndSettle();
+
+      expect(harness.profileRepo.lastOnboardingTheme, 'dark');
+      expect(harness.profileRepo.lastOnboardingLanguage, 'id');
+      expect(harness.profileRepo.lastOnboardingCurrency, 'IDR');
+      // Preview cleared after successful persist; profile holds the value.
+      expect(harness.container.read(themePreviewProvider), isNull);
+    });
+
+    testWidgets('replay finish writes nothing and clears preview',
+        (tester) async {
+      final harness = _buildHarness(promoEnabled: false, isReplay: true);
+      addTearDown(harness.container.dispose);
+      await tester.pumpWidget(harness.app);
+      await tester.pumpAndSettle();
+
+      // Simulate a stale preview leaking in from elsewhere, then finish.
+      harness.container.read(themePreviewProvider.notifier).set(ThemeMode.dark);
+
+      // Replay starts on /settings-stub; push /onboarding so pop() is valid.
+      harness.router.push('/onboarding');
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      // Replay has no preference slide and no promo: 3 tutorial slides.
+      // Advance to the last one where the button reads "Selesai".
+      await _tapNext(tester);
+      await _tapNext(tester);
+      await tester.tap(find.text('Selesai'));
+      await tester.pumpAndSettle();
+
+      expect(harness.profileRepo.lastOnboardingTheme, isNull);
+      expect(harness.profileRepo.lastOnboardingLanguage, isNull);
+      expect(harness.profileRepo.lastOnboardingCurrency, isNull);
+      expect(harness.container.read(themePreviewProvider), isNull);
     });
   });
 }

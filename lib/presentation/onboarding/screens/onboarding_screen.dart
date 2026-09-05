@@ -11,6 +11,7 @@ import '../../settings/providers/preferences_providers.dart';
 import '../../settings/providers/profile_notifier.dart';
 import '../../settings/widgets/currency_picker_sheet.dart';
 import '../../settings/widgets/language_picker_sheet.dart';
+import '../../settings/widgets/theme_picker_sheet.dart';
 import '../providers/onboarding_notifier.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -31,8 +32,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   // Local selections for the preference slide. Kept out of provider state so
   // switching language re-renders the slide without persisting prematurely.
+  // The theme choice additionally drives `themePreviewProvider` so the user
+  // sees the effect live; it is cleared on dispose / successful persist.
   String? _selectedLanguage;
   String? _selectedCurrency;
+  String? _selectedTheme;
 
   static const _assetPaths = [
     'assets/images/onboarding/onboarding_scan.png',
@@ -63,8 +67,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     required String promoBody,
     required String prefLanguage,
     required String prefCurrency,
+    required String prefTheme,
     required void Function(String) onPickLanguage,
     required void Function(String) onPickCurrency,
+    required void Function(String) onPickTheme,
     required bool isReplay,
   }) {
     final pages = <Widget>[
@@ -95,8 +101,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           l10n: l10n,
           language: prefLanguage,
           currency: prefCurrency,
+          theme: prefTheme,
           onPickLanguage: onPickLanguage,
           onPickCurrency: onPickCurrency,
+          onPickTheme: onPickTheme,
         ),
       );
     }
@@ -115,6 +123,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final previewLocale = _selectedLanguage ?? profileLocale;
     final l10n = lookupAppL10n(Locale(previewLocale));
     final currency = _selectedCurrency ?? profileCurrency;
+    final theme = _selectedTheme ?? ref.watch(profileProvider).value?.themePref ?? 'system';
     final showPromo = appConfig != null &&
         appConfig.promoOnboardingEnabled &&
         appConfig.hasCompletePromoOnboardingCopy;
@@ -137,8 +146,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       promoBody: promoBody,
       prefLanguage: previewLocale,
       prefCurrency: currency,
+      prefTheme: theme,
       onPickLanguage: _pickLanguage,
       onPickCurrency: _pickCurrency,
+      onPickTheme: _pickTheme,
       isReplay: widget.isReplay,
     );
 
@@ -147,6 +158,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return PopScope(
       canPop: !_busy,
+      // `ref` is unsafe in dispose(), so the in-flight theme preview is
+      // cleared here when the user backs out without finishing. The
+      // success and replay paths clear it explicitly in `_finish()`.
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) ref.read(themePreviewProvider.notifier).clear();
+      },
       child: Scaffold(
         body: SafeArea(
           child: Column(
@@ -232,8 +249,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     required AppL10n l10n,
     required String language,
     required String currency,
+    required String theme,
     required void Function(String) onPickLanguage,
     required void Function(String) onPickCurrency,
+    required void Function(String) onPickTheme,
   }) {
     final scheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
@@ -305,6 +324,17 @@ ListTile(
         }
       },
     ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Icon(themeModeIcon(theme)),
+                    title: Text(l10n.onboardingPreferencesTheme),
+                    subtitle: Text(themeModeLabel(l10n, theme)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      final next = await showThemePickerSheet(context, theme);
+                      if (next != null && next != theme) onPickTheme(next);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -401,23 +431,32 @@ ListTile(
     setState(() => _selectedCurrency = next);
   }
 
+  void _pickTheme(String next) {
+    setState(() => _selectedTheme = next);
+    ref.read(themePreviewProvider.notifier).set(themeModeFromPref(next));
+  }
+
   Future<void> _finish() async {
     if (widget.isReplay) {
+      ref.read(themePreviewProvider.notifier).clear();
       if (mounted) context.pop();
       return;
     }
 
     // Persist the preference choice (or the current effective defaults when
     // the user skipped straight through) before completing onboarding, so
-    // language + currency are saved or fail together in a single UPDATE.
+    // language + currency + theme are saved or fail together in one UPDATE.
     setState(() => _submitting = true);
     final currency = (_selectedCurrency ?? ref.read(currencyPrefProvider))!;
     final language = _selectedLanguage ?? ref.read(localePrefProvider).languageCode;
+    final theme =
+        _selectedTheme ?? ref.read(profileProvider).value?.themePref ?? 'system';
     final prefs = await ref
         .read(profileProvider.notifier)
         .updateOnboardingPreferences(
           currencyCode: currency,
           languageCode: language,
+          themeMode: theme,
         );
     if (!mounted) return;
     if (prefs is ResultFailure<void>) {
@@ -432,6 +471,9 @@ ListTile(
     if (!mounted) return;
 
     setState(() => _submitting = false);
+
+    // The profile now holds the persisted theme, so the preview is redundant.
+    ref.read(themePreviewProvider.notifier).clear();
 
 switch (res) {
       case Success<void>():

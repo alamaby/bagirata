@@ -1691,7 +1691,7 @@ class AppL10nId extends AppL10n {
 
   @override
   String get onboardingPreferencesBody =>
-      'Pilih bahasa dan mata uang default untuk aplikasi.';
+      'Pilih bahasa, mata uang default, dan tema untuk aplikasi.';
 
   @override
   String get onboardingPreferencesLanguage => 'Bahasa aplikasi';
@@ -1700,8 +1700,11 @@ class AppL10nId extends AppL10n {
   String get onboardingPreferencesCurrency => 'Mata uang default';
 
   @override
+  String get onboardingPreferencesTheme => 'Tema aplikasi';
+
+  @override
   String get onboardingPreferencesChangeLater =>
-      'Keduanya bisa diubah nanti di Pengaturan.';
+      'Semuanya bisa diubah nanti di Pengaturan.';
 
   @override
   String get onboardingPreferencesSaveError =>
