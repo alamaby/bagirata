@@ -7,17 +7,22 @@ class PhoneFormatter {
   const PhoneFormatter._();
 
   /// Strips everything that isn't a digit, then prepends the Indonesian
-  /// country code (`62`) when the number starts with a leading `0` or `+62`.
+  /// country code (`62`) when the number starts with a leading `0` or is a
+  /// bare domestic mobile number (starts with `8`, at least 9 digits —
+  /// Indonesian mobiles are 9–13 digits long).
   ///
-  /// Returns `null` when the result has fewer than 6 digits — the
-  /// `participants.phone` CHECK constraint requires at least 6, and a link
-  /// with fewer digits will not resolve in WhatsApp anyway.
+  /// Returns `null` when there are no digits at all. Callers decide the
+  /// minimum-length policy (`waMeLink` requires at least 6; the saved
+  /// participant library collapses short results into the no-phone bucket).
   static String? normalize(String? raw) {
     if (raw == null) return null;
     final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
     if (digits.isEmpty) return null;
     if (digits.startsWith('0')) {
       return '62${digits.substring(1)}';
+    }
+    if (digits.startsWith('8') && digits.length >= 9) {
+      return '62$digits';
     }
     return digits;
   }

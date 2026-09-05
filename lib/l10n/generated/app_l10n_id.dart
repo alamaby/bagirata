@@ -1743,4 +1743,40 @@ class AppL10nId extends AppL10n {
   @override
   String get ocrAiDisclosure =>
       'Foto struk diproses oleh layanan AI pihak ketiga untuk ekstraksi item.';
+
+  @override
+  String get manualBillAction => 'Buat manual';
+
+  @override
+  String get manualBillEmptyHint =>
+      'Tanpa foto struk — tambah item manual, gratis tanpa credit.';
+
+  @override
+  String get billSplitAssignAll => 'Bagi rata';
+
+  @override
+  String get billSplitDuplicateName => 'Nama sudah ada di bill ini.';
+
+  @override
+  String get billSplitOverwriteContactTitle => 'Ganti dengan kontak?';
+
+  @override
+  String get billSplitOverwriteContactBody =>
+      'Field sudah terisi. Ganti dengan data kontak yang dipilih?';
+
+  @override
+  String get billSplitOverwriteContactConfirm => 'Ganti';
+
+  @override
+  String get reminderNotificationTitle => 'Tagihan belum lunas';
+
+  @override
+  String reminderNotificationBody(String title, String total) {
+    return '$title ($total) masih ada yang belum bayar. Ketuk untuk menagih.';
+  }
+
+  @override
+  String reminderScheduled(int days) {
+    return 'Pengingat ditagih dalam $days hari.';
+  }
 }

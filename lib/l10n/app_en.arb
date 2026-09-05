@@ -797,5 +797,25 @@
   "onboardingSettingsTile": "View app guide",
   "onboardingSaveError": "Could not save. Please try again.",
 
-  "ocrAiDisclosure": "Receipt photos are processed by third-party AI services for item extraction."
+  "ocrAiDisclosure": "Receipt photos are processed by third-party AI services for item extraction.",
+
+  "manualBillAction": "New manual",
+  "manualBillEmptyHint": "No receipt photo — add items manually, free with no credit.",
+  "billSplitAssignAll": "Split equally",
+  "billSplitDuplicateName": "This name is already on the bill.",
+  "billSplitOverwriteContactTitle": "Replace with contact?",
+  "billSplitOverwriteContactBody": "Fields are already filled. Replace them with the selected contact?",
+  "billSplitOverwriteContactConfirm": "Replace",
+  "reminderNotificationTitle": "Bill not settled yet",
+  "reminderNotificationBody": "{title} ({total}) still has unpaid shares. Tap to follow up.",
+  "@reminderNotificationBody": {
+    "placeholders": {
+      "title": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "reminderScheduled": "Reminder set in {days} days.",
+  "@reminderScheduled": {
+    "placeholders": { "days": { "type": "int" } }
+  }
 }

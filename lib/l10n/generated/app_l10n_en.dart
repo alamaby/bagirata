@@ -1744,4 +1744,40 @@ class AppL10nEn extends AppL10n {
   @override
   String get ocrAiDisclosure =>
       'Receipt photos are processed by third-party AI services for item extraction.';
+
+  @override
+  String get manualBillAction => 'New manual';
+
+  @override
+  String get manualBillEmptyHint =>
+      'No receipt photo — add items manually, free with no credit.';
+
+  @override
+  String get billSplitAssignAll => 'Split equally';
+
+  @override
+  String get billSplitDuplicateName => 'This name is already on the bill.';
+
+  @override
+  String get billSplitOverwriteContactTitle => 'Replace with contact?';
+
+  @override
+  String get billSplitOverwriteContactBody =>
+      'Fields are already filled. Replace them with the selected contact?';
+
+  @override
+  String get billSplitOverwriteContactConfirm => 'Replace';
+
+  @override
+  String get reminderNotificationTitle => 'Bill not settled yet';
+
+  @override
+  String reminderNotificationBody(String title, String total) {
+    return '$title ($total) still has unpaid shares. Tap to follow up.';
+  }
+
+  @override
+  String reminderScheduled(int days) {
+    return 'Reminder set in $days days.';
+  }
 }

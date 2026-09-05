@@ -475,8 +475,8 @@ return $default(_that.items,_that.detectedTotal,_that.detectedTax,_that.detected
 /// @nodoc
 
 
-class _OcrResult implements OcrResult {
-  const _OcrResult({required final  List<OcrLineItem> items, this.detectedTotal, this.detectedTax, this.detectedService, this.merchant, this.receiptDate, this.confidence = 0.0, required this.providerUsed}): _items = items;
+class _OcrResult extends OcrResult {
+  const _OcrResult({required final  List<OcrLineItem> items, this.detectedTotal, this.detectedTax, this.detectedService, this.merchant, this.receiptDate, this.confidence = 0.0, required this.providerUsed}): _items = items,super._();
   
 
  final  List<OcrLineItem> _items;

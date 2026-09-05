@@ -1,0 +1,49 @@
+# M4 — Template Recurring + Priority OCR Retry + Batch Gabung
+
+Created: 2026-09-05 12:00:00
+
+## Objective
+
+Kasih Plus yang benar-benar bertenaga: duplikasi bill 1-tap untuk tagihan rutin (fase 1 tanpa model grup), OCR prioritas dengan auto-retry sekali saat provider sibuk, dan gabung multi-struk jadi 1 bill dengan pricing kredit yang adil.
+
+## Scope
+
+- In-scope: F12 template/duplikat 1-tap (max 5 Free, tak terbatas Plus), F14 retry Plus 1x + batch gabung (keputusan review: Plus = flat 1 kredit per request batch, ikut perilaku server existing `creditCostForRequest: plus?1` — BUKAN 1+1/foto; usulan lama "1 + tambahan/foto" dibatalkan agar tak perlu ubah katalog/SKU).
+- Out-of-scope: grup kos multi-user + role/invite (fase 2), client-side retry loop tak terbatas, perubahan harga katalog (`google_play_billing_catalog.dart:22-58` tak tersentuh).
+- Kredit tetap otoritatif server (`consume_ocr_credit` sebelum LLM — `supabase/functions/process-receipt/index.ts:1475-1502`).
+
+## Milestones
+
+1. F12 template/duplikat (model + UI + limit).
+2. F14.1 Priority retry Plus (server-first).
+3. F14.2 Batch gabung (UI + pricing + guard).
+
+## Tasks
+
+- [ ] F12.1 Model template fase 1: `bill_templates(id, owner_id, name, snapshot JSONB {items, participants, weights, tax, service, currency, category}, use_count, created_at)` + RPC `create_template_from_bill / instantiate_template / delete_template`; RLS owner-only; `REVOKE/GRANT` eksplisit. Alternatif tanpa tabel (SharedPreferences lokal) ditolak untuk konsistensi lintas-device — nyatakan di Notes bila operator pilih lokal dulu.
+- [ ] F12.2 Client: menu "Jadikan template" di detail + "Duplikat bill" di detail/history row (duplikat = copy bill+items+participants+assignments tanggal kini, tanpa settlement state); list template sederhana (Free ≤5, Plus tak terbatas — enforce server via `plan_code`); ARB `templateTitle/Save/Use/Duplicate/LimitReached`.
+- [ ] F12.3 Test (diperkuat hasil review): duplikat preservasi angka (subtotal/tax/service/currency) + reset `is_paid=false/pl/paidAt=null/is_settled=false`; tetapkan `receipt_date` (kini vs preserve) + `createdAt=kini` di spec sebelum kode; snapshot `v:1` + whitelist field + tolak field asing + corrupt JSONB; limit Free≤5 race (2 create konkuren → tetap 5, enforce server via `plan_code`); RLS owner-only + `plus_feature_limits.dart` tambah `templateLimit` (belum ada); ARB baru (0 hit hari ini); entry point eksplisit: pilih detail SAJA atau detail+history-row (dua-duanya absen hari ini — `bill_detail:62-75`, `history row:318-342`); `share_weight` ikut di-copy (`init:51`).
+- [ ] F14.1 Server retry Plus: di `supabase/functions/process-receipt/index.ts:1595-1715` tambah 1x retry same-provider-then-next untuk `plan_code == 'plus'` saat error retryable (`shouldFailover:873-881`, `fallback_policy:883-892`) sebelum `502 all_providers_failed:1717-1730`. Client tetap single-shot (`ocr_service.dart:48-60`, `ocr_notifier.dart:30-48`) — retry diorkestrasi server agar `consume_ocr_credit` atomik tak double-charge; refund path `not_a_receipt:1633-1635` dan `all_providers_failed:1718` dipertahankan. `plus_priority` route tetap (`loadLlmConfigsForRequest:1233-1305`).
+- [ ] F14.2 UX sibuk: Free tetap pesan "AI sibuk / rate-limit" (`ocr_messages.dart:64-91`, `canRetry:true` manual); Plus tampilkan "Mencoba provider prioritas…" + 1 auto-retry transparan dengan `request_id` sama (`README:89` grouping) agar telemetri `llm_logs.route_source` tetap akurat.
+- [ ] F14.3 Batch gabung: UI pilih 2–3 draft/struk (reuse `scanDraftProvider:11-21`, dedupe `addSharedFiles:53-60`, downscale `image_codec.dart:27-55` ≤1600px q85) → 1 request (server sudah merge multi-foto `buildSystemPrompt:129-154`); pricing `creditCostForRequest(plus?1:max(1,imageCount))` (`index.ts:244-246`) dipertahankan — batch Plus = 1 + tambahan/foto (bukan gratis); guard `OCR_MAX_IMAGES=10`, `20MB` (`:1341-1361`) + pre-check client (`receipt_capture_screen.dart:237-265,519-522`) diupdate untuk estimasi batch.
+- [ ] F14.4 ARB: `scanRetryPlus`, `scanBatchTitle`, `scanBatchCost` (ID+EN); label biaya batch `scanCreditCostWithBalance` (`app_id.arb:47`) reuse.
+- [ ] F14.5 Test (diperkuat hasil review): retry hanya Plus + sekali + hanya retryable (`429/5xx/408`/schema-mismatch); `400/401/403/404/422` tak di-retry (catat konflik `fallback_policy=always:885-886` → harus `stopped_policy:1682` + `break:1713`, uji tiap kode); `AbortSignal` timeout provider (Gemini 15s, OpenAI 20s, Nvidia/Ollama 60s) → `408:866-871` retryable; retry pakai `request_id` sama + `attempt_number+1` + `route_source` benar (`default|plus_priority|user_override`) agar telemetri `README:89-104` tak rusak; tidak ada test Deno `consume/refund` hari ini → tambah (konkurensi N-scan 1 kredit, idempoten per `request_id`, order `loadConfigs/anon-quota` sebelum reserve tak perlu refund); `not_a_receipt` (`is_receipt==false || items==0&&conf<0.3:1611-1612` + guard client `receipt:340`) false-positive struk-valid-low-conf → uji batas + refund; `refund` reason selalu `provider_unavailable` walau `not_a_receipt` → perbaiki telemetri atau dokumentasikan; UX: `canRetry` (`ocr_messages.dart:12`) tak dibaca `receipt_capture_screen:329-404` (tombol retry manual tak muncul) → tampilkan untuk Free, status "prioritas…" untuk Plus; `413 too_many_images/images_too_large` belum dipetakan `_serverMessage:47-102` (jatuh `Generic`) → tambah mapping; batch: oversized/empty-draft (client `imageCount<=0→0` vs server `max(1,…)` + `400 images_required`), campuran currency IDR/USD dalam 1 request (server `currency` tunggal `:1327-1329` — tolak atau kunci satu); pre-check `maxImages/maxBytes` client + estimasi batch; katalog tak berubah (`productIds` konsisten — jaga).
+- [ ] Verifikasi akhir M4: `flutter analyze`, `flutter test`, `flutter build apk --split-per-abi`; deploy Edge Function `supabase functions deploy process-receipt` oleh operator + smoke `./smoketest.sh`; audit `llm_logs` 24 jam (`PROJECT_SUMMARY.md §6`).
+
+## Risks
+
+- Retry menaikkan cost LLM — mitigasi: hanya Plus, sekali, hanya `429/5xx/408`; alert dedup 30 mnt (`shouldAlertProviderIssue:982-1009`) dipertahankan agar tak spam.
+- Template snapshot JSONB bisa drift dari skema bills/items — mitigasi: snapshot versi (`v:1`) + validasi saat instantiate, tolak field asing.
+- Batch disalahartikan "scan gratis" — mitigasi: estimasi kredit eksplisit sebelum submit + copy "1 kredit/foto tambahan".
+- Grup penuh (invite/role) sengaja ditunda — risiko template terasa setengah; mitigasi: ukur adopsi duplikat dulu sebelum bangun model grup yang mahal (keputusan berbasis data).
+
+## Progress Log
+
+- 2026-09-05 12:00:00 — Plan M4 ditulis; belum ada implementasi; deploy Edge Function menunggu operator.
+- 2026-09-05 12:30:00 — Review audit vs kode: putuskan pricing batch Plus flat-1 (batalkan 1+1/foto), perkuat F12.3/F14.5 (fallback_policy, request_id, refund, 413, mixed-currency); belum ada implementasi.
+
+## Notes
+
+- Contoh: `kos "Listrik Agustus" → Jadikan template → September 1-tap duplikat`; `Plus scan saat Gemini 429 → auto-coba OpenRouter sekali → sukses`.
+- Counter-argumen utama: 3 mekanisme Plus sekaligus (template, retry, batch) menaikkan kompleksitas billing/observabilitas; alternatif minimal: retry saja dulu (nilai paling terasa saat outage), template + batch menyusul — plan ini menggabung karena menyentuh alur scan/simpan yang sama.
+- Katalog produk tak berubah; bila pricing batch butuh SKU baru, itu plan monetisasi terpisah (`TODO.md:48-65` Play Billing setup).

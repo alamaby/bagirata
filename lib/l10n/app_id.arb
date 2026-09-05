@@ -797,5 +797,25 @@
   "onboardingSettingsTile": "Lihat panduan aplikasi",
   "onboardingSaveError": "Gagal menyimpan. Coba lagi.",
 
-  "ocrAiDisclosure": "Foto struk diproses oleh layanan AI pihak ketiga untuk ekstraksi item."
+  "ocrAiDisclosure": "Foto struk diproses oleh layanan AI pihak ketiga untuk ekstraksi item.",
+
+  "manualBillAction": "Buat manual",
+  "manualBillEmptyHint": "Tanpa foto struk — tambah item manual, gratis tanpa credit.",
+  "billSplitAssignAll": "Bagi rata",
+  "billSplitDuplicateName": "Nama sudah ada di bill ini.",
+  "billSplitOverwriteContactTitle": "Ganti dengan kontak?",
+  "billSplitOverwriteContactBody": "Field sudah terisi. Ganti dengan data kontak yang dipilih?",
+  "billSplitOverwriteContactConfirm": "Ganti",
+  "reminderNotificationTitle": "Tagihan belum lunas",
+  "reminderNotificationBody": "{title} ({total}) masih ada yang belum bayar. Ketuk untuk menagih.",
+  "@reminderNotificationBody": {
+    "placeholders": {
+      "title": { "type": "String" },
+      "total": { "type": "String" }
+    }
+  },
+  "reminderScheduled": "Pengingat ditagih dalam {days} hari.",
+  "@reminderScheduled": {
+    "placeholders": { "days": { "type": "int" } }
+  }
 }

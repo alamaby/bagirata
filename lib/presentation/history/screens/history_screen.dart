@@ -11,6 +11,7 @@ import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
 import '../../../domain/entities/bill_payment_status.dart';
+import '../../../domain/entities/ocr_result.dart';
 import '../../../domain/entities/history_summary.dart';
 import '../../../domain/entities/monthly_spending_insight.dart';
 import '../../../l10n/generated/app_l10n.dart';
@@ -167,6 +168,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 title: Text(l10n.historyTab),
                 pinned: true,
                 actions: [
+                  IconButton(
+                    tooltip: l10n.manualBillAction,
+                    icon: const Icon(Icons.note_add_outlined),
+                    onPressed: () => context.pushNamed(
+                      Routes.billReviewName,
+                      extra: OcrResult.manual(),
+                    ),
+                  ),
                   IconButton(
                     tooltip: l10n.historyFilterTooltip,
                     icon: Badge(

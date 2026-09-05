@@ -48,6 +48,22 @@ void main() {
     test('full-width digits stripped', () {
       expect(PhoneFormatter.normalize('１２３４５'), isNull);
     });
+
+    test('bare domestic mobile gains 62 prefix', () {
+      expect(PhoneFormatter.normalize('81234567890'), '6281234567890');
+    });
+
+    test('bare domestic mobile with separators gains 62 prefix', () {
+      expect(PhoneFormatter.normalize('812-3456-7890'), '6281234567890');
+    });
+
+    test('short bare number keeps digits (bucket policy is caller-side)', () {
+      expect(PhoneFormatter.normalize('812345'), '812345');
+    });
+
+    test('non-mobile short number untouched', () {
+      expect(PhoneFormatter.normalize('123456'), '123456');
+    });
   });
 
   group('PhoneFormatter.waMeLink', () {

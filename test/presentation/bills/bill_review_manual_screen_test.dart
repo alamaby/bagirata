@@ -1,0 +1,52 @@
+import 'package:bagistruk/domain/entities/ocr_result.dart';
+import 'package:bagistruk/presentation/bills/screens/bill_review_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../helpers/widget_test_harness.dart';
+
+void main() {
+  Future<void> pumpReview(WidgetTester tester, OcrResult ocr) async {
+    setTestViewport(tester);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: buildTestApp(child: BillReviewScreen(ocr: ocr)),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  group('BillReviewScreen manual mode', () {
+    testWidgets('shows manual hint and no confidence warning', (
+      tester,
+    ) async {
+      await pumpReview(tester, OcrResult.manual());
+
+      expect(
+        find.text(
+          'No receipt photo — add items manually, free with no credit.',
+        ),
+        findsOneWidget,
+      );
+      // confidence == 0 would trigger the warning for OCR bills — suppressed.
+      expect(find.textContaining('confident'), findsNothing);
+      // Untitled default + add-item affordance present.
+      expect(find.text('Untitled bill'), findsOneWidget);
+      expect(find.text('Add item'), findsOneWidget);
+    });
+
+    testWidgets('low-confidence OCR still shows the warning chip', (
+      tester,
+    ) async {
+      const ocr = OcrResult(
+        items: [OcrLineItem(name: 'Kopi', price: 15000, qty: 1)],
+        confidence: 0.5,
+        providerUsed: 'gemini',
+      );
+      await pumpReview(tester, ocr);
+
+      expect(find.textContaining('confident'), findsOneWidget);
+      expect(find.textContaining('No receipt photo'), findsNothing);
+    });
+  });
+}

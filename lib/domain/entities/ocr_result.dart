@@ -26,4 +26,19 @@ abstract class OcrResult with _$OcrResult {
     @Default(0.0) double confidence,
     required String providerUsed,
   }) = _OcrResult;
+
+  const OcrResult._();
+
+  /// Sentinel for bills created manually without OCR (0 credit). The review
+  /// screen treats this as a blank form: no confidence warning, no mismatch
+  /// banner, no receipt-date row.
+  static const String manualProviderUsed = 'manual';
+
+  static OcrResult manual() => const OcrResult(
+    items: [],
+    confidence: 0,
+    providerUsed: manualProviderUsed,
+  );
+
+  bool get isManual => providerUsed == manualProviderUsed;
 }

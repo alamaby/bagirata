@@ -9,14 +9,25 @@ import '../providers/saved_participants_notifier.dart';
 import 'participant_avatar.dart';
 
 class ParticipantSuggestionChips extends ConsumerWidget {
-  const ParticipantSuggestionChips({super.key, required this.onSelected});
+  const ParticipantSuggestionChips({
+    super.key,
+    required this.onSelected,
+    this.excludeNames = const {},
+  });
 
   final ValueChanged<SavedParticipant> onSelected;
+
+  /// Lowercased participant names already on the bill — hidden so the user
+  /// cannot re-add someone twice.
+  final Set<String> excludeNames;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(savedParticipantsProvider);
-    final suggestions = async.value ?? const <SavedParticipant>[];
+    final all = async.value ?? const <SavedParticipant>[];
+    final suggestions = all
+        .where((p) => !excludeNames.contains(p.name.trim().toLowerCase()))
+        .toList(growable: false);
     if (suggestions.isEmpty) return const SizedBox.shrink();
 
     final scheme = Theme.of(context).colorScheme;
@@ -90,6 +101,17 @@ class _SuggestionChip extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600),
               ),
+              if (participant.phone.isNotEmpty)
+                Text(
+                  participant.phone,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ),
         ),

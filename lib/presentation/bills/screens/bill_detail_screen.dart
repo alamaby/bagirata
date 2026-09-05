@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -12,6 +13,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
+import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/auth_snapshot.dart';
 import '../../../domain/entities/participant.dart';
 import '../../../l10n/generated/app_l10n.dart';
@@ -109,6 +111,16 @@ class _Body extends ConsumerWidget {
     final err = await ref
         .read(billDetailFamily(billId).notifier)
         .toggleParticipantPaymentStatus(pid);
+    // Bill just flipped to settled → cancel its local reminders (best-effort).
+    final settled =
+        ref.read(billDetailFamily(billId)).value?.bill.isSettled ?? false;
+    if (settled) {
+      unawaited(
+        ref.read(settlementReminderServiceProvider.future).then(
+          (svc) => svc.cancelForBill(billId),
+        ),
+      );
+    }
     if (err != null && context.mounted) {
       final l10n = AppL10n.of(context);
       final msg = switch (err.kind) {

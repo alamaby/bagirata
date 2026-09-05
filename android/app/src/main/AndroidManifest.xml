@@ -19,6 +19,13 @@
          contact, granting temporary read access to that contact only.
          No READ_CONTACTS permission required. -->
 
+    <!-- Settlement reminders (M1/F4) via flutter_local_notifications.
+         POST_NOTIFICATIONS is runtime-requested contextually when the first
+         bill is saved (never at cold start). Inexact alarms only — no
+         SCHEDULE_EXACT_ALARM needed. Disclose in Play Console Data safety
+         only if reminder content is ever enriched beyond bill title/total. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <application
         android:label="Bagi Struk"
         android:name="${applicationName}"

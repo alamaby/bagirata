@@ -3130,6 +3130,66 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'Foto struk diproses oleh layanan AI pihak ketiga untuk ekstraksi item.'**
   String get ocrAiDisclosure;
+
+  /// No description provided for @manualBillAction.
+  ///
+  /// In id, this message translates to:
+  /// **'Buat manual'**
+  String get manualBillAction;
+
+  /// No description provided for @manualBillEmptyHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Tanpa foto struk — tambah item manual, gratis tanpa credit.'**
+  String get manualBillEmptyHint;
+
+  /// No description provided for @billSplitAssignAll.
+  ///
+  /// In id, this message translates to:
+  /// **'Bagi rata'**
+  String get billSplitAssignAll;
+
+  /// No description provided for @billSplitDuplicateName.
+  ///
+  /// In id, this message translates to:
+  /// **'Nama sudah ada di bill ini.'**
+  String get billSplitDuplicateName;
+
+  /// No description provided for @billSplitOverwriteContactTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Ganti dengan kontak?'**
+  String get billSplitOverwriteContactTitle;
+
+  /// No description provided for @billSplitOverwriteContactBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Field sudah terisi. Ganti dengan data kontak yang dipilih?'**
+  String get billSplitOverwriteContactBody;
+
+  /// No description provided for @billSplitOverwriteContactConfirm.
+  ///
+  /// In id, this message translates to:
+  /// **'Ganti'**
+  String get billSplitOverwriteContactConfirm;
+
+  /// No description provided for @reminderNotificationTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Tagihan belum lunas'**
+  String get reminderNotificationTitle;
+
+  /// No description provided for @reminderNotificationBody.
+  ///
+  /// In id, this message translates to:
+  /// **'{title} ({total}) masih ada yang belum bayar. Ketuk untuk menagih.'**
+  String reminderNotificationBody(String title, String total);
+
+  /// No description provided for @reminderScheduled.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengingat ditagih dalam {days} hari.'**
+  String reminderScheduled(int days);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

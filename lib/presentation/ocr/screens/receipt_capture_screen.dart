@@ -11,6 +11,7 @@ import '../../../core/error/result.dart';
 import '../../../core/router/routes.dart';
 import '../../../data/providers.dart';
 import '../../../data/services/device_fingerprint_service.dart';
+import '../../../domain/entities/ocr_result.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../../../core/ads/ad_config.dart';
 import '../../ads/widgets/banner_ad_widget.dart';
@@ -415,6 +416,16 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
     return AppScaffold(
       title: l10n.scanScreenTitle,
       actions: [
+        IconButton(
+          tooltip: l10n.manualBillAction,
+          icon: const Icon(Icons.note_add_outlined),
+          onPressed: busy
+              ? null
+              : () => context.pushNamed(
+                  Routes.billReviewName,
+                  extra: OcrResult.manual(),
+                ),
+        ),
         IconButton(
           icon: Icon(
             _mode == ReceiptPreviewMode.carousel

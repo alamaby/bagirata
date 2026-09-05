@@ -117,6 +117,7 @@ class _SplitBody extends ConsumerWidget {
     final msg = switch (error.kind) {
       SplitActionErrorKind.notReady => l10n.billSplitStateNotReady,
       SplitActionErrorKind.nameRequired => l10n.billSplitNameRequired,
+      SplitActionErrorKind.duplicateName => l10n.billSplitDuplicateName,
       SplitActionErrorKind.addPersonFailed => l10n.billSplitAddPersonFailed(
         error.message ?? '',
       ),
@@ -164,6 +165,12 @@ class _SplitBody extends ConsumerWidget {
   Future<void> _addParticipant(BuildContext context, WidgetRef ref) async {
     final nameCtrl = TextEditingController();
     final phoneCtrl = TextEditingController();
+    final excludeNames = <String>{
+      for (final p
+          in ref.read(splitFamily(billId)).value?.participants ??
+              const <Participant>[])
+        p.name.trim().toLowerCase(),
+    };
     final result =
         await showModalBottomSheet<({String name, String? phone})>(
       context: context,
@@ -172,6 +179,7 @@ class _SplitBody extends ConsumerWidget {
       builder: (ctx) => _AddPersonSheet(
         nameCtrl: nameCtrl,
         phoneCtrl: phoneCtrl,
+        excludeNames: excludeNames,
       ),
     ).whenComplete(() {
       nameCtrl.dispose();
@@ -199,6 +207,21 @@ class _SplitBody extends ConsumerWidget {
           unassignedSubtotal: state.unassignedSubtotal,
           currency: currency,
         ),
+        if (state.participants.length >= 2 && state.items.isNotEmpty)
+          Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: () async {
+                  final err = await _notifier(ref).assignAll();
+                  if (err != null && context.mounted) _toast(context, err);
+                },
+                icon: const Icon(Icons.group_add_outlined),
+                label: Text(AppL10n.of(context).billSplitAssignAll),
+              ),
+            ),
+          ),
         Expanded(
           child: state.items.isEmpty
               ? Center(
@@ -433,10 +456,12 @@ class _AddPersonSheet extends StatefulWidget {
   const _AddPersonSheet({
     required this.nameCtrl,
     required this.phoneCtrl,
+    this.excludeNames = const {},
   });
 
   final TextEditingController nameCtrl;
   final TextEditingController phoneCtrl;
+  final Set<String> excludeNames;
 
   @override
   State<_AddPersonSheet> createState() => _AddPersonSheetState();
@@ -452,16 +477,47 @@ class _AddPersonSheetState extends State<_AddPersonSheet> {
       final picker = FlutterNativeContactPicker();
       final contact = await picker.selectPhoneNumber();
       if (contact == null || !mounted) return;
+      final l10n = AppL10n.of(context);
       final phone = contact.selectedPhoneNumber != null
           ? PhoneFormatter.normalize(contact.selectedPhoneNumber!)
           : null;
+      final name = contact.fullName?.trim().isNotEmpty == true
+          ? contact.fullName!.trim()
+          : null;
+      if (name == null && phone == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.participantImportNoPhone)),
+        );
+        return;
+      }
+      // Fields already filled: ask before overwriting instead of silently
+      // ignoring the picked contact.
+      final needsConfirm =
+          (name != null && widget.nameCtrl.text.trim().isNotEmpty) ||
+          (phone != null && widget.phoneCtrl.text.trim().isNotEmpty);
+      if (needsConfirm) {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(l10n.billSplitOverwriteContactTitle),
+            content: Text(l10n.billSplitOverwriteContactBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l10n.cancelAction),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l10n.billSplitOverwriteContactConfirm),
+              ),
+            ],
+          ),
+        );
+        if (confirmed != true || !mounted) return;
+      }
       setState(() {
-        if (widget.nameCtrl.text.isEmpty && contact.fullName != null) {
-          widget.nameCtrl.text = contact.fullName!;
-        }
-        if (phone != null && widget.phoneCtrl.text.isEmpty) {
-          widget.phoneCtrl.text = phone;
-        }
+        if (name != null) widget.nameCtrl.text = name;
+        if (phone != null) widget.phoneCtrl.text = phone;
       });
     } catch (_) {
       if (mounted) {
@@ -536,13 +592,14 @@ class _AddPersonSheetState extends State<_AddPersonSheet> {
               ),
               SizedBox(height: 12.h),
               ParticipantSuggestionChips(
+                excludeNames: widget.excludeNames,
                 onSelected: (participant) {
-                  setState(() {
-                    widget.nameCtrl.text = participant.name;
-                    if (participant.phone.isNotEmpty) {
-                      widget.phoneCtrl.text = participant.phone;
-                    }
-                  });
+                  // One-tap add: close the sheet with the suggestion's values
+                  // instead of merely prefilling the form.
+                  Navigator.of(context).pop((
+                    name: participant.name,
+                    phone: participant.phone.isEmpty ? null : participant.phone,
+                  ));
                 },
               ),
               SizedBox(height: 16.h),

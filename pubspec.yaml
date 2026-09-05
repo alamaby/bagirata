@@ -1,7 +1,7 @@
 name: bagistruk
 description: "BagiStruk — split-bill app with multi-photo OCR via Supabase Edge Functions."
 publish_to: 'none'
-version: 0.30.1+76
+version: 0.31.0+77
 
 environment:
   sdk: ^3.11.5
@@ -75,6 +75,12 @@ dependencies:
   # OS-native picker via Intent — no READ_CONTACTS permission required.
   # Returns only the user-selected contact's name and phone number.
   flutter_native_contact_picker: ^0.0.12
+  # Local settlement reminders (M1/F4). Best-effort OS notifications at T+3/T+7
+  # days for unsettled bills; all scheduling bookkeeping lives in
+  # SettlementReminderService so a denied permission or missing plugin never
+  # crashes the app. `timezone` backs zoned scheduling.
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
   # Local JSON cache for the cross-bill participant suggestion library. Stores
   # the top-N suggestions returned by `list_suggested_participants` so the
   # split screen can render suggestions instantly before the network round

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
+import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
@@ -109,11 +112,34 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
           context,
         ).showSnackBar(SnackBar(content: Text(_saveErrorMessage(result))));
       case SaveSuccess(:final billId):
+        _scheduleSettlementReminder(billId);
         context.pushNamed(
           Routes.billSplitName,
           pathParameters: {'billId': billId},
         );
     }
+  }
+
+  /// Best-effort T+3/T+7 local reminder for the new bill. Never blocks
+  /// navigation and never throws (denied permission, missing plugin, and a
+  /// killed process are all swallowed inside the service).
+  void _scheduleSettlementReminder(String billId) {
+    final state = ref.read(billReviewFamily(widget.ocr));
+    final l10n = AppL10n.of(context);
+    final currency = CurrencyFormatter.of(state.currency);
+    unawaited(
+      ref.read(settlementReminderServiceProvider.future).then(
+        (svc) => svc.scheduleForBill(
+          billId: billId,
+          notificationTitle: l10n.reminderNotificationTitle,
+          notificationBody: l10n.reminderNotificationBody(
+            state.title,
+            currency.format(state.grandTotal),
+          ),
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ),
+    );
   }
 
   String _saveErrorMessage(SaveError error) {
@@ -147,7 +173,10 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
       AsyncData(:final value) => value?.isPlus ?? false,
       _ => false,
     };
+    // Manual bills (0 credit, no OCR) never show the low-confidence warning —
+    // there is no AI output to double-check.
     final lowConfidence =
+        !widget.ocr.isManual &&
         state.confidence < AppConstants.ocrLowConfidenceThreshold;
 
     // Saat keyboard terbuka dan user TIDAK sedang mengedit Pajak/Service,
@@ -186,6 +215,20 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
                   computed: state.grandTotal,
                   detected: state.detectedTotal!,
                   currency: currency,
+                ),
+              ),
+            if (widget.ocr.isManual && state.items.isEmpty)
+              Padding(
+                padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 4.h),
+                child: Text(
+                  l10n.manualBillEmptyHint,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             Expanded(

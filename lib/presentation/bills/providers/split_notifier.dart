@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/error/failure.dart';
 import '../../../core/error/result.dart';
+import '../../../core/format/phone_formatter.dart';
 import '../../../data/providers.dart';
 import '../../../domain/entities/assignment.dart';
 import '../../../domain/entities/bill.dart';
@@ -253,12 +254,22 @@ class SplitNotifier extends _$SplitNotifier {
     if (trimmed.isEmpty) {
       return const SplitActionError(SplitActionErrorKind.nameRequired);
     }
+    final lowered = trimmed.toLowerCase();
+    if (s.participants.any((p) => p.name.trim().toLowerCase() == lowered)) {
+      return const SplitActionError(SplitActionErrorKind.duplicateName);
+    }
 
+    final rawPhone = phone?.trim();
+    final normalizedPhone = PhoneFormatter.normalize(rawPhone);
     final participant = Participant(
       id: _uuid.v4(),
       billId: s.bill.id,
       name: trimmed,
-      phone: phone,
+      // Collapse missing/short numbers to null — the `participants.phone`
+      // CHECK constraint requires at least 6 digits when present.
+      phone: normalizedPhone == null || normalizedPhone.length < 6
+          ? null
+          : normalizedPhone,
     );
     final repo = ref.read(billRepositoryProvider);
     final res = await repo.upsertParticipant(participant);
@@ -348,6 +359,39 @@ class SplitNotifier extends _$SplitNotifier {
     return null;
   }
 
+  /// Assigns every participant to every item ("bagi rata") in a single
+  /// [replaceAssignments] round-trip. Already-assigned pairs are kept, so the
+  /// call is idempotent. Rolls back local state on persistence failure.
+  Future<SplitActionError?> assignAll() async {
+    final s = state.value;
+    if (s == null) return const SplitActionError(SplitActionErrorKind.notReady);
+    if (s.participants.isEmpty || s.items.isEmpty) return null;
+
+    final existing = <String>{for (final a in s.assignments) '${a.itemId}|${a.participantId}'};
+    final next = [
+      ...s.assignments,
+      for (final it in s.items)
+        for (final p in s.participants)
+          if (!existing.contains('${it.id}|${p.id}'))
+            Assignment(id: _uuid.v4(), itemId: it.id, participantId: p.id),
+    ];
+    if (next.length == s.assignments.length) return null;
+
+    state = AsyncData(s.copyWith(assignments: next));
+
+    final repo = ref.read(billRepositoryProvider);
+    final res = await repo.replaceAssignments(s.bill.id, next);
+    if (res is ResultFailure<List<Assignment>>) {
+      // Roll back local state on persistence failure.
+      state = AsyncData(s);
+      return SplitActionError(
+        SplitActionErrorKind.saveAssignmentFailed,
+        res.failure.toString(),
+      );
+    }
+    return null;
+  }
+
   static T _unwrap<T>(Result<T> r) => switch (r) {
     Success(:final data) => data,
     ResultFailure(:final failure) => throw _FailureException(failure),
@@ -370,6 +414,7 @@ class SplitActionError {
 enum SplitActionErrorKind {
   notReady,
   nameRequired,
+  duplicateName,
   addPersonFailed,
   selectPersonFirst,
   saveAssignmentFailed,
