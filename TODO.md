@@ -17,8 +17,8 @@ Severity:
 
 ### Operator — UNIQUE Participants Migration (TAHAN: commit lokal, belum push/apply)
 
-- Konteks: `supabase` commit `3e30586` (file `migrations/20260905120000_participants_bill_name_unique.sql`) + parent `8177ded` (mapping 23505→duplicateName). Produksi terverifikasi 0 duplikat (92 baris). CLI Supabase di dev belum auth → apply via Dashboard.
-- [ ] **Urutan wajib:** push submodule DULU (`cd supabase && git push`), BARU push parent. Pointer `8177ded` menunjuk commit submodule yang belum ter-push — jangan push parent sendirian (pointer menggantung).
+- Konteks: `supabase` commit `3e30586` (file `migrations/20260905120000_participants_bill_name_unique.sql`) + parent `8177ded` (mapping 23505→duplicateName) + `32695c2` (deferred items) + patch `0.31.2+79`. Produksi terverifikasi 0 duplikat (92 baris). CLI Supabase di dev belum auth → apply via Dashboard.
+- [x] **Urutan wajib:** push submodule DULU (`cd supabase && git push`), BARU push parent. (Selesai 2026-09-05.)
 - [ ] Apply ke live via Dashboard SQL Editor (role postgres) isi file `supabase/migrations/20260905120000_participants_bill_name_unique.sql` apa adanya.
 - [ ] Verifikasi: `\d participants` memuat `participants_bill_name_unique`; `SELECT bill_id, lower(trim(name)), COUNT(*) FROM participants GROUP BY 1,2 HAVING COUNT(*)>1;` → 0 baris.
 - [ ] Sinkron: `supabase migration list` (atau Dashboard history) menunjukkan `20260905120000` applied; tidak ada drift vs remote history.
