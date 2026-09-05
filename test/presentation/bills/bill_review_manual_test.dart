@@ -192,6 +192,9 @@ void main() {
       expect(captured.title, 'Warung Manual');
       expect(captured.totalAmount, 30000);
       expect(captured.receiptDate, isNull);
+      // Single timestamp: reminder scheduling must reuse the bill's own
+      // creation time, not a second drifting clock sample.
+      expect((result as SaveSuccess).createdAt, captured.createdAt);
     });
 
     test('upsertItems failure → saveItemsFailed and saving resets', () async {

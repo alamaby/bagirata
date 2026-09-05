@@ -27,6 +27,19 @@ class PhoneFormatter {
     return digits;
   }
 
+  /// Familiar display form for Indonesian numbers: `62812…` → `0812…`.
+  /// Anything else (short codes, foreign numbers, unparseable input) is
+  /// returned digit-stripped as-is, or `''` when there are no digits. Display
+  /// only — never persist this; storage keeps the normalized `62…` form.
+  static String pretty(String? raw) {
+    final digits = raw?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+    if (digits.isEmpty) return '';
+    if (digits.startsWith('62') && digits.length > 4) {
+      return '0${digits.substring(2)}';
+    }
+    return digits;
+  }
+
   /// Builds a `https://wa.me/<digits>` URL or returns `null` if the phone
   /// is missing / unparseable. WhatsApp requires digits only and a country
   /// code, which is what [normalize] produces.

@@ -183,6 +183,10 @@ class BillReviewNotifier extends _$BillReviewNotifier {
     }
 
     final billId = _uuid.v4();
+    // Single timestamp for the whole save so downstream consumers (e.g. the
+    // T+3/T+7 reminder schedule) use exactly the bill's creation time instead
+    // of a second, drifting `DateTime.now()`.
+    final createdAt = DateTime.now().toUtc();
     final bill = Bill(
       id: billId,
       title: state.title.trim(),
@@ -191,7 +195,7 @@ class BillReviewNotifier extends _$BillReviewNotifier {
       tax: state.tax,
       service: state.service,
       receiptDate: state.receiptDate,
-      createdAt: DateTime.now().toUtc(),
+      createdAt: createdAt,
     );
 
     final billRes = await repo.createBill(bill);
@@ -226,7 +230,7 @@ class BillReviewNotifier extends _$BillReviewNotifier {
     }
 
     state = state.copyWith(saving: false);
-    return SaveSuccess(billId);
+    return SaveSuccess(billId, createdAt);
   }
 
   static String _msg(Failure f) => f.toString();
@@ -237,8 +241,12 @@ sealed class SaveResult {
 }
 
 class SaveSuccess extends SaveResult {
-  const SaveSuccess(this.billId);
+  const SaveSuccess(this.billId, this.createdAt);
   final String billId;
+
+  /// The bill's creation timestamp — downstream consumers must reuse this
+  /// instead of sampling their own clock (avoids save-latency/skew drift).
+  final DateTime createdAt;
 }
 
 /// Returned when [BillReviewNotifier.save] is invoked while a previous save is

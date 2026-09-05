@@ -112,8 +112,8 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(_saveErrorMessage(result))));
-      case SaveSuccess(:final billId):
-        _scheduleSettlementReminder(billId);
+      case SaveSuccess(:final billId, :final createdAt):
+        _scheduleSettlementReminder(billId, createdAt);
         context.pushNamed(
           Routes.billSplitName,
           pathParameters: {'billId': billId},
@@ -125,7 +125,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
   /// navigation and never throws: provider creation itself (e.g.
   /// SharedPreferences failure) is guarded here, everything downstream is
   /// swallowed inside the service.
-  void _scheduleSettlementReminder(String billId) {
+  void _scheduleSettlementReminder(String billId, DateTime createdAt) {
     final state = ref.read(billReviewFamily(widget.ocr));
     final l10n = AppL10n.of(context);
     final currency = CurrencyFormatter.of(state.currency);
@@ -140,7 +140,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
           billId: billId,
           notificationTitle: l10n.reminderNotificationTitle,
           notificationBody: l10n.reminderNotificationBody(title, totalLabel),
-          createdAt: DateTime.now().toUtc(),
+          createdAt: createdAt,
         );
       } catch (e) {
         AppLogger.error(

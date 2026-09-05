@@ -15,6 +15,15 @@ Severity:
 - [ ] **Setelah rilis `0.29.1+74` rollout:** bump `app_config` `legal.terms_version` & `legal.privacy_version` `1 → 2` via Supabase Dashboard (MCP read-only — jangan bump sebelum rollout: aset `docs/*.md` ter-bundle, gate `LegalAcceptanceScreen` akan minta dokumen yang belum ada di app lama). SQL: `UPDATE app_config SET value = '2' WHERE key IN ('legal.terms_version','legal.privacy_version');` lalu verifikasi `SELECT key, value FROM app_config WHERE key LIKE 'legal.%';` — harus `2`/`2`. Detail: `plans/2026-09-04-legal-docs-refresh-plan.md:14,33`, `docs/privacy-policy.md:3,34,41,48,73`, `docs/terms-of-service.md:3,31`.
 - [ ] Verifikasi post-bump: login user lama (Free/Plus/anonymous) → `LegalAcceptanceScreen` muncul → Accept → `profiles.accepted_terms_version` & `accepted_privacy_version = 2`. Cek Play Console Privacy Policy URL masih valid (host `docs/privacy-policy.md`).
 
+### Operator — UNIQUE Participants Migration (TAHAN: commit lokal, belum push/apply)
+
+- Konteks: `supabase` commit `3e30586` (file `migrations/20260905120000_participants_bill_name_unique.sql`) + parent `8177ded` (mapping 23505→duplicateName). Produksi terverifikasi 0 duplikat (92 baris). CLI Supabase di dev belum auth → apply via Dashboard.
+- [ ] **Urutan wajib:** push submodule DULU (`cd supabase && git push`), BARU push parent. Pointer `8177ded` menunjuk commit submodule yang belum ter-push — jangan push parent sendirian (pointer menggantung).
+- [ ] Apply ke live via Dashboard SQL Editor (role postgres) isi file `supabase/migrations/20260905120000_participants_bill_name_unique.sql` apa adanya.
+- [ ] Verifikasi: `\d participants` memuat `participants_bill_name_unique`; `SELECT bill_id, lower(trim(name)), COUNT(*) FROM participants GROUP BY 1,2 HAVING COUNT(*)>1;` → 0 baris.
+- [ ] Sinkron: `supabase migration list` (atau Dashboard history) menunjukkan `20260905120000` applied; tidak ada drift vs remote history.
+- [ ] Smoke: tambah 2 peserta nama sama beda casing di 1 bill → peserta ke-2 ditolak `billSplitDuplicateName`; tambah nama sama di bill lain → lolos.
+
 ### Google Play Policy 2026 July Cycle
 - [x] Sebelum 2026-10-28, hapus `READ_CONTACTS` dan migrasikan import peserta ke Android Contact Picker. Jangan request akses buku kontak luas. (Selesai 2026-07-22: ganti `flutter_contacts` ke `flutter_native_contact_picker`, hapus permission dari manifest.)
 - [x] Audit Data Safety Play Console: foto struk, kontak, email, user ID, purchase history, data finansial opsional, device ID/diagnostics, approximate location AdMob, dan app interactions. (Audit mapping selesai 2026-07-22; entry manual di Play Console pending.)

@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../core/format/phone_formatter.dart';
 import '../../../domain/entities/saved_participant.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../providers/saved_participants_notifier.dart';
@@ -103,7 +104,7 @@ class _SuggestionChip extends StatelessWidget {
               ),
               if (participant.phone.isNotEmpty)
                 Text(
-                  participant.phone,
+                  PhoneFormatter.pretty(participant.phone),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,

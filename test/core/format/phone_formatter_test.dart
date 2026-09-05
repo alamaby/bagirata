@@ -66,6 +66,26 @@ void main() {
     });
   });
 
+  group('PhoneFormatter.pretty', () {
+    test('62-prefixed renders as familiar 08', () {
+      expect(PhoneFormatter.pretty('6281234567890'), '081234567890');
+    });
+
+    test('already-local number unchanged', () {
+      expect(PhoneFormatter.pretty('081234567890'), '081234567890');
+    });
+
+    test('short and foreign numbers pass through digit-stripped', () {
+      expect(PhoneFormatter.pretty('123456'), '123456');
+      expect(PhoneFormatter.pretty('+1-415-555-1234'), '14155551234');
+    });
+
+    test('null and empty become empty string', () {
+      expect(PhoneFormatter.pretty(null), '');
+      expect(PhoneFormatter.pretty('   '), '');
+    });
+  });
+
   group('PhoneFormatter.waMeLink', () {
     test('valid phone returns wa.me URL', () {
       expect(

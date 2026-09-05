@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 
 import '../../../core/format/currency_formatter.dart';
+import '../../../core/format/phone_formatter.dart';
 import '../../../core/router/routes.dart';
 import '../../../domain/entities/auth_snapshot.dart';
 import '../../../domain/entities/item.dart';
@@ -480,11 +481,16 @@ class _AddPersonSheetState extends ConsumerState<_AddPersonSheet> {
       final contact = await picker.selectPhoneNumber();
       if (contact == null || !mounted) return;
       final l10n = AppL10n.of(context);
-      // Keep the raw text in the field for familiar display (`08…`);
-      // normalization to `62…` happens once at save in `addParticipant`.
-      final phone = contact.selectedPhoneNumber?.trim().isNotEmpty == true
+      // Show the familiar display form (`08…`); normalization to `62…`
+      // happens once at save in `addParticipant`.
+      final rawPhone = contact.selectedPhoneNumber?.trim().isNotEmpty == true
           ? contact.selectedPhoneNumber!.trim()
           : null;
+      final phone = rawPhone == null
+          ? null
+          : PhoneFormatter.pretty(rawPhone).isEmpty
+              ? null
+              : PhoneFormatter.pretty(rawPhone);
       final name = contact.fullName?.trim().isNotEmpty == true
           ? contact.fullName!.trim()
           : null;
