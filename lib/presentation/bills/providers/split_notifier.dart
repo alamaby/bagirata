@@ -274,6 +274,13 @@ class SplitNotifier extends _$SplitNotifier {
     final repo = ref.read(billRepositoryProvider);
     final res = await repo.upsertParticipant(participant);
     if (res is ResultFailure<Participant>) {
+      final message = res.failure.toString();
+      // Double-tap / multi-device race slipped past the in-memory check and
+      // hit `participants_bill_name_unique` — surface as duplicate, not a
+      // generic failure.
+      if (message.contains('23505') || message.contains('duplicate key')) {
+        return const SplitActionError(SplitActionErrorKind.duplicateName);
+      }
       return SplitActionError(
         SplitActionErrorKind.addPersonFailed,
         res.failure.toString(),

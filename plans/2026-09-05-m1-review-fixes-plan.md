@@ -41,7 +41,8 @@ Perbaiki temuan audit atas commit M1 (`4179074`) sebelum rilis: ID notifikasi ta
 ## Progress Log
 
 - 2026-09-05 17:30:00 — Plan ditulis dari 2 audit paralel (9 temuan service + 8 temuan UI); belum ada perbaikan.
-- 2026-09-05 18:30:00 — Semua tasks selesai. R1: ID SHA-256 + golden + stored IDs + uji 1k. R2: init bool + prune + cancel-init. R3: izin Android/iOS + rehidrasi + BOOT_COMPLETED. R4: try/catch call site + hook unsettle/delete. R5: mock plugin, 12 test. U1: chip confirm + live exclude (Consumer). U2: raw display. U3: router guard manual fallback. U4: ARB mati dihapus. D1: privacy EN+ID (cermin in-app otomatis via aset). Verifikasi: analyze 0, test 518 passed. Ditunda: DB UNIQUE (butuh operator), AppBar overflow snapshot test, format display `08…`, drift createdAt detik.
+- 2026-09-05 18:30:00 — Semua tasks selesai.
+- 2026-09-05 19:00:00 — UNIQUE(bill_id, lower(trim(name))) keluar dari daftar tunda: produksi terbukti 0 duplikat, migration `20260905120000` ditulis + mapping 23505→duplicateName + test. Menunggu push submodule + apply live (CLI belum auth). R1: ID SHA-256 + golden + stored IDs + uji 1k. R2: init bool + prune + cancel-init. R3: izin Android/iOS + rehidrasi + BOOT_COMPLETED. R4: try/catch call site + hook unsettle/delete. R5: mock plugin, 12 test. U1: chip confirm + live exclude (Consumer). U2: raw display. U3: router guard manual fallback. U4: ARB mati dihapus. D1: privacy EN+ID (cermin in-app otomatis via aset). Verifikasi: analyze 0, test 518 passed. Ditunda: DB UNIQUE (butuh operator), AppBar overflow snapshot test, format display `08…`, drift createdAt detik.
 
 ## Notes
 

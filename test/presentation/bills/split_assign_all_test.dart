@@ -130,6 +130,27 @@ void main() {
       expect(captured.phone, '628123456789');
     });
 
+    test('unique-violation race maps to duplicateName', () async {
+      seedGraph(participants: [participant('p1', 'Budi')]);
+      await loadState();
+      final notifier = container.read(splitFamily('bill-1').notifier);
+
+      // Simulate the double-tap race: in-memory check passed (different
+      // client state), server rejects via participants_bill_name_unique.
+      when(mockRepo.upsertParticipant(any)).thenAnswer(
+        (_) async => const Result.failure(
+          Failure.server(
+            code: 23505,
+            message:
+                'duplicate key value violates unique constraint "participants_bill_name_unique"',
+          ),
+        ),
+      );
+      final err = await notifier.addParticipant('Ani');
+      expect(err, isNotNull);
+      expect(err!.kind, SplitActionErrorKind.duplicateName);
+    });
+
     test('short phone collapses to null', () async {
       seedGraph(participants: [participant('p1', 'Budi')]);
       await loadState();
