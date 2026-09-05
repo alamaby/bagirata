@@ -25,6 +25,10 @@
          SCHEDULE_EXACT_ALARM needed. Disclose in Play Console Data safety
          only if reminder content is ever enriched beyond bill title/total. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Rehydrate settlement reminders after reboot: the OS wipes scheduled
+         alarms, but prefs bookkeeping survives — the app reschedules pending
+         (non-cancelled, still-future) dues on next start. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:label="Bagi Struk"

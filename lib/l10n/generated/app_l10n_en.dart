@@ -1775,9 +1775,4 @@ class AppL10nEn extends AppL10n {
   String reminderNotificationBody(String title, String total) {
     return '$title ($total) still has unpaid shares. Tap to follow up.';
   }
-
-  @override
-  String reminderScheduled(int days) {
-    return 'Reminder set in $days days.';
-  }
 }

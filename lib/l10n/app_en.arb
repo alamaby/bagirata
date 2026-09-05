@@ -813,9 +813,5 @@
       "title": { "type": "String" },
       "total": { "type": "String" }
     }
-  },
-  "reminderScheduled": "Reminder set in {days} days.",
-  "@reminderScheduled": {
-    "placeholders": { "days": { "type": "int" } }
   }
 }

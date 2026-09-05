@@ -1774,9 +1774,4 @@ class AppL10nId extends AppL10n {
   String reminderNotificationBody(String title, String total) {
     return '$title ($total) masih ada yang belum bayar. Ketuk untuk menagih.';
   }
-
-  @override
-  String reminderScheduled(int days) {
-    return 'Pengingat ditagih dalam $days hari.';
-  }
 }

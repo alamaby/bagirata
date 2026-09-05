@@ -3184,12 +3184,6 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'{title} ({total}) masih ada yang belum bayar. Ketuk untuk menagih.'**
   String reminderNotificationBody(String title, String total);
-
-  /// No description provided for @reminderScheduled.
-  ///
-  /// In id, this message translates to:
-  /// **'Pengingat ditagih dalam {days} hari.'**
-  String reminderScheduled(int days);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

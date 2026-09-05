@@ -245,8 +245,15 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.billReview,
         name: Routes.billReviewName,
-        builder: (context, state) =>
-            BillReviewScreen(ocr: state.extra! as OcrResult),
+        // `extra` does not survive deep links, web URLs, or state
+        // restoration — fall back to a blank manual bill instead of throwing
+        // on a null/wrong-typed cast.
+        builder: (context, state) {
+          final ocr = state.extra;
+          return BillReviewScreen(
+            ocr: ocr is OcrResult ? ocr : OcrResult.manual(),
+          );
+        },
       ),
       GoRoute(
         path: Routes.billSplit,

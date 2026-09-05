@@ -813,9 +813,5 @@
       "title": { "type": "String" },
       "total": { "type": "String" }
     }
-  },
-  "reminderScheduled": "Pengingat ditagih dalam {days} hari.",
-  "@reminderScheduled": {
-    "placeholders": { "days": { "type": "int" } }
   }
 }

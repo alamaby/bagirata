@@ -13,6 +13,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/auth_snapshot.dart';
 import '../../../domain/entities/participant.dart';
@@ -111,15 +112,37 @@ class _Body extends ConsumerWidget {
     final err = await ref
         .read(billDetailFamily(billId).notifier)
         .toggleParticipantPaymentStatus(pid);
-    // Bill just flipped to settled → cancel its local reminders (best-effort).
-    final settled =
-        ref.read(billDetailFamily(billId)).value?.bill.isSettled ?? false;
-    if (settled) {
-      unawaited(
-        ref.read(settlementReminderServiceProvider.future).then(
-          (svc) => svc.cancelForBill(billId),
-        ),
-      );
+    // Keep local reminders in sync (best-effort, never throws): settled →
+    // cancel; otherwise (re)schedule — idempotent overwrite, so un-toggling a
+    // participant back to unpaid restores the nudges.
+    final bill = ref.read(billDetailFamily(billId)).value?.bill;
+    if (bill != null) {
+      final l10n = AppL10n.of(context);
+      final title = bill.title;
+      final totalLabel = currency.format(bill.totalAmount);
+      final settled = bill.isSettled;
+      unawaited(() async {
+        try {
+          final svc = await ref.read(
+            settlementReminderServiceProvider.future,
+          );
+          if (settled) {
+            await svc.cancelForBill(billId);
+          } else {
+            await svc.scheduleForBill(
+              billId: billId,
+              notificationTitle: l10n.reminderNotificationTitle,
+              notificationBody: l10n.reminderNotificationBody(
+                title,
+                totalLabel,
+              ),
+              createdAt: bill.createdAt,
+            );
+          }
+        } catch (e) {
+          AppLogger.error('BillDetailScreen.reminderSync failed', e);
+        }
+      }());
     }
     if (err != null && context.mounted) {
       final l10n = AppL10n.of(context);

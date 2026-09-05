@@ -10,6 +10,8 @@ import '../../../core/billing/plus_feature_limits.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/utils/app_logger.dart';
+import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/bill_payment_status.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../domain/entities/history_summary.dart';
@@ -423,6 +425,19 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final deleted = await ref
         .read(historyListProvider.notifier)
         .deleteBill(billId);
+    if (deleted) {
+      // Deleted bills must not keep firing reminders (best-effort).
+      unawaited(() async {
+        try {
+          final svc = await ref.read(
+            settlementReminderServiceProvider.future,
+          );
+          await svc.cancelForBill(billId);
+        } catch (e) {
+          AppLogger.error('HistoryScreen.reminderCancel failed', e);
+        }
+      }());
+    }
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

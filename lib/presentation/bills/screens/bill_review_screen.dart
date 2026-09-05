@@ -11,6 +11,7 @@ import '../../../core/config/app_constants.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../l10n/generated/app_l10n.dart';
@@ -121,25 +122,33 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
   }
 
   /// Best-effort T+3/T+7 local reminder for the new bill. Never blocks
-  /// navigation and never throws (denied permission, missing plugin, and a
-  /// killed process are all swallowed inside the service).
+  /// navigation and never throws: provider creation itself (e.g.
+  /// SharedPreferences failure) is guarded here, everything downstream is
+  /// swallowed inside the service.
   void _scheduleSettlementReminder(String billId) {
     final state = ref.read(billReviewFamily(widget.ocr));
     final l10n = AppL10n.of(context);
     final currency = CurrencyFormatter.of(state.currency);
-    unawaited(
-      ref.read(settlementReminderServiceProvider.future).then(
-        (svc) => svc.scheduleForBill(
+    final title = state.title;
+    final totalLabel = currency.format(state.grandTotal);
+    unawaited(() async {
+      try {
+        final svc = await ref.read(
+          settlementReminderServiceProvider.future,
+        );
+        await svc.scheduleForBill(
           billId: billId,
           notificationTitle: l10n.reminderNotificationTitle,
-          notificationBody: l10n.reminderNotificationBody(
-            state.title,
-            currency.format(state.grandTotal),
-          ),
+          notificationBody: l10n.reminderNotificationBody(title, totalLabel),
           createdAt: DateTime.now().toUtc(),
-        ),
-      ),
-    );
+        );
+      } catch (e) {
+        AppLogger.error(
+          'BillReviewScreen.scheduleReminder failed',
+          e,
+        );
+      }
+    }());
   }
 
   String _saveErrorMessage(SaveError error) {

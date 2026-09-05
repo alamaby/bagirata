@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
 
 import '../../../core/format/currency_formatter.dart';
-import '../../../core/format/phone_formatter.dart';
 import '../../../core/router/routes.dart';
 import '../../../domain/entities/auth_snapshot.dart';
 import '../../../domain/entities/item.dart';
@@ -165,21 +164,15 @@ class _SplitBody extends ConsumerWidget {
   Future<void> _addParticipant(BuildContext context, WidgetRef ref) async {
     final nameCtrl = TextEditingController();
     final phoneCtrl = TextEditingController();
-    final excludeNames = <String>{
-      for (final p
-          in ref.read(splitFamily(billId)).value?.participants ??
-              const <Participant>[])
-        p.name.trim().toLowerCase(),
-    };
     final result =
         await showModalBottomSheet<({String name, String? phone})>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (ctx) => _AddPersonSheet(
+        billId: billId,
         nameCtrl: nameCtrl,
         phoneCtrl: phoneCtrl,
-        excludeNames: excludeNames,
       ),
     ).whenComplete(() {
       nameCtrl.dispose();
@@ -452,23 +445,32 @@ class _ItemRow extends StatelessWidget {
   }
 }
 
-class _AddPersonSheet extends StatefulWidget {
+class _AddPersonSheet extends ConsumerStatefulWidget {
   const _AddPersonSheet({
+    required this.billId,
     required this.nameCtrl,
     required this.phoneCtrl,
-    this.excludeNames = const {},
   });
 
+  final String billId;
   final TextEditingController nameCtrl;
   final TextEditingController phoneCtrl;
-  final Set<String> excludeNames;
 
   @override
-  State<_AddPersonSheet> createState() => _AddPersonSheetState();
+  ConsumerState<_AddPersonSheet> createState() => _AddPersonSheetState();
 }
 
-class _AddPersonSheetState extends State<_AddPersonSheet> {
+class _AddPersonSheetState extends ConsumerState<_AddPersonSheet> {
   bool _importing = false;
+
+  /// Participants already on the bill, read live so the suggestion filter
+  /// never goes stale while the sheet is open.
+  Set<String> get _excludeNames => <String>{
+    for (final p
+        in ref.watch(splitFamily(widget.billId)).value?.participants ??
+            const <Participant>[])
+      p.name.trim().toLowerCase(),
+  };
 
   Future<void> _pickContact() async {
     if (_importing) return;
@@ -478,8 +480,10 @@ class _AddPersonSheetState extends State<_AddPersonSheet> {
       final contact = await picker.selectPhoneNumber();
       if (contact == null || !mounted) return;
       final l10n = AppL10n.of(context);
-      final phone = contact.selectedPhoneNumber != null
-          ? PhoneFormatter.normalize(contact.selectedPhoneNumber!)
+      // Keep the raw text in the field for familiar display (`08…`);
+      // normalization to `62…` happens once at save in `addParticipant`.
+      final phone = contact.selectedPhoneNumber?.trim().isNotEmpty == true
+          ? contact.selectedPhoneNumber!.trim()
           : null;
       final name = contact.fullName?.trim().isNotEmpty == true
           ? contact.fullName!.trim()
@@ -592,10 +596,47 @@ class _AddPersonSheetState extends State<_AddPersonSheet> {
               ),
               SizedBox(height: 12.h),
               ParticipantSuggestionChips(
-                excludeNames: widget.excludeNames,
-                onSelected: (participant) {
+                excludeNames: _excludeNames,
+                onSelected: (participant) async {
+                  // Don't silently discard what the user already typed.
+                  if (widget.nameCtrl.text.trim().isNotEmpty ||
+                      widget.phoneCtrl.text.trim().isNotEmpty) {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(
+                          AppL10n.of(
+                            ctx,
+                          ).billSplitOverwriteContactTitle,
+                        ),
+                        content: Text(
+                          AppL10n.of(
+                            ctx,
+                          ).billSplitOverwriteContactBody,
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text(AppL10n.of(ctx).cancelAction),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: Text(
+                              AppL10n.of(
+                                ctx,
+                              ).billSplitOverwriteContactConfirm,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed != true || !context.mounted) return;
+                  }
                   // One-tap add: close the sheet with the suggestion's values
-                  // instead of merely prefilling the form.
+                  // instead of merely prefilling the form. Post-pop
+                  // validation (empty/duplicate race) still toasts on the
+                  // split screen via `_addParticipant`.
+                  if (!context.mounted) return;
                   Navigator.of(context).pop((
                     name: participant.name,
                     phone: participant.phone.isEmpty ? null : participant.phone,

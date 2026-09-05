@@ -47,6 +47,7 @@ For Indonesian users, you may lodge a complaint with the Ministry of Communicati
 - **Photos / media access**: to pick receipt photos from the gallery.
 - **Shared images (no permission required)**: when you share images to BagiStruk from another app (Share → Scan receipt), Android delivers those images to the app via the `SEND` / `SEND_MULTIPLE` share intent. Only the images you explicitly share are received; no broad media-read permission is needed for this flow.
 - **Contacts** (no permission required): when you tap "Import from contacts" while adding a participant, the Android system Contact Picker opens. We receive only the name and phone number of the single contact you explicitly select. We do not access, read, or store your full address book. No `READ_CONTACTS` permission is requested.
+- **Notifications** (`POST_NOTIFICATIONS`, Android 13+): to deliver local settlement reminders for bills that are still unsettled (3 and 7 days after a bill is saved). The notification shows only the bill title and total, is created on-device, and is never sent to our servers. Permission is requested contextually when the first bill is saved — never at app startup — and you can revoke it any time in Android system settings.
 - **Internet / network state**: to communicate with Supabase and OCR services.
 
 ## How We Use Data
@@ -61,6 +62,7 @@ For Indonesian users, you may lodge a complaint with the Ministry of Communicati
 - To store user preferences and personalize the app.
 - To track last activity for account retention and cleanup.
 - To send inactivity reminders to registered users before account cleanup.
+- To schedule on-device settlement reminders for unsettled bills; reminders are cancelled automatically when the bill is settled or deleted.
 - To show ads, measure ad performance, prevent ad fraud, and respect consent choices when ads are enabled. If you do not consent to personalized ads where required, Google Mobile Ads / AdMob may serve non-personalized or limited ads where supported.
 - To fill in a participant's name and phone number from the single contact you choose via the optional "Import from contacts" feature, and to generate WhatsApp deep-links in settlement messages when the bill owner shares them.
 - To diagnose errors, prevent abuse, and enforce database rate limits.
@@ -223,6 +225,7 @@ Untuk pengguna di Indonesia, Anda dapat mengajukan keluhan ke Kementerian Komuni
 - **Akses foto / media**: untuk memilih foto struk dari galeri.
 - **Gambar yang dibagikan (tidak perlu izin)**: ketika Anda membagikan gambar ke BagiStruk dari aplikasi lain (Share → Scan receipt), Android mengirimkan gambar tersebut ke aplikasi melalui share intent `SEND` / `SEND_MULTIPLE`. Hanya gambar yang Anda bagikan secara eksplisit yang diterima; tidak diperlukan izin baca media yang luas untuk alur ini.
 - **Kontak** (tidak perlu izin): ketika Anda memilih "Import dari kontak" saat menambahkan peserta, Android system Contact Picker akan terbuka. Kami hanya menerima nama dan nomor telepon dari satu kontak yang Anda pilih secara eksplisit. Kami tidak mengakses, membaca, atau menyimpan buku alamat lengkap Anda. Izin `READ_CONTACTS` tidak diminta.
+- **Notifikasi** (`POST_NOTIFICATIONS`, Android 13+): untuk menampilkan pengingat settlement lokal atas tagihan yang belum lunas (3 dan 7 hari setelah tagihan disimpan). Notifikasi hanya menampilkan judul dan total tagihan, dibuat di perangkat, dan tidak pernah dikirim ke server kami. Izin diminta secara kontekstual saat tagihan pertama disimpan — tidak pernah saat aplikasi dibuka — dan dapat dicabut kapan saja di pengaturan sistem Android.
 - **Internet / status jaringan**: untuk berkomunikasi dengan Supabase dan layanan OCR.
 
 ## Cara Kami Menggunakan Data
@@ -237,6 +240,7 @@ Untuk pengguna di Indonesia, Anda dapat mengajukan keluhan ke Kementerian Komuni
 - Menyimpan preferensi pengguna dan menyesuaikan pengalaman aplikasi.
 - Melacak aktivitas terakhir untuk retensi dan pembersihan akun.
 - Mengirim reminder tidak aktif kepada pengguna terdaftar sebelum pembersihan akun.
+- Menjadwalkan pengingat settlement di perangkat untuk tagihan yang belum lunas; pengingat dibatalkan otomatis saat tagihan lunas atau dihapus.
 - Menampilkan iklan, mengukur performa iklan, mencegah fraud iklan, dan menghormati pilihan consent saat iklan diaktifkan. Jika Anda tidak menyetujui iklan yang dipersonalisasi di wilayah yang mewajibkan, Google Mobile Ads / AdMob dapat menayangkan iklan non-personalized atau limited ads jika didukung.
 - Mengisi nama dan nomor peserta dari satu kontak yang Anda pilih lewat fitur opsional "Import dari kontak", dan membuat deep-link WhatsApp di pesan settlement ketika pemilik tagihan membagikannya.
 - Mendiagnosis error, mencegah penyalahgunaan, dan menerapkan rate limit database.
