@@ -15,14 +15,25 @@ Severity:
 - [ ] **Setelah rilis `0.29.1+74` rollout:** bump `app_config` `legal.terms_version` & `legal.privacy_version` `1 → 2` via Supabase Dashboard (MCP read-only — jangan bump sebelum rollout: aset `docs/*.md` ter-bundle, gate `LegalAcceptanceScreen` akan minta dokumen yang belum ada di app lama). SQL: `UPDATE app_config SET value = '2' WHERE key IN ('legal.terms_version','legal.privacy_version');` lalu verifikasi `SELECT key, value FROM app_config WHERE key LIKE 'legal.%';` — harus `2`/`2`. Detail: `plans/2026-09-04-legal-docs-refresh-plan.md:14,33`, `docs/privacy-policy.md:3,34,41,48,73`, `docs/terms-of-service.md:3,31`.
 - [ ] Verifikasi post-bump: login user lama (Free/Plus/anonymous) → `LegalAcceptanceScreen` muncul → Accept → `profiles.accepted_terms_version` & `accepted_privacy_version = 2`. Cek Play Console Privacy Policy URL masih valid (host `docs/privacy-policy.md`).
 
-### Operator — UNIQUE Participants Migration (TAHAN: commit lokal, belum push/apply)
+### Operator — UNIQUE Participants Migration (push selesai, apply live manual)
 
-- Konteks: `supabase` commit `3e30586` (file `migrations/20260905120000_participants_bill_name_unique.sql`) + parent `8177ded` (mapping 23505→duplicateName) + `32695c2` (deferred items) + patch `0.31.2+79`. Produksi terverifikasi 0 duplikat (92 baris). CLI Supabase di dev belum auth → apply via Dashboard.
-- [x] **Urutan wajib:** push submodule DULU (`cd supabase && git push`), BARU push parent. (Selesai 2026-09-05.)
-- [ ] Apply ke live via Dashboard SQL Editor (role postgres) isi file `supabase/migrations/20260905120000_participants_bill_name_unique.sql` apa adanya.
-- [ ] Verifikasi: `\d participants` memuat `participants_bill_name_unique`; `SELECT bill_id, lower(trim(name)), COUNT(*) FROM participants GROUP BY 1,2 HAVING COUNT(*)>1;` → 0 baris.
-- [ ] Sinkron: `supabase migration list` (atau Dashboard history) menunjukkan `20260905120000` applied; tidak ada drift vs remote history.
-- [ ] Smoke: tambah 2 peserta nama sama beda casing di 1 bill → peserta ke-2 ditolak `billSplitDuplicateName`; tambah nama sama di bill lain → lolos.
+- Konteks: `supabase` `3e30586` ter-push + parent `646a168` (`0.31.2+79`) ter-push. CLI Supabase di dev belum auth → apply live HANYA via Dashboard. JANGAN `supabase db push` lokal (bisa menimpa drift yang belum dipetakan).
+- [ ] Buka Supabase Dashboard → project bagistruk-production → SQL Editor → role postgres → tempel SELURUH isi `supabase/migrations/20260905120000_participants_bill_name_unique.sql` → Run.
+  - SQL: `CREATE UNIQUE INDEX IF NOT EXISTS participants_bill_name_unique ON public.participants (bill_id, lower(trim(name)));` + COMMENT. Idempoten — aman diulang bila ragu.
+  - Ekspektasi: `CREATE INDEX` sukses (produksi 0 duplikat per cek 2026-09-05, 92 baris). Bila gagal `already exists` → justru bagus, lanjut verifikasi.
+- [ ] Verifikasi index ada: jalankan `\d participants` (atau `SELECT indexname FROM pg_indexes WHERE tablename='participants';`) → harus memuat `participants_bill_name_unique`.
+- [ ] Verifikasi data bersih: `SELECT bill_id, lower(trim(name)), COUNT(*) FROM participants GROUP BY 1,2 HAVING COUNT(*)>1;` → harus 0 baris.
+- [ ] Tandai migration sebagai applied agar history sinkron: catat `20260905120000` di Dashboard migration history / jalankan `supabase migration list` dari mesin yang terauth dan pastikan tidak ada drift vs remote history.
+- [ ] Smoke di device (build `0.31.2+79`): buka 1 bill → tambah peserta `Budi` lalu `budi` → peserta ke-2 DITOLAK dengan pesan `billSplitDuplicateName`; tambah nama sama di bill LAIN → lolos. Artinya mapping client 23505→duplicateName bekerja end-to-end.
+- [ ] Bila smoke gagal (duplikat lolos ke DB): JANGAN tambah index paksa — cek dulu apakah apply langkah 1 benar-benar jalan di project yang benar, lalu laporkan output error SQL-nya.
+
+### Operator — Play Console: Notifications Disclosure (M1/F4, `POST_NOTIFICATIONS`)
+
+- Konteks: `AndroidManifest.xml` kini meminta `POST_NOTIFICATIONS` (runtime, kontekstual saat bill pertama disimpan) + `RECEIVE_BOOT_COMPLETED`. Policy `docs/privacy-policy.md` sudah memuat disclosure EN+ID. Play Console Data Safety + App content WAJIB disinkron manual sebelum rilis `0.31.2`.
+- [ ] Play Console → App content → Data safety → Permissions: nyatakan `POST_NOTIFICATIONS` (local settlement reminders T+3/T+7, konten judul+total bill, on-device, revocable via OS settings). `RECEIVE_BOOT_COMPLETED` tidak perlu dideklarasikan terpisah bila tidak ditanya — cukup jangan disembunyikan bila ada kolomnya.
+- [ ] Play Console → App content → Privacy policy URL: pastikan URL menunjuk revisi policy yang memuat bullet Notifications (host `docs/privacy-policy.md` terbaru).
+- [ ] Smoke di device Android 13+: simpan bill baru → dialog izin notifikasi muncul SEKALI (kontekstual, bukan saat cold start); tolak → app tetap jalan, tanpa crash, tanpa reminder; terima → settle bill → reminder batal.
+- [ ] Catat tanggal sinkron Data Safety di sini agar audit berikutnya tahu revisi mana yang live.
 
 ### Google Play Policy 2026 July Cycle
 - [x] Sebelum 2026-10-28, hapus `READ_CONTACTS` dan migrasikan import peserta ke Android Contact Picker. Jangan request akses buku kontak luas. (Selesai 2026-07-22: ganti `flutter_contacts` ke `flutter_native_contact_picker`, hapus permission dari manifest.)
