@@ -14,6 +14,7 @@ import 'package:bagistruk/domain/entities/history_summary.dart';
 import 'package:bagistruk/domain/entities/item.dart';
 import 'package:bagistruk/domain/entities/ocr_credit_status.dart';
 import 'package:bagistruk/domain/entities/participant.dart';
+import 'package:bagistruk/domain/entities/shared_bill.dart';
 import 'package:bagistruk/domain/repositories/i_bill_repository.dart';
 import 'package:bagistruk/presentation/credits/providers/ocr_credit_status_provider.dart';
 import 'package:bagistruk/presentation/history/providers/history_filter_notifier.dart';
@@ -159,6 +160,17 @@ class FakeBillRepository implements IBillRepository {
 
   @override
   Future<Result<void>> ensureSignedIn() async => const Result.success(null);
+
+  @override
+  Future<Result<BillShareLink>> createShareToken(
+      {required String billId, required String tokenHash}) =>
+      throw UnimplementedError();
+  @override
+  Future<Result<void>> revokeShareToken(String tokenId) =>
+      throw UnimplementedError();
+  @override
+  Future<Result<SharedBill?>> resolveShareToken(String tokenHash) =>
+      throw UnimplementedError();
 }
 
 class ListHistoryCall {

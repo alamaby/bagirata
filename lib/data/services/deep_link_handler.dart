@@ -38,6 +38,28 @@ class DeepLinkHandler {
   final _appLinks = AppLinks();
   StreamSubscription<Uri>? _sub;
 
+  /// Token from the most recent `bagistruk://share/<token>` link that the
+  /// router has not consumed yet. Kept outside the widget tree because the
+  /// handler runs before `ProviderScope` mounts on cold start.
+  static String? _pendingShareToken;
+
+  /// Extracts the share token from a `bagistruk://share/<token>` URI, or
+  /// null for anything else. Pure — unit-tested.
+  static String? parseShareToken(Uri uri) {
+    if (uri.scheme != 'bagistruk' || uri.host != 'share') return null;
+    if (uri.pathSegments.isEmpty) return null;
+    final token = uri.pathSegments.first.trim();
+    return token.isEmpty ? null : token;
+  }
+
+  /// Takes the pending share token, if any. One-shot: the router redirect
+  /// consumes it when routing to `/share/:token`.
+  static String? consumeShareToken() {
+    final token = _pendingShareToken;
+    _pendingShareToken = null;
+    return token;
+  }
+
   /// Process the initial link that cold-started the app (if any).
   Future<void> handleInitialLink() async {
     try {
@@ -61,6 +83,14 @@ class DeepLinkHandler {
 
   Future<void> _processUri(Uri uri) async {
     final raw = uri.toString();
+    // Public share-links (M2/F5) never touch Supabase auth: stash the token
+    // for the router redirect and stop. The token itself is never logged.
+    final shareToken = parseShareToken(uri);
+    if (shareToken != null) {
+      _pendingShareToken = shareToken;
+      AppLogger.log('DeepLinkHandler: share link received');
+      return;
+    }
     final isSupabaseCallback =
         raw.contains('access_token=') ||
         raw.contains('refresh_token=') ||

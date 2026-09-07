@@ -25,7 +25,9 @@ import '../../shared/widgets/loading_view.dart';
 import '../../shared/widgets/plus_info_icon.dart';
 import '../export/bill_csv_exporter.dart';
 import '../export/bill_pdf_exporter.dart';
+import '../export/bill_xlsx_exporter.dart';
 import '../providers/bill_detail_notifier.dart';
+import '../providers/bill_share_link_notifier.dart';
 import '../providers/split_notifier.dart' show ParticipantTotal, SplitState;
 import '../utils/settlement_share_launcher.dart';
 import '../utils/settlement_message_builder.dart';
@@ -259,6 +261,52 @@ class _Body extends ConsumerWidget {
     }
   }
 
+  Future<void> _exportXlsx(BuildContext context, WidgetRef ref) async {
+    final l10n = AppL10n.of(context);
+    final isPlus = switch (ref.read(ocrCreditStatusProvider)) {
+      AsyncData(:final value) => value?.isPlus ?? false,
+      _ => false,
+    };
+    if (!isPlus) {
+      context.goNamed(Routes.settingsName);
+      return;
+    }
+
+    try {
+      final bankInfo = isPlus
+          ? await ref.read(transferBankInfoProvider.future)
+          : null;
+      if (!context.mounted) return;
+      final bytes = BillXlsxExporter(
+        state,
+        l10n: l10n,
+        bankInfo: bankInfo,
+      ).build();
+      final filename = BillXlsxExporter.fileName(
+        state.bill.title,
+        state.bill.id,
+      );
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            Uint8List.fromList(bytes),
+            mimeType:
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          ),
+        ],
+        subject: l10n.exportXlsxSubject(state.bill.title),
+        text: l10n.exportXlsxShareText(state.bill.title),
+        fileNameOverrides: [filename],
+      );
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.exportFailed)));
+      }
+    }
+  }
+
   String _safeFileName(String title) {
     final cleaned = title
         .toLowerCase()
@@ -295,8 +343,11 @@ class _Body extends ConsumerWidget {
           isPlus: isPlus,
           onExportPdf: () => _exportPdf(context, ref),
           onExportCsv: () => _exportCsv(context, ref),
+          onExportXlsx: () => _exportXlsx(context, ref),
           l10n: l10n,
         ),
+        SizedBox(height: 12.h),
+        _ShareLinkSection(billId: billId),
         SizedBox(height: 20.h),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -334,12 +385,14 @@ class _ExportActions extends StatelessWidget {
     required this.isPlus,
     required this.onExportPdf,
     required this.onExportCsv,
+    required this.onExportXlsx,
     required this.l10n,
   });
 
   final bool isPlus;
   final VoidCallback onExportPdf;
   final VoidCallback onExportCsv;
+  final VoidCallback onExportXlsx;
   final AppL10n l10n;
 
   @override
@@ -353,7 +406,7 @@ class _ExportActions extends StatelessWidget {
       foregroundColor: scheme.onSurfaceVariant,
     );
 
-    return Row(
+    final buttons = Row(
       children: [
         Expanded(
           child: FilledButton.tonalIcon(
@@ -392,6 +445,28 @@ class _ExportActions extends StatelessWidget {
             iconColor: scheme.onSurfaceVariant,
           ),
         ],
+      ],
+    );
+    return Column(
+      children: [
+        buttons,
+        SizedBox(height: 8.h),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onExportXlsx,
+            icon: Icon(
+              isPlus ? Icons.table_chart_outlined : Icons.lock_outline,
+            ),
+            label: _OneLineButtonLabel(
+              isPlus ? l10n.exportXlsx : l10n.exportXlsxPlusLocked,
+            ),
+            style: OutlinedButton.styleFrom(
+              minimumSize: Size.fromHeight(44.h),
+              padding: EdgeInsets.symmetric(horizontal: 10.w),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -718,6 +793,180 @@ class _EmptyParticipants extends StatelessWidget {
             icon: const Icon(Icons.call_split),
             label: Text(l10n.billDetailGoToSplit),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Owner-side share-link controls (M2/F5): create/copy a 7-day read-only
+/// link, show its expiry while active, revoke it. The raw token lives only
+/// in the creating session (clipboard + in-memory `lastLink`); reopening the
+/// screen shows expiry + revoke for the active row resolved by hash lookup.
+class _ShareLinkSection extends ConsumerStatefulWidget {
+  const _ShareLinkSection({required this.billId});
+
+  final String billId;
+
+  @override
+  ConsumerState<_ShareLinkSection> createState() => _ShareLinkSectionState();
+}
+
+class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(billShareLinkProvider.notifier).load(widget.billId),
+    );
+  }
+
+  Future<void> _create() async {
+    final link = await ref
+        .read(billShareLinkProvider.notifier)
+        .createAndCopy(widget.billId);
+    if (!mounted) return;
+    final l10n = AppL10n.of(context);
+    final err = ref.read(billShareLinkProvider).error;
+    if (link != null) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.shareLinkCopied),
+            action: SnackBarAction(
+              label: l10n.splitSummaryShare,
+              onPressed: () => Share.shareUri(Uri.parse(link)),
+            ),
+          ),
+        );
+    } else if (err == 'share_token_limit') {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.shareLinkFreeLimit)));
+    } else {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.shareLinkCreateFailed)));
+    }
+  }
+
+  Future<void> _revoke(String tokenId) async {
+    final ok = await ref
+        .read(billShareLinkProvider.notifier)
+        .revoke(tokenId);
+    if (!mounted) return;
+    final l10n = AppL10n.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(ok ? l10n.shareLinkRevoked : l10n.shareLinkCreateFailed),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final async = ref.watch(billShareLinkProvider);
+
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.link_outlined,
+                size: 18.r,
+                color: scheme.onSurfaceVariant,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                l10n.shareLinkSectionTitle,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          switch (async) {
+            AsyncLoading() => const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            AsyncError(:final error) when error == 'share_token_limit' => Text(
+              l10n.shareLinkFreeLimit,
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: scheme.error,
+              ),
+            ),
+            AsyncError() => Text(
+              l10n.shareLinkCreateFailed,
+              style: TextStyle(fontSize: 13.sp, color: scheme.error),
+            ),
+            AsyncData(:final value) when value == null => SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _create,
+                icon: const Icon(Icons.content_copy_outlined),
+                label: Text(l10n.shareLinkCreate),
+              ),
+            ),
+            AsyncData(:final value) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.shareLinkExpiresIn(
+                    DateFormat.yMMMd(
+                      AppFormat.intlLocaleOf(Localizations.localeOf(context)),
+                    ).format(value!.expiresAt.toLocal()),
+                  ),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    if (value.lastLink != null)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () =>
+                              Share.shareUri(Uri.parse(value.lastLink!)),
+                          icon: const Icon(Icons.share_outlined),
+                          label: Text(l10n.splitSummaryShare),
+                        ),
+                      ),
+                    if (value.lastLink != null) SizedBox(width: 8.w),
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => _revoke(value.tokenId),
+                        icon: const Icon(Icons.link_off_outlined),
+                        label: Text(l10n.shareLinkRevoke),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            _ => const SizedBox.shrink(),
+          },
         ],
       ),
     );

@@ -635,6 +635,31 @@
   "@settlementPromoFooter": {
     "placeholders": { "url": { "type": "String" } }
   },
+
+  "shareLinkSectionTitle": "Share link",
+  "shareLinkCreate": "Copy link",
+  "shareLinkCopied": "Link copied. Valid for 7 days.",
+  "shareLinkCreateFailed": "Could not create the link. Try again.",
+  "shareLinkRevoke": "Disable link",
+  "shareLinkRevoked": "Link disabled.",
+  "shareLinkExpired": "This link is expired or invalid.",
+  "shareLinkFreeLimit": "Free allows 1 active link per bill. Disable the old link or upgrade to Plus to rotate.",
+  "shareLinkExpiresIn": "Valid until {date}",
+  "@shareLinkExpiresIn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "shareLinkPublicTitle": "Shared details",
+  "shareLinkJoinCta": "Sign up to create your own bills",
+  "exportXlsx": "Export XLSX",
+  "exportXlsxPlusLocked": "Export XLSX (Plus)",
+  "exportXlsxSubject": "Export {title}",
+  "@exportXlsxSubject": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "exportXlsxShareText": "XLSX export for {title}",
+  "@exportXlsxShareText": {
+    "placeholders": { "title": { "type": "String" } }
+  },
   "aboutTitle": "About",
   "aboutSettingsTile": "About App",
   "aboutVersionLabel": "Version",

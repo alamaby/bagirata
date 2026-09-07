@@ -34,6 +34,7 @@ For Indonesian users, you may lodge a complaint with the Ministry of Communicati
 - Receipt photos: images you choose, capture, or share from other apps via the Android share sheet (Share → Scan receipt) for OCR processing.
 - Bill data: merchant names, receipt dates, items, quantities, prices, taxes, service charges, participants, split assignments, settlement status, deleted-bill recovery metadata, exports generated on device, and optional transfer bank information used in settlement messages.
 - **Participant contact info**: when you import a participant using the Android system Contact Picker, only the name and phone number of the single contact you explicitly select are stored on our server as part of the bill. We do not access, read, or upload your full address book. No contacts permission is required.
+- **Bill share-links**: when you create a share-link for a bill, we store only a SHA-256 hash of an opaque token plus its expiry (7 days) — never the raw link. Anyone opening the link sees a read-only snapshot (bill title, items, per-person totals, payment status) without logging in. The snapshot excludes bank transfer info and phone numbers. You can disable a link at any time from the bill detail screen, which immediately invalidates it.
 - OCR credit data: plan/entitlement status, Plus trial start/end/consumption metadata, monthly credit grants, credit usage, and audit records needed to enforce scan limits and feature access.
 - Google Play Billing data when purchases are available: product IDs, purchase tokens, order IDs, subscription status/expiry, and verification responses needed to grant Plus access or OCR credit packs.
 - Support and reminder data: email address and inactivity reminder timestamps when reminders are sent.
@@ -55,6 +56,7 @@ For Indonesian users, you may lodge a complaint with the Ministry of Communicati
 - To authenticate users and keep sessions active.
 - To process receipt photos and extract bill information, including images you share from other apps via the Android share sheet.
 - To save, display, edit, split, settle, share, export, delete, and restore bills when the feature is available.
+- To let bill owners share a time-limited read-only link so participants without an account can view their share; resolving a link stamps an anonymous view timestamp used only for link lifecycle display.
 - To preserve anonymous data when a user upgrades to a registered account.
 - To enforce OCR credit limits and feature access, including anonymous, Free, Plus, history windows, export access, deleted-bill recovery, per-bill currency override, transfer bank information, and monthly insights.
 - To grant and enforce one-time Plus trials for eligible registered users, including recording when a trial starts, ends, and has been consumed.
@@ -212,6 +214,7 @@ Untuk pengguna di Indonesia, Anda dapat mengajukan keluhan ke Kementerian Komuni
 - Foto struk: gambar yang Anda pilih, ambil, atau bagikan dari aplikasi lain melalui share sheet Android (Share → Scan receipt) untuk pemrosesan OCR.
 - Data tagihan: nama merchant, tanggal struk, item, jumlah, harga, pajak, service, peserta, pembagian item, status pembayaran, metadata pemulihan bill terhapus, export yang dibuat di perangkat, dan info bank transfer opsional untuk pesan settlement.
 - **Info kontak peserta**: ketika Anda mengimpor peserta menggunakan Android system Contact Picker, hanya nama dan nomor telepon dari satu kontak yang Anda pilih secara eksplisit yang disimpan di server kami sebagai bagian dari tagihan. Kami tidak mengakses, membaca, atau mengunggah buku alamat lengkap Anda. Tidak diperlukan izin kontak.
+- **Link berbagi tagihan**: saat Anda membuat link berbagi untuk sebuah tagihan, kami hanya menyimpan hash SHA-256 dari token acak beserta masa berlakunya (7 hari) — bukan link mentahnya. Siapa pun yang membuka link melihat ringkasan read-only (judul tagihan, item, total per orang, status bayar) tanpa perlu login. Ringkasan tidak memuat info bank transfer maupun nomor telepon. Anda dapat mematikan link kapan saja dari layar detail tagihan dan link langsung tidak berlaku.
 - Data credit OCR: status plan/entitlement, metadata mulai/akhir/pemakaian trial Plus, grant credit bulanan, penggunaan credit, dan audit yang dibutuhkan untuk menerapkan batas scan dan akses fitur.
 - Data Google Play Billing saat pembelian tersedia: product ID, purchase token, order ID, status/expiry subscription, dan respons verifikasi yang dibutuhkan untuk memberi akses Plus atau paket credit OCR.
 - Data dukungan dan reminder: alamat email dan timestamp reminder tidak aktif saat reminder dikirim.
@@ -233,6 +236,7 @@ Untuk pengguna di Indonesia, Anda dapat mengajukan keluhan ke Kementerian Komuni
 - Mengautentikasi pengguna dan menjaga sesi tetap aktif.
 - Memproses foto struk dan mengekstrak informasi tagihan, termasuk gambar yang Anda bagikan dari aplikasi lain melalui share sheet Android.
 - Menyimpan, menampilkan, mengedit, membagi, menyelesaikan, membagikan, mengekspor, menghapus, dan memulihkan tagihan saat fitur tersedia.
+- Memungkinkan pemilik tagihan membagikan link read-only berbatas waktu agar peserta tanpa akun bisa melihat bagiannya; pembukaan link mencatat timestamp kunjungan anonim yang hanya dipakai untuk siklus hidup link.
 - Mempertahankan data anonim saat pengguna upgrade ke akun terdaftar.
 - Menerapkan batas credit OCR dan akses fitur, termasuk batas pengguna anonim, Free, Plus, jendela History, akses export, pemulihan bill terhapus, penggantian currency per bill, info bank transfer, dan insight bulanan.
 - Memberikan dan menerapkan trial Plus satu kali untuk pengguna terdaftar yang memenuhi syarat, termasuk mencatat kapan trial mulai, berakhir, dan sudah digunakan.

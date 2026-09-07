@@ -7,6 +7,7 @@ import '../../domain/entities/history_bill_page.dart';
 import '../../domain/entities/history_summary.dart';
 import '../../domain/entities/item.dart';
 import '../../domain/entities/participant.dart';
+import '../../domain/entities/shared_bill.dart';
 import '../../domain/repositories/i_bill_repository.dart';
 import '../datasources/bill_remote_datasource.dart';
 import '../dtos/assignment_dto.dart';
@@ -95,6 +96,33 @@ class BillRepositoryImpl implements IBillRepository {
     }
     return const Result.success(null);
   }
+
+  @override
+  Future<Result<BillShareLink>> createShareToken({
+    required String billId,
+    required String tokenHash,
+  }) => guardAsync(() async {
+    final row = await _ds.createShareToken(
+      billId: billId,
+      tokenHash: tokenHash,
+    );
+    return BillShareLink(
+      tokenId: row['token_id'].toString(),
+      expiresAt: DateTime.parse(row['expires_at'].toString()),
+    );
+  });
+
+  @override
+  Future<Result<void>> revokeShareToken(String tokenId) =>
+      guardAsync(() => _ds.revokeShareToken(tokenId));
+
+  @override
+  Future<Result<SharedBill?>> resolveShareToken(String tokenHash) =>
+      guardAsync(() async {
+        final json = await _ds.resolveShareToken(tokenHash);
+        if (json == null) return null;
+        return SharedBill.fromJson(json);
+      });
 
   @override
   Future<Result<List<DeletedBill>>> listDeletedBills() => guardAsync(

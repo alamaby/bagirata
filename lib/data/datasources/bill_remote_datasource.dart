@@ -258,6 +258,40 @@ class BillRemoteDataSource {
   Future<void> deleteParticipant(String participantId) =>
       _client.from(_participants).delete().eq('id', participantId);
 
+  /// Creates (or rotates, for Plus) a share-link token. Only the SHA-256 of
+  /// the opaque [tokenHash] is sent — the raw token never leaves the device
+  /// except via the deep link the owner shares.
+  Future<Map<String, dynamic>> createShareToken({
+    required String billId,
+    required String tokenHash,
+  }) async {
+    final rows = await _client.rpc<Map<String, dynamic>>(
+      'create_bill_share_token',
+      params: {'p_bill_id': billId, 'p_token_hash': tokenHash},
+    );
+    final list = (rows as List?) ?? const [];
+    if (list.isEmpty) throw const FormatException('empty create response');
+    return Map<String, dynamic>.from(list.first as Map);
+  }
+
+  Future<void> revokeShareToken(String tokenId) => _client.rpc(
+    'revoke_bill_share_token',
+    params: {'p_token_id': tokenId},
+  );
+
+  /// Public resolve (no login required). Returns null when the token is
+  /// invalid, expired, revoked, or the bill was deleted.
+  Future<Map<String, dynamic>?> resolveShareToken(String tokenHash) async {
+    final res = await _client.rpc(
+      'resolve_share_token',
+      params: {'p_token_hash': tokenHash},
+    );
+    if (res == null) return null;
+    if (res is Map<String, dynamic>) return res;
+    if (res is Map) return Map<String, dynamic>.from(res);
+    return null;
+  }
+
   Future<List<AssignmentDto>> listAssignments(String billId) async {
     // Assignments are joined via items.bill_id; assumes a SQL view or a
     // nested select policy is in place. Fallback: per-item fetch from caller.

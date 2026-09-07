@@ -2525,6 +2525,96 @@ abstract class AppL10n {
   /// **'Dibuat dengan BagiStruk. Coba aplikasinya di Google Play: {url}'**
   String settlementPromoFooter(String url);
 
+  /// No description provided for @shareLinkSectionTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Link berbagi'**
+  String get shareLinkSectionTitle;
+
+  /// No description provided for @shareLinkCreate.
+  ///
+  /// In id, this message translates to:
+  /// **'Salin link'**
+  String get shareLinkCreate;
+
+  /// No description provided for @shareLinkCopied.
+  ///
+  /// In id, this message translates to:
+  /// **'Link disalin. Berlaku 7 hari.'**
+  String get shareLinkCopied;
+
+  /// No description provided for @shareLinkCreateFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Link belum bisa dibuat. Coba lagi.'**
+  String get shareLinkCreateFailed;
+
+  /// No description provided for @shareLinkRevoke.
+  ///
+  /// In id, this message translates to:
+  /// **'Matikan link'**
+  String get shareLinkRevoke;
+
+  /// No description provided for @shareLinkRevoked.
+  ///
+  /// In id, this message translates to:
+  /// **'Link dimatikan.'**
+  String get shareLinkRevoked;
+
+  /// No description provided for @shareLinkExpired.
+  ///
+  /// In id, this message translates to:
+  /// **'Link sudah kedaluwarsa atau tidak valid.'**
+  String get shareLinkExpired;
+
+  /// No description provided for @shareLinkFreeLimit.
+  ///
+  /// In id, this message translates to:
+  /// **'Free hanya boleh 1 link aktif per bill. Matikan link lama atau upgrade ke Plus untuk rotate.'**
+  String get shareLinkFreeLimit;
+
+  /// No description provided for @shareLinkExpiresIn.
+  ///
+  /// In id, this message translates to:
+  /// **'Berlaku sampai {date}'**
+  String shareLinkExpiresIn(String date);
+
+  /// No description provided for @shareLinkPublicTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Rincian berbagi'**
+  String get shareLinkPublicTitle;
+
+  /// No description provided for @shareLinkJoinCta.
+  ///
+  /// In id, this message translates to:
+  /// **'Daftar untuk membuat bill sendiri'**
+  String get shareLinkJoinCta;
+
+  /// No description provided for @exportXlsx.
+  ///
+  /// In id, this message translates to:
+  /// **'Export XLSX'**
+  String get exportXlsx;
+
+  /// No description provided for @exportXlsxPlusLocked.
+  ///
+  /// In id, this message translates to:
+  /// **'Export XLSX (Plus)'**
+  String get exportXlsxPlusLocked;
+
+  /// No description provided for @exportXlsxSubject.
+  ///
+  /// In id, this message translates to:
+  /// **'Export {title}'**
+  String exportXlsxSubject(String title);
+
+  /// No description provided for @exportXlsxShareText.
+  ///
+  /// In id, this message translates to:
+  /// **'Export XLSX untuk {title}'**
+  String exportXlsxShareText(String title);
+
   /// No description provided for @aboutTitle.
   ///
   /// In id, this message translates to:

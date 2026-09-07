@@ -635,6 +635,31 @@
   "@settlementPromoFooter": {
     "placeholders": { "url": { "type": "String" } }
   },
+
+  "shareLinkSectionTitle": "Link berbagi",
+  "shareLinkCreate": "Salin link",
+  "shareLinkCopied": "Link disalin. Berlaku 7 hari.",
+  "shareLinkCreateFailed": "Link belum bisa dibuat. Coba lagi.",
+  "shareLinkRevoke": "Matikan link",
+  "shareLinkRevoked": "Link dimatikan.",
+  "shareLinkExpired": "Link sudah kedaluwarsa atau tidak valid.",
+  "shareLinkFreeLimit": "Free hanya boleh 1 link aktif per bill. Matikan link lama atau upgrade ke Plus untuk rotate.",
+  "shareLinkExpiresIn": "Berlaku sampai {date}",
+  "@shareLinkExpiresIn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "shareLinkPublicTitle": "Rincian berbagi",
+  "shareLinkJoinCta": "Daftar untuk membuat bill sendiri",
+  "exportXlsx": "Export XLSX",
+  "exportXlsxPlusLocked": "Export XLSX (Plus)",
+  "exportXlsxSubject": "Export {title}",
+  "@exportXlsxSubject": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "exportXlsxShareText": "Export XLSX untuk {title}",
+  "@exportXlsxShareText": {
+    "placeholders": { "title": { "type": "String" } }
+  },
   "aboutTitle": "Tentang",
   "aboutSettingsTile": "Tentang Aplikasi",
   "aboutVersionLabel": "Versi",

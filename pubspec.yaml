@@ -59,6 +59,10 @@ dependencies:
   logger: ^2.5.0
   share_plus: ^10.1.4
   pdf: ^3.12.0
+  # M2/F7 XLSX export (Plus). Pure-Dart workbook writer, sejajar dengan
+  # `pdf:` untuk export client-side. Angka ditulis sebagai sel numerik agar
+  # parity dengan CSV (raw double) terjaga; format tampilan ikut Excel.
+  excel: ^4.0.6
   package_info_plus: ^8.0.0
   url_launcher: ^6.3.0
   # SHA-256 hashing for marketing_subscribers.email_canonical_hash so the

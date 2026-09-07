@@ -1399,6 +1399,58 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get shareLinkSectionTitle => 'Share link';
+
+  @override
+  String get shareLinkCreate => 'Copy link';
+
+  @override
+  String get shareLinkCopied => 'Link copied. Valid for 7 days.';
+
+  @override
+  String get shareLinkCreateFailed => 'Could not create the link. Try again.';
+
+  @override
+  String get shareLinkRevoke => 'Disable link';
+
+  @override
+  String get shareLinkRevoked => 'Link disabled.';
+
+  @override
+  String get shareLinkExpired => 'This link is expired or invalid.';
+
+  @override
+  String get shareLinkFreeLimit =>
+      'Free allows 1 active link per bill. Disable the old link or upgrade to Plus to rotate.';
+
+  @override
+  String shareLinkExpiresIn(String date) {
+    return 'Valid until $date';
+  }
+
+  @override
+  String get shareLinkPublicTitle => 'Shared details';
+
+  @override
+  String get shareLinkJoinCta => 'Sign up to create your own bills';
+
+  @override
+  String get exportXlsx => 'Export XLSX';
+
+  @override
+  String get exportXlsxPlusLocked => 'Export XLSX (Plus)';
+
+  @override
+  String exportXlsxSubject(String title) {
+    return 'Export $title';
+  }
+
+  @override
+  String exportXlsxShareText(String title) {
+    return 'XLSX export for $title';
+  }
+
+  @override
   String get aboutTitle => 'About';
 
   @override

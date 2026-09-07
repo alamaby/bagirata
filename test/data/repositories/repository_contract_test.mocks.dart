@@ -243,6 +243,39 @@ class MockBillRemoteDataSource extends _i1.Mock
           as _i7.Future<void>);
 
   @override
+  _i7.Future<Map<String, dynamic>> createShareToken({
+    required String? billId,
+    required String? tokenHash,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createShareToken, [], {
+              #billId: billId,
+              #tokenHash: tokenHash,
+            }),
+            returnValue: _i7.Future<Map<String, dynamic>>.value(
+              <String, dynamic>{},
+            ),
+          )
+          as _i7.Future<Map<String, dynamic>>);
+
+  @override
+  _i7.Future<void> revokeShareToken(String? tokenId) =>
+      (super.noSuchMethod(
+            Invocation.method(#revokeShareToken, [tokenId]),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
+  _i7.Future<Map<String, dynamic>?> resolveShareToken(String? tokenHash) =>
+      (super.noSuchMethod(
+            Invocation.method(#resolveShareToken, [tokenHash]),
+            returnValue: _i7.Future<Map<String, dynamic>?>.value(),
+          )
+          as _i7.Future<Map<String, dynamic>?>);
+
+  @override
   _i7.Future<List<_i11.AssignmentDto>> listAssignments(String? billId) =>
       (super.noSuchMethod(
             Invocation.method(#listAssignments, [billId]),

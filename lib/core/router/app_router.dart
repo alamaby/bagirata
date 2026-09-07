@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/providers.dart';
+import '../../data/services/deep_link_handler.dart';
 import '../../domain/entities/auth_snapshot.dart';
 import '../../domain/entities/ocr_result.dart';
 import '../../presentation/auth/providers/auth_providers.dart';
@@ -15,6 +16,7 @@ import '../../presentation/auth/screens/reset_password_screen.dart';
 import '../../presentation/auth/screens/verify_email_screen.dart';
 import '../../presentation/auth/screens/verify_otp_screen.dart';
 import '../../presentation/bills/screens/bill_detail_screen.dart';
+import '../../presentation/bills/screens/shared_bill_screen.dart';
 import '../../presentation/bills/screens/deleted_bills_screen.dart';
 import '../../presentation/bills/screens/bill_review_screen.dart';
 import '../../presentation/bills/screens/bill_split_screen.dart';
@@ -50,6 +52,25 @@ GoRouter appRouter(Ref ref) {
     redirect: (context, state) async {
       final rawLoc = state.uri.toString();
       final loc = state.matchedLocation;
+
+      // ── Public share-link (M2/F5) ─────────────────────────────────────
+      // Viewers without an account land here straight from
+      // `bagistruk://share/<token>` (or a pasted link). It must bypass every
+      // gate below — legal, onboarding, welcome, history paywall — because
+      // there may be no usable profile/session at all. The screen itself is
+      // read-only and resolves the token over an anonymous-safe RPC.
+      if (loc == '/share' || loc.startsWith('/share/')) return null;
+
+      // A share-link that arrived while the app was running (or cold-started
+      // it) is stashed by DeepLinkHandler; route it to the public screen.
+      // Also handle the raw custom-scheme URI in case GoRouter received it
+      // directly as the initial location.
+      final pendingShare =
+          DeepLinkHandler.consumeShareToken() ??
+          DeepLinkHandler.parseShareToken(state.uri);
+      if (pendingShare != null && pendingShare.isNotEmpty) {
+        return '/share/$pendingShare';
+      }
 
       // ── Supabase email-link callback ──────────────────────────────────
       // Two entry points reach this block:
@@ -340,6 +361,16 @@ GoRouter appRouter(Ref ref) {
         path: Routes.callback,
         name: Routes.callbackName,
         redirect: (context, state) => null,
+      ),
+      // Public read-only bill view for share-links. Gated out of every
+      // redirect rule above; an unknown/expired token renders the expired
+      // view instead of bouncing to login.
+      GoRoute(
+        path: Routes.share,
+        name: Routes.shareName,
+        builder: (context, state) => SharedBillScreen(
+          token: state.pathParameters['token'] ?? '',
+        ),
       ),
     ],
   );

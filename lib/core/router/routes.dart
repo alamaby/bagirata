@@ -68,6 +68,12 @@ class Routes {
   static const String callback = '/callback';
   static const String callbackName = 'callback';
 
+  /// Public read-only bill view (`bagistruk://share/<token>`). No login wall
+  /// and no legal/onboarding gates — viewers without an account must land
+  /// here directly (exempted in the router redirect).
+  static const String share = '/share/:token';
+  static const String shareName = 'share';
+
   /// One-time screen shown after a non-anonymous user finishes the
   /// authentication flow (currently Google sign-in) to collect an explicit
   /// marketing email opt-in. Email/password sign-up collects the same

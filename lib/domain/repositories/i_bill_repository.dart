@@ -6,6 +6,7 @@ import '../entities/history_bill_page.dart';
 import '../entities/history_summary.dart';
 import '../entities/item.dart';
 import '../entities/participant.dart';
+import '../entities/shared_bill.dart';
 
 abstract interface class IBillRepository {
   Future<Result<List<Bill>>> listBills({DateTime? createdAfter});
@@ -47,4 +48,13 @@ abstract interface class IBillRepository {
   /// Idempotent session guard. Ensures a valid Supabase user session is
   /// available before write operations that require RLS authorization.
   Future<Result<void>> ensureSignedIn();
+
+  /// Share-link (M2/F5): create/rotate a token (server enforces Free 1-active
+  /// via `plan_code`), revoke it, or resolve it publicly (no login).
+  Future<Result<BillShareLink>> createShareToken({
+    required String billId,
+    required String tokenHash,
+  });
+  Future<Result<void>> revokeShareToken(String tokenId);
+  Future<Result<SharedBill?>> resolveShareToken(String tokenHash);
 }

@@ -1398,6 +1398,58 @@ class AppL10nId extends AppL10n {
   }
 
   @override
+  String get shareLinkSectionTitle => 'Link berbagi';
+
+  @override
+  String get shareLinkCreate => 'Salin link';
+
+  @override
+  String get shareLinkCopied => 'Link disalin. Berlaku 7 hari.';
+
+  @override
+  String get shareLinkCreateFailed => 'Link belum bisa dibuat. Coba lagi.';
+
+  @override
+  String get shareLinkRevoke => 'Matikan link';
+
+  @override
+  String get shareLinkRevoked => 'Link dimatikan.';
+
+  @override
+  String get shareLinkExpired => 'Link sudah kedaluwarsa atau tidak valid.';
+
+  @override
+  String get shareLinkFreeLimit =>
+      'Free hanya boleh 1 link aktif per bill. Matikan link lama atau upgrade ke Plus untuk rotate.';
+
+  @override
+  String shareLinkExpiresIn(String date) {
+    return 'Berlaku sampai $date';
+  }
+
+  @override
+  String get shareLinkPublicTitle => 'Rincian berbagi';
+
+  @override
+  String get shareLinkJoinCta => 'Daftar untuk membuat bill sendiri';
+
+  @override
+  String get exportXlsx => 'Export XLSX';
+
+  @override
+  String get exportXlsxPlusLocked => 'Export XLSX (Plus)';
+
+  @override
+  String exportXlsxSubject(String title) {
+    return 'Export $title';
+  }
+
+  @override
+  String exportXlsxShareText(String title) {
+    return 'Export XLSX untuk $title';
+  }
+
+  @override
   String get aboutTitle => 'Tentang';
 
   @override

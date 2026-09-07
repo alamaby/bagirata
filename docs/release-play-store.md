@@ -84,8 +84,11 @@ Required repository secrets and variables:
 | Variable | `GOOGLE_IOS_CLIENT_ID` | Google OAuth iOS client ID, required for iOS builds |
 | Variable | `AUTH_EMAIL_REDIRECT_TO` | Optional; defaults to `bagistruk://auth/callback` for Supabase email verification/password reset links |
 | Variable | `ADS_ENABLED` | `false` by default; set `true` only after AdMob production IDs and Play disclosures are ready |
-| Variable | `ADMOB_ANDROID_BANNER_ID` | Android AdMob banner unit ID, currently `ca-app-pub-4082765898994990/8733289141` |
-| Variable | `ADMOB_IOS_BANNER_ID` | iOS AdMob banner unit ID |
+| Variable | `ADMOB_ANDROID_BANNER_SCAN_ID` | Android AdMob banner unit ID for Scan screen, `ca-app-pub-4082765898994990/4091625538` |
+| Variable | `ADMOB_ANDROID_BANNER_HISTORY_ID` | Android AdMob banner unit ID for History screen, `ca-app-pub-4082765898994990/2778543869` |
+| Variable | `ADMOB_ANDROID_BANNER_SETTINGS_ID` | Android AdMob banner unit ID for Settings screen, `ca-app-pub-4082765898994990/1436552353` |
+| Variable | `ADMOB_ANDROID_BANNER_ID` | Android AdMob banner unit ID (fallback if per-placement IDs not set), currently `ca-app-pub-4082765898994990/8733289141` |
+| Variable | `ADMOB_IOS_BANNER_ID` | iOS AdMob banner unit ID (same fallback pattern if per-placement IDs are added later) |
 
 Before smoke testing email sign-up or password reset, configure Supabase
 Dashboard **Authentication -> URL Configuration**:
@@ -139,7 +142,8 @@ supabase functions deploy inactive-user-cleanup --no-verify-jwt
    - Submit the public Privacy Policy URL: `https://bagistruk.vercel.app/privacy`.
    - Complete Data deletion questions and disclose the in-app path: **Profile & Settings -> Delete Account**.
    - If `ADS_ENABLED=true`, declare that the app contains ads. Declare Advertising ID while the build includes Google Mobile Ads/AdMob and the `AD_ID` permission. Android AdMob App ID is configured as `ca-app-pub-4082765898994990~1671692391`.
-   - Complete the Data safety form for email, receipt photos, bill data, Supabase, Google Sign-In, OCR providers, Google Mobile Ads/AdMob if ads are enabled, and reminder email provider if enabled.
+    - Complete the Data safety form for email, receipt photos, bill data, Supabase, Google Sign-In, OCR providers, Google Mobile Ads/AdMob if ads are enabled, and reminder email provider if enabled.
+    - Declare the bill share-link flow: read-only snapshots (bill title, items, per-person totals, payment status) viewable without login via a 7-day expiring link; only the SHA-256 token hash is stored server-side; bank info and phone numbers are excluded; links are revocable from the bill detail screen. Reference `docs/privacy-policy.md` "Bill share-links" section.
    - Complete content rating, target audience, and app access declarations.
 4. Promote to **Closed testing -> Production** once internal testing passes.
 

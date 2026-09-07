@@ -72,6 +72,20 @@
                     android:host="auth"
                     android:path="/callback"/>
             </intent-filter>
+            <!-- Public share-links (M2/F5): `bagistruk://share/<token>` opens
+                 the read-only SharedBillScreen. Any path under host "share"
+                 is accepted; unknown/expired tokens render the expired view
+                 instead of bouncing to login. -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data
+                    android:scheme="bagistruk"
+                    android:host="share"/>
+            </intent-filter>
         </activity>
         <!-- Share target "Scan receipt": appears in the Android share sheet
              when the user shares images. Routes SEND / SEND_MULTIPLE into

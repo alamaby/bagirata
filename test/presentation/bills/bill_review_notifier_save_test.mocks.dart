@@ -13,6 +13,7 @@ import 'package:bagistruk/domain/entities/history_bill_page.dart' as _i7;
 import 'package:bagistruk/domain/entities/history_summary.dart' as _i8;
 import 'package:bagistruk/domain/entities/item.dart' as _i10;
 import 'package:bagistruk/domain/entities/participant.dart' as _i11;
+import 'package:bagistruk/domain/entities/shared_bill.dart' as _i13;
 import 'package:bagistruk/domain/repositories/i_bill_repository.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
@@ -304,4 +305,54 @@ class MockIBillRepository extends _i1.Mock implements _i2.IBillRepository {
             ),
           )
           as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<_i13.BillShareLink>> createShareToken({
+    required String? billId,
+    required String? tokenHash,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createShareToken, [], {
+              #billId: billId,
+              #tokenHash: tokenHash,
+            }),
+            returnValue: _i3.Future<_i4.Result<_i13.BillShareLink>>.value(
+              _i6.dummyValue<_i4.Result<_i13.BillShareLink>>(
+                this,
+                Invocation.method(#createShareToken, [], {
+                  #billId: billId,
+                  #tokenHash: tokenHash,
+                }),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i13.BillShareLink>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> revokeShareToken(String? tokenId) =>
+      (super.noSuchMethod(
+            Invocation.method(#revokeShareToken, [tokenId]),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#revokeShareToken, [tokenId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
+
+  @override
+  _i3.Future<_i4.Result<_i13.SharedBill?>> resolveShareToken(
+    String? tokenHash,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#resolveShareToken, [tokenHash]),
+            returnValue: _i3.Future<_i4.Result<_i13.SharedBill?>>.value(
+              _i6.dummyValue<_i4.Result<_i13.SharedBill?>>(
+                this,
+                Invocation.method(#resolveShareToken, [tokenHash]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<_i13.SharedBill?>>);
 }
