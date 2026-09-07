@@ -3,6 +3,7 @@ import 'package:excel/excel.dart';
 import '../../../domain/entities/transfer_bank_info.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../providers/bill_detail_notifier.dart';
+import 'export_filenames.dart';
 
 /// XLSX export (M2/F7, Plus-only — gated by the caller like PDF/CSV).
 /// Mirrors [BillCsvExporter] row-for-row so numbers stay identical across
@@ -21,18 +22,10 @@ class BillXlsxExporter {
   final AppL10n l10n;
   final TransferBankInfo? bankInfo;
 
-  /// `bagistruk-<slug>-<billId8>.xlsx`. The bill-id suffix keeps filenames
-  /// unique when two bills share a slug (`Bukber!!!` vs `Bukber`, emoji-only
-  /// titles, or empty titles → `bagistruk-bill`).
-  static String fileName(String title, String billId) {
-    final cleaned = title
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
-        .replaceAll(RegExp(r'^-+|-+$'), '');
-    final slug = cleaned.isEmpty ? 'bagistruk-bill' : 'bagistruk-$cleaned';
-    final shortId = billId.length >= 8 ? billId.substring(0, 8) : billId;
-    return '$slug-$shortId.xlsx';
-  }
+  /// `bagistruk-<slug>-<billId8>.xlsx`. Delegates to [ExportFilenames] so
+  /// all three export formats share one rule (kept for API compatibility).
+  static String fileName(String title, String billId) =>
+      ExportFilenames.unique(title, billId, 'xlsx');
 
   /// Excel sheet names: max 31 chars, none of `[]:*?/\`.
   static String sanitizeSheetName(String name) {

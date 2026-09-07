@@ -21,11 +21,30 @@ class BillShareState {
   final String? lastLink;
 }
 
+/// Outcome of [BillShareLink.createAndCopy] without touching displayed data.
+class ShareLinkResult {
+  const ShareLinkResult._({this.link, this.limited = false});
+
+  const ShareLinkResult.created(this.link) : limited = false;
+  const ShareLinkResult.limited() : link = null, limited = true;
+  const ShareLinkResult.failed() : link = null, limited = false;
+
+  final String? link;
+  final bool limited;
+}
+
 @riverpod
 class BillShareLink extends _$BillShareLink {
   @override
-  Future<BillShareState?> build() async => null;
+  Future<BillShareState?> build(String billId) async {
+    // No network in build: the screen calls load() explicitly. This keeps
+    // the provider unit-testable without a Supabase client and makes the
+    // per-bill family state (not a global singleton) the fix for stale A→B
+    // detail navigation.
+    return null;
+  }
 
+  /// Resolves the currently active link (if any) for [billId].
   Future<void> load(String billId) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
@@ -49,21 +68,29 @@ class BillShareLink extends _$BillShareLink {
     }
   }
 
-  Future<String?> createAndCopy(String billId) async {
+  /// Centralized Free-limit match (case-insensitive; the RPC raises
+  /// `share_token_limit: ...` which PostgREST surfaces in the message).
+  static bool isLimitError(Object e) =>
+      e.toString().toLowerCase().contains('share_token_limit');
+
+  Future<ShareLinkResult> createAndCopy(String billId) async {
     final token = ShareLinkToken.generate();
     final hash = ShareLinkToken.hash(token);
-    state = const AsyncLoading();
     try {
       final repo = ref.read(billRepositoryProvider);
       final res = await repo.createShareToken(billId: billId, tokenHash: hash);
       switch (res) {
         case ResultFailure(:final failure):
-          if (failure.toString().contains('share_token_limit')) {
-            state = AsyncError('share_token_limit', StackTrace.current);
-          } else {
-            state = AsyncError(failure, StackTrace.current);
-          }
-          return null;
+          AppLogger.error(
+            'BillShareLink.createAndCopy failed',
+            failure,
+            StackTrace.current,
+          );
+          // Preserve displayed data: a failed create must not wipe a
+          // previously loaded expiry/revoke.
+          return isLimitError(failure)
+              ? const ShareLinkResult.limited()
+              : const ShareLinkResult.failed();
         case Success(:final data):
           final link = 'bagistruk://share/$token';
           state = AsyncData(
@@ -73,17 +100,20 @@ class BillShareLink extends _$BillShareLink {
               lastLink: link,
             ),
           );
-          await Clipboard.setData(ClipboardData(text: link));
-          return link;
+          // Best-effort: a clipboard failure (e.g. headless env) must
+          // not lose the link — the screen re-shares from `lastLink`.
+          try {
+            await Clipboard.setData(ClipboardData(text: link));
+          } catch (e, st) {
+            AppLogger.error('BillShareLink.clipboard failed', e, st);
+          }
+          return ShareLinkResult.created(link);
       }
     } catch (e, st) {
       AppLogger.error('BillShareLink.createAndCopy failed', e, st);
-      if (e.toString().contains('share_token_limit')) {
-        state = AsyncError('share_token_limit', st);
-      } else {
-        state = AsyncError(e, st);
-      }
-      return null;
+      return isLimitError(e)
+          ? const ShareLinkResult.limited()
+          : const ShareLinkResult.failed();
     }
   }
 
@@ -92,14 +122,17 @@ class BillShareLink extends _$BillShareLink {
       final repo = ref.read(billRepositoryProvider);
       final res = await repo.revokeShareToken(tokenId);
       if (res is ResultFailure) {
-        state = AsyncError(res.failure, StackTrace.current);
+        AppLogger.error(
+          'BillShareLink.revoke failed',
+          res.failure,
+          StackTrace.current,
+        );
         return false;
       }
       state = const AsyncData(null);
       return true;
     } catch (e, st) {
       AppLogger.error('BillShareLink.revoke failed', e, st);
-      state = AsyncError(e, st);
       return false;
     }
   }

@@ -26,6 +26,7 @@ import '../../shared/widgets/plus_info_icon.dart';
 import '../export/bill_csv_exporter.dart';
 import '../export/bill_pdf_exporter.dart';
 import '../export/bill_xlsx_exporter.dart';
+import '../export/export_filenames.dart';
 import '../providers/bill_detail_notifier.dart';
 import '../providers/bill_share_link_notifier.dart';
 import '../providers/split_notifier.dart' show ParticipantTotal, SplitState;
@@ -200,8 +201,20 @@ class _Body extends ConsumerWidget {
     }
 
     try {
-      final csv = BillCsvExporter(state, l10n: l10n).build();
-      final filename = '${_safeFileName(state.bill.title)}.csv';
+      final bankInfo = isPlus
+          ? await ref.read(transferBankInfoProvider.future)
+          : null;
+      if (!context.mounted) return;
+      final csv = BillCsvExporter(
+        state,
+        l10n: l10n,
+        bankInfo: bankInfo,
+      ).build();
+      final filename = ExportFilenames.unique(
+        state.bill.title,
+        state.bill.id,
+        'csv',
+      );
       await Share.shareXFiles(
         [
           XFile.fromData(
@@ -245,7 +258,11 @@ class _Body extends ConsumerWidget {
         l10n: l10n,
         bankInfo: bankInfo,
       ).build();
-      final filename = '${_safeFileName(state.bill.title)}.pdf';
+      final filename = ExportFilenames.unique(
+        state.bill.title,
+        state.bill.id,
+        'pdf',
+      );
       await Share.shareXFiles(
         [XFile.fromData(bytes, mimeType: 'application/pdf')],
         subject: l10n.exportPdfSubject(state.bill.title),
@@ -282,9 +299,10 @@ class _Body extends ConsumerWidget {
         l10n: l10n,
         bankInfo: bankInfo,
       ).build();
-      final filename = BillXlsxExporter.fileName(
+      final filename = ExportFilenames.unique(
         state.bill.title,
         state.bill.id,
+        'xlsx',
       );
       await Share.shareXFiles(
         [
@@ -298,21 +316,14 @@ class _Body extends ConsumerWidget {
         text: l10n.exportXlsxShareText(state.bill.title),
         fileNameOverrides: [filename],
       );
-    } catch (_) {
+    } catch (e, st) {
+      AppLogger.error('BillDetailScreen._exportXlsx failed', e, st);
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.exportFailed)));
       }
     }
-  }
-
-  String _safeFileName(String title) {
-    final cleaned = title
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
-        .replaceAll(RegExp(r'^-+|-+$'), '');
-    return cleaned.isEmpty ? 'bagistruk-bill' : 'bagistruk-$cleaned';
   }
 
   @override
@@ -817,45 +828,53 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
   void initState() {
     super.initState();
     Future.microtask(
-      () => ref.read(billShareLinkProvider.notifier).load(widget.billId),
+      () => ref.read(billShareLinkFamily(widget.billId).notifier).load(widget.billId),
     );
   }
 
-  Future<void> _create() async {
-    final link = await ref
-        .read(billShareLinkProvider.notifier)
+  Future<void> _create(BuildContext context, WidgetRef ref) async {
+    final result = await ref
+        .read(billShareLinkFamily(widget.billId).notifier)
         .createAndCopy(widget.billId);
-    if (!mounted) return;
+    if (!context.mounted) return;
     final l10n = AppL10n.of(context);
-    final err = ref.read(billShareLinkProvider).error;
-    if (link != null) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(l10n.shareLinkCopied),
-            action: SnackBarAction(
-              label: l10n.splitSummaryShare,
-              onPressed: () => Share.shareUri(Uri.parse(link)),
-            ),
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    if (result.link != null) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.shareLinkCopied),
+          action: SnackBarAction(
+            label: l10n.splitSummaryShare,
+            onPressed: () => Share.shareUri(Uri.parse(result.link!)),
           ),
-        );
-    } else if (err == 'share_token_limit') {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.shareLinkFreeLimit)));
+        ),
+      );
+    } else if (result.limited) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.shareLinkFreeLimit),
+          action: SnackBarAction(
+            label: l10n.billingUpgradePlus,
+            onPressed: () => context.pushNamed(Routes.settingsName),
+          ),
+        ),
+      );
     } else {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.shareLinkCreateFailed)));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.shareLinkCreateFailed)),
+      );
     }
   }
 
-  Future<void> _revoke(String tokenId) async {
+  Future<void> _revoke(
+    BuildContext context,
+    WidgetRef ref,
+    String tokenId,
+  ) async {
     final ok = await ref
-        .read(billShareLinkProvider.notifier)
+        .read(billShareLinkFamily(widget.billId).notifier)
         .revoke(tokenId);
-    if (!mounted) return;
+    if (!context.mounted) return;
     final l10n = AppL10n.of(context);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -870,7 +889,7 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final async = ref.watch(billShareLinkProvider);
+    final async = ref.watch(billShareLinkFamily(widget.billId));
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -908,21 +927,29 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
                 child: CircularProgressIndicator(),
               ),
             ),
-            AsyncError(:final error) when error == 'share_token_limit' => Text(
-              l10n.shareLinkFreeLimit,
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: scheme.error,
-              ),
-            ),
-            AsyncError() => Text(
-              l10n.shareLinkCreateFailed,
-              style: TextStyle(fontSize: 13.sp, color: scheme.error),
+            AsyncError() => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.shareLinkCreateFailed,
+                  style: TextStyle(fontSize: 13.sp, color: scheme.error),
+                ),
+                SizedBox(height: 8.h),
+                OutlinedButton.icon(
+                  onPressed: () => ref
+                      .read(
+                        billShareLinkFamily(widget.billId).notifier,
+                      )
+                      .load(widget.billId),
+                  icon: const Icon(Icons.refresh_outlined),
+                  label: Text(l10n.retry),
+                ),
+              ],
             ),
             AsyncData(:final value) when value == null => SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: _create,
+                onPressed: () => _create(context, ref),
                 icon: const Icon(Icons.content_copy_outlined),
                 label: Text(l10n.shareLinkCreate),
               ),
@@ -956,7 +983,7 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
                     if (value.lastLink != null) SizedBox(width: 8.w),
                     Expanded(
                       child: TextButton.icon(
-                        onPressed: () => _revoke(value.tokenId),
+                        onPressed: () => _revoke(context, ref, value.tokenId),
                         icon: const Icon(Icons.link_off_outlined),
                         label: Text(l10n.shareLinkRevoke),
                       ),

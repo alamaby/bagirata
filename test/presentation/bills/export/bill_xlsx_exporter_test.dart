@@ -283,4 +283,49 @@ void main() {
       expect(BillXlsxExporter.sanitizeSheetName(''), 'Sheet');
     });
   });
+
+  group('BillXlsxExporter scale', () {
+    test('500 items and 100 participants encode without throwing', () {
+      const billId = 'bill-big-12345678';
+      final items = List.generate(
+        500,
+        (i) => Item(
+          id: 'i$i',
+          billId: billId,
+          name: 'Item $i',
+          price: 1000 + i.toDouble(),
+          qty: 1,
+        ),
+      );
+      final parts = List.generate(
+        100,
+        (i) => Participant(id: 'p$i', billId: billId, name: 'P$i'),
+      );
+      final assigns = [
+        for (final item in items)
+          for (final p in parts)
+            Assignment(
+              id: '${item.id}:${p.id}',
+              itemId: item.id,
+              participantId: p.id,
+            ),
+      ];
+      final big = BillDetailState(
+        bill: Bill(
+          id: billId,
+          title: 'Big bill',
+          totalAmount: 1000000,
+          currencyCode: 'IDR',
+          createdAt: DateTime.utc(2026, 9, 2),
+        ),
+        items: items,
+        participants: parts,
+        assignments: assigns,
+      );
+      final bytes = BillXlsxExporter(big, l10n: l10n).build();
+      expect(bytes, isNotEmpty);
+      final excel = Excel.decodeBytes(bytes);
+      expect(excel.tables.keys, hasLength(2));
+    });
+  });
 }

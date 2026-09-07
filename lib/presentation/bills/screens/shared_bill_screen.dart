@@ -32,13 +32,60 @@ class SharedBillScreen extends ConsumerWidget {
       body: SafeArea(
         child: switch (async) {
           AsyncLoading() => LoadingView(message: l10n.loading),
-          AsyncError() => _ExpiredView(l10n: l10n),
+          AsyncError(:final error) => _ResolveErrorView(
+            l10n: l10n,
+            message: error.toString(),
+            onRetry: () => ref.invalidate(sharedBillProvider(token)),
+          ),
           AsyncData(:final value) =>
             value == null
                 ? _ExpiredView(l10n: l10n)
                 : _SharedBillView(shared: value),
           _ => _ExpiredView(l10n: l10n),
         },
+      ),
+    );
+  }
+}
+
+class _ResolveErrorView extends StatelessWidget {
+  const _ResolveErrorView({
+    required this.l10n,
+    required this.message,
+    required this.onRetry,
+  });
+
+  final AppL10n l10n;
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 48.r,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14.sp),
+            ),
+            SizedBox(height: 16.h),
+            FilledButton.tonalIcon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_outlined),
+              label: Text(l10n.retry),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -161,6 +208,15 @@ class _SharedBillView extends StatelessWidget {
                 : l10n.settlementMessageUnpaid,
             amount: currency.format(totals[p.id]?.total ?? 0),
           ),
+        SizedBox(height: 24.h),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.tonalIcon(
+            onPressed: () => context.pushNamed(Routes.registerName),
+            icon: const Icon(Icons.person_add_outlined),
+            label: Text(l10n.shareLinkJoinCta),
+          ),
+        ),
       ],
     );
   }

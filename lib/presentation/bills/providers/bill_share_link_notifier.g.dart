@@ -10,37 +10,82 @@ part of 'bill_share_link_notifier.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(BillShareLink)
-const billShareLinkProvider = BillShareLinkProvider._();
+const billShareLinkFamily = BillShareLinkFamily._();
 
 final class BillShareLinkProvider
     extends $AsyncNotifierProvider<BillShareLink, BillShareState?> {
-  const BillShareLinkProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'billShareLinkProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  const BillShareLinkProvider._({
+    required BillShareLinkFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'billShareLinkFamily',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$billShareLinkHash();
 
+  @override
+  String toString() {
+    return r'billShareLinkFamily'
+        ''
+        '($argument)';
+  }
+
   @$internal
   @override
   BillShareLink create() => BillShareLink();
+
+  @override
+  bool operator ==(Object other) {
+    return other is BillShareLinkProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
 }
 
-String _$billShareLinkHash() => r'66573c157adc5fdc39f6667bbd6f3db565ffdffb';
+String _$billShareLinkHash() => r'c43506a797f988b0a997f7807933a4ed39fcb7e6';
+
+final class BillShareLinkFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          BillShareLink,
+          AsyncValue<BillShareState?>,
+          BillShareState?,
+          FutureOr<BillShareState?>,
+          String
+        > {
+  const BillShareLinkFamily._()
+    : super(
+        retry: null,
+        name: r'billShareLinkFamily',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  BillShareLinkProvider call(String billId) =>
+      BillShareLinkProvider._(argument: billId, from: this);
+
+  @override
+  String toString() => r'billShareLinkFamily';
+}
 
 abstract class _$BillShareLink extends $AsyncNotifier<BillShareState?> {
-  FutureOr<BillShareState?> build();
+  late final _$args = ref.$arg as String;
+  String get billId => _$args;
+
+  FutureOr<BillShareState?> build(String billId);
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
+    final created = build(_$args);
     final ref = this.ref as $Ref<AsyncValue<BillShareState?>, BillShareState?>;
     final element =
         ref.element

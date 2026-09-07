@@ -1,11 +1,16 @@
+import '../../../domain/entities/transfer_bank_info.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../providers/bill_detail_notifier.dart';
 
 class BillCsvExporter {
-  const BillCsvExporter(this.state, {required this.l10n});
+  const BillCsvExporter(this.state, {required this.l10n, this.bankInfo});
 
   final BillDetailState state;
   final AppL10n l10n;
+
+  /// Included only when the caller passes a complete value (Plus-only,
+  /// like PDF/XLSX) so Free CSVs never leak bank details.
+  final TransferBankInfo? bankInfo;
 
   String build() {
     final rows = <List<Object?>>[
@@ -75,6 +80,17 @@ class BillCsvExporter {
         participant.isPaid
             ? l10n.exportLabelPaidStatus
             : l10n.exportLabelUnpaidStatus,
+      ]);
+    }
+
+    final bank = bankInfo;
+    if (bank != null && bank.isComplete) {
+      rows.addAll([
+        [],
+        [l10n.transferBankShareTitle],
+        [l10n.transferBankNameLabel, bank.bankName.trim()],
+        [l10n.transferAccountNameLabel, bank.accountName.trim()],
+        [l10n.transferAccountNumberLabel, bank.accountNumber.trim()],
       ]);
     }
 

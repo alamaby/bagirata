@@ -13,8 +13,10 @@ final sharedBillProvider =
     FutureProvider.autoDispose.family<SharedBill?, String>((ref, token) async {
       final repo = ref.read(billRepositoryProvider);
       final res = await repo.resolveShareToken(ShareLinkToken.hash(token));
+      // Null data = invalid/expired/revoked/deleted token → expired view.
+      // Genuine failures (network, server) rethrow → error view with retry.
       return switch (res) {
         Success(:final data) => data,
-        ResultFailure() => null,
+        ResultFailure(:final failure) => throw failure,
       };
     });
