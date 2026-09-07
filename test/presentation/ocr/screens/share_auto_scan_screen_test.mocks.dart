@@ -526,11 +526,13 @@ class MockIProfileRepository extends _i1.Mock
   getMonthlySpendingInsight({
     required DateTime? month,
     required String? currencyCode,
+    String? category,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getMonthlySpendingInsight, [], {
               #month: month,
               #currencyCode: currencyCode,
+              #category: category,
             }),
             returnValue:
                 _i3.Future<_i5.Result<_i10.MonthlySpendingInsight>>.value(
@@ -539,6 +541,7 @@ class MockIProfileRepository extends _i1.Mock
                     Invocation.method(#getMonthlySpendingInsight, [], {
                       #month: month,
                       #currencyCode: currencyCode,
+                      #category: category,
                     }),
                   ),
                 ),

@@ -35,6 +35,19 @@ void main() {
       expect(find.text('Add item'), findsOneWidget);
     });
 
+    testWidgets('category presets and tags field are visible', (
+      tester,
+    ) async {
+      await pumpReview(tester, OcrResult.manual());
+
+      // All five presets render as chips.
+      for (final label in ['Food', 'Transport', 'Groceries', 'Shopping', 'Other']) {
+        expect(find.text(label), findsOneWidget);
+      }
+      // Tags field exists (locked for non-Plus in this harness).
+      expect(find.text('Tags (Plus)'), findsOneWidget);
+    });
+
     testWidgets('low-confidence OCR still shows the warning chip', (
       tester,
     ) async {

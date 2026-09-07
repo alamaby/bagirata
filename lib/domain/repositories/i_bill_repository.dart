@@ -20,10 +20,14 @@ abstract interface class IBillRepository {
     String? cursorSortValue,
     DateTime? cursorCreatedAt,
     String? cursorId,
+    String? query,
+    String? category,
   });
 
   Future<Result<HistorySummary>> getHistorySummary({
     required DateTime createdAfter,
+    String? query,
+    String? category,
   });
   Future<Result<Bill>> getBill(String id);
   Future<Result<Bill>> createBill(Bill bill);

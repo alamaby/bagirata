@@ -123,6 +123,7 @@ class _FakeProfileRepository implements IProfileRepository {
   Future<Result<MonthlySpendingInsight>> getMonthlySpendingInsight({
     required DateTime month,
     required String currencyCode,
+    String? category,
   }) async =>
       throw UnimplementedError();
 

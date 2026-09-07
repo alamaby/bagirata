@@ -11,6 +11,7 @@ import '../../../domain/entities/bill.dart';
 import '../../../domain/entities/item.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../domain/services/ocr_scale_normalizer.dart';
+import '../../history/utils/bill_category.dart';
 import '../../settings/providers/profile_notifier.dart';
 
 part 'bill_review_notifier.freezed.dart';
@@ -44,6 +45,10 @@ abstract class BillReviewState with _$BillReviewState {
     // mendeteksi bug parsing pemisah ribuan pada zero-decimal currencies.
     @Default('IDR') String currency,
     @Default(false) bool saving,
+    // Bill category preset (server CHECK-enforced). Free for all presets;
+    // custom tags are Plus-gated in the UI and normalized on save.
+    @Default(BillCategory.lain) String category,
+    @Default([]) List<String> tags,
   }) = _BillReviewState;
 
   const BillReviewState._();
@@ -111,6 +116,10 @@ class BillReviewNotifier extends _$BillReviewNotifier {
 
   void setTitle(String value) => state = state.copyWith(title: value);
   void setCurrency(String value) => state = state.copyWith(currency: value);
+  void setCategory(String value) =>
+      state = state.copyWith(category: BillCategory.coerce(value));
+  void setTags(List<String> tags) =>
+      state = state.copyWith(tags: BillCategory.normalizeTags(tags));
   void setTax(double value) => state = state.copyWith(tax: value);
   void setService(double value) => state = state.copyWith(service: value);
 
@@ -196,6 +205,8 @@ class BillReviewNotifier extends _$BillReviewNotifier {
       service: state.service,
       receiptDate: state.receiptDate,
       createdAt: createdAt,
+      category: BillCategory.coerce(state.category),
+      tags: BillCategory.normalizeTags(state.tags),
     );
 
     final billRes = await repo.createBill(bill);

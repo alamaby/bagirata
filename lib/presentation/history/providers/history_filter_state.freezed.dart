@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HistoryFilterState {
 
- HistorySort get sort; BillPaymentStatus? get paymentStatus; String? get currencyCode;
+ HistorySort get sort; BillPaymentStatus? get paymentStatus; String? get currencyCode; String? get category; String? get query;
 /// Create a copy of HistoryFilterState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $HistoryFilterStateCopyWith<HistoryFilterState> get copyWith => _$HistoryFilterS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryFilterState&&(identical(other.sort, sort) || other.sort == sort)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryFilterState&&(identical(other.sort, sort) || other.sort == sort)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.category, category) || other.category == category)&&(identical(other.query, query) || other.query == query));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sort,paymentStatus,currencyCode);
+int get hashCode => Object.hash(runtimeType,sort,paymentStatus,currencyCode,category,query);
 
 @override
 String toString() {
-  return 'HistoryFilterState(sort: $sort, paymentStatus: $paymentStatus, currencyCode: $currencyCode)';
+  return 'HistoryFilterState(sort: $sort, paymentStatus: $paymentStatus, currencyCode: $currencyCode, category: $category, query: $query)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $HistoryFilterStateCopyWith<$Res>  {
   factory $HistoryFilterStateCopyWith(HistoryFilterState value, $Res Function(HistoryFilterState) _then) = _$HistoryFilterStateCopyWithImpl;
 @useResult
 $Res call({
- HistorySort sort, BillPaymentStatus? paymentStatus, String? currencyCode
+ HistorySort sort, BillPaymentStatus? paymentStatus, String? currencyCode, String? category, String? query
 });
 
 
@@ -62,11 +62,13 @@ class _$HistoryFilterStateCopyWithImpl<$Res>
 
 /// Create a copy of HistoryFilterState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sort = null,Object? paymentStatus = freezed,Object? currencyCode = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sort = null,Object? paymentStatus = freezed,Object? currencyCode = freezed,Object? category = freezed,Object? query = freezed,}) {
   return _then(_self.copyWith(
 sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
 as HistorySort,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
 as BillPaymentStatus?,currencyCode: freezed == currencyCode ? _self.currencyCode : currencyCode // ignore: cast_nullable_to_non_nullable
+as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String?,query: freezed == query ? _self.query : query // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -152,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( HistorySort sort,  BillPaymentStatus? paymentStatus,  String? currencyCode)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( HistorySort sort,  BillPaymentStatus? paymentStatus,  String? currencyCode,  String? category,  String? query)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HistoryFilterState() when $default != null:
-return $default(_that.sort,_that.paymentStatus,_that.currencyCode);case _:
+return $default(_that.sort,_that.paymentStatus,_that.currencyCode,_that.category,_that.query);case _:
   return orElse();
 
 }
@@ -173,10 +175,10 @@ return $default(_that.sort,_that.paymentStatus,_that.currencyCode);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( HistorySort sort,  BillPaymentStatus? paymentStatus,  String? currencyCode)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( HistorySort sort,  BillPaymentStatus? paymentStatus,  String? currencyCode,  String? category,  String? query)  $default,) {final _that = this;
 switch (_that) {
 case _HistoryFilterState():
-return $default(_that.sort,_that.paymentStatus,_that.currencyCode);case _:
+return $default(_that.sort,_that.paymentStatus,_that.currencyCode,_that.category,_that.query);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -193,10 +195,10 @@ return $default(_that.sort,_that.paymentStatus,_that.currencyCode);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( HistorySort sort,  BillPaymentStatus? paymentStatus,  String? currencyCode)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( HistorySort sort,  BillPaymentStatus? paymentStatus,  String? currencyCode,  String? category,  String? query)?  $default,) {final _that = this;
 switch (_that) {
 case _HistoryFilterState() when $default != null:
-return $default(_that.sort,_that.paymentStatus,_that.currencyCode);case _:
+return $default(_that.sort,_that.paymentStatus,_that.currencyCode,_that.category,_that.query);case _:
   return null;
 
 }
@@ -208,12 +210,14 @@ return $default(_that.sort,_that.paymentStatus,_that.currencyCode);case _:
 
 
 class _HistoryFilterState extends HistoryFilterState {
-  const _HistoryFilterState({this.sort = HistorySort.newest, this.paymentStatus, this.currencyCode}): super._();
+  const _HistoryFilterState({this.sort = HistorySort.newest, this.paymentStatus, this.currencyCode, this.category, this.query}): super._();
   
 
 @override@JsonKey() final  HistorySort sort;
 @override final  BillPaymentStatus? paymentStatus;
 @override final  String? currencyCode;
+@override final  String? category;
+@override final  String? query;
 
 /// Create a copy of HistoryFilterState
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +229,16 @@ _$HistoryFilterStateCopyWith<_HistoryFilterState> get copyWith => __$HistoryFilt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryFilterState&&(identical(other.sort, sort) || other.sort == sort)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryFilterState&&(identical(other.sort, sort) || other.sort == sort)&&(identical(other.paymentStatus, paymentStatus) || other.paymentStatus == paymentStatus)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.category, category) || other.category == category)&&(identical(other.query, query) || other.query == query));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sort,paymentStatus,currencyCode);
+int get hashCode => Object.hash(runtimeType,sort,paymentStatus,currencyCode,category,query);
 
 @override
 String toString() {
-  return 'HistoryFilterState(sort: $sort, paymentStatus: $paymentStatus, currencyCode: $currencyCode)';
+  return 'HistoryFilterState(sort: $sort, paymentStatus: $paymentStatus, currencyCode: $currencyCode, category: $category, query: $query)';
 }
 
 
@@ -245,7 +249,7 @@ abstract mixin class _$HistoryFilterStateCopyWith<$Res> implements $HistoryFilte
   factory _$HistoryFilterStateCopyWith(_HistoryFilterState value, $Res Function(_HistoryFilterState) _then) = __$HistoryFilterStateCopyWithImpl;
 @override @useResult
 $Res call({
- HistorySort sort, BillPaymentStatus? paymentStatus, String? currencyCode
+ HistorySort sort, BillPaymentStatus? paymentStatus, String? currencyCode, String? category, String? query
 });
 
 
@@ -262,11 +266,13 @@ class __$HistoryFilterStateCopyWithImpl<$Res>
 
 /// Create a copy of HistoryFilterState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sort = null,Object? paymentStatus = freezed,Object? currencyCode = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sort = null,Object? paymentStatus = freezed,Object? currencyCode = freezed,Object? category = freezed,Object? query = freezed,}) {
   return _then(_HistoryFilterState(
 sort: null == sort ? _self.sort : sort // ignore: cast_nullable_to_non_nullable
 as HistorySort,paymentStatus: freezed == paymentStatus ? _self.paymentStatus : paymentStatus // ignore: cast_nullable_to_non_nullable
 as BillPaymentStatus?,currencyCode: freezed == currencyCode ? _self.currencyCode : currencyCode // ignore: cast_nullable_to_non_nullable
+as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String?,query: freezed == query ? _self.query : query // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

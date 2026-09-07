@@ -18,6 +18,10 @@ _BillDto _$BillDtoFromJson(Map<String, dynamic> json) => _BillDto(
       ? null
       : DateTime.parse(json['receipt_date'] as String),
   createdAt: DateTime.parse(json['created_at'] as String),
+  category: json['category'] as String? ?? 'lain',
+  tags:
+      (json['bill_tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$BillDtoToJson(_BillDto instance) => <String, dynamic>{
@@ -30,4 +34,6 @@ Map<String, dynamic> _$BillDtoToJson(_BillDto instance) => <String, dynamic>{
   'is_settled': instance.isSettled,
   'receipt_date': ?instance.receiptDate?.toIso8601String(),
   'created_at': instance.createdAt.toIso8601String(),
+  'category': instance.category,
+  'bill_tags': instance.tags,
 };

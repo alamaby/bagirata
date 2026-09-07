@@ -8,6 +8,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/billing/google_play_billing_catalog.dart';
+import '../../../core/billing/plus_feature_limits.dart';
 import '../../../core/config/app_constants.dart';
 import '../../../core/error/result.dart';
 import '../../../core/format/app_format.dart';
@@ -229,12 +230,16 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
             title: Text(l10n.deletedBillsTitle),
             subtitle: Text(
               (creditStatus?.isPlus ?? false)
-                  ? l10n.deletedBillsSettingsSubtitle
+                  ? l10n.deletedBillsSettingsSubtitle(
+                      PlusFeatureLimits.trashRetentionDaysPlus,
+                    )
                   : l10n.plusOnlyShort,
             ),
             trailing: _SettingsTileTrailing(
               infoTitle: l10n.deletedBillsTitle,
-              infoMessage: l10n.deletedBillsSettingsLockedSubtitle,
+              infoMessage: l10n.deletedBillsRetentionPlus(
+                PlusFeatureLimits.trashRetentionDaysPlus,
+              ),
               showInfo: !(creditStatus?.isPlus ?? false),
             ),
             onTap: () => context.pushNamed(Routes.deletedBillsName),

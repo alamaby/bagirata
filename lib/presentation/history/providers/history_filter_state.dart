@@ -12,6 +12,8 @@ abstract class HistoryFilterState with _$HistoryFilterState {
     @Default(HistorySort.newest) HistorySort sort,
     BillPaymentStatus? paymentStatus,
     String? currencyCode,
+    String? category,
+    String? query,
   }) = _HistoryFilterState;
 
   const HistoryFilterState._();
@@ -19,7 +21,19 @@ abstract class HistoryFilterState with _$HistoryFilterState {
   bool get isAmountSort =>
       sort == HistorySort.amountAsc || sort == HistorySort.amountDesc;
 
-  bool get hasActiveFilters => paymentStatus != null || currencyCode != null;
+  /// Trimmed non-empty query, or null when the search box is effectively
+  /// empty. An empty query must behave as "no filter", never as a full-scan
+  /// `ILIKE '%%'`.
+  String? get effectiveQuery {
+    final q = query?.trim() ?? '';
+    return q.isEmpty ? null : q;
+  }
+
+  bool get hasActiveFilters =>
+      paymentStatus != null ||
+      currencyCode != null ||
+      category != null ||
+      effectiveQuery != null;
 }
 
 HistoryFilterState normalizeHistoryFilter(

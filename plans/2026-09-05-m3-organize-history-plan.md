@@ -42,6 +42,7 @@ Bikin riwayat bisa dicari dan diatur (kategori/tag + breakdown insight) dan biki
 
 - 2026-09-05 12:00:00 — Plan M3 ditulis; belum ada implementasi.
 - 2026-09-05 12:30:00 — Review audit vs kode: perkuat F9.5/F15.2/F15.4, koreksi klaim search-field existing, tambah DTO/ARB/kontrak yang terbukti belum ada; belum ada implementasi.
+- 2026-09-07 — Implementasi selesai. Migrasi `20260907120000` (kolom + CHECK + index + trigram, rewrite list/summary/insight/resolve, soft-delete per-plan; operator-apply). Client: Bill/HistoryBill + DTO category/tags, insight byCategory, filter query/category + debounce + chips + sheet + rows + breakdown, review picker + Plus tags, trash countdown + retention copy + expired mapping. Verifikasi: analyze 0 error, test 591 passed.
 
 ## Notes
 

@@ -79,6 +79,9 @@ class SharedBill {
         createdAt:
             DateTime.tryParse(bill['created_at']?.toString() ?? '') ??
             DateTime.now().toUtc(),
+        // Public snapshot carries the preset category only — custom tags
+        // may contain free-form PII and are never exposed here.
+        category: bill['category']?.toString() ?? 'lain',
       ),
       items: items,
       participants: participants,

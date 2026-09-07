@@ -188,10 +188,12 @@ class ProfileRepositoryImpl implements IProfileRepository {
   Future<Result<MonthlySpendingInsight>> getMonthlySpendingInsight({
     required DateTime month,
     required String currencyCode,
+    String? category,
   }) => guardAsync(() async {
     final row = await _ds.getMonthlySpendingInsight(
       month: month,
       currencyCode: currencyCode,
+      category: category,
     );
     return MonthlySpendingInsight.fromJson(row);
   });

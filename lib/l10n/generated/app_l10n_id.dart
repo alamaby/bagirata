@@ -579,8 +579,19 @@ class AppL10nId extends AppL10n {
   String get deletedBillsTitle => 'Bill terhapus';
 
   @override
-  String get deletedBillsSettingsSubtitle =>
-      'Pulihkan bill yang dihapus dalam 30 hari terakhir.';
+  String deletedBillsSettingsSubtitle(int days) {
+    return 'Pulihkan bill yang dihapus dalam $days hari terakhir.';
+  }
+
+  @override
+  String deletedBillsRetentionFree(int days) {
+    return 'Bill terhapus disimpan selama $days hari.';
+  }
+
+  @override
+  String deletedBillsRetentionPlus(int days) {
+    return 'Bill terhapus disimpan selama $days hari agar pengguna Plus bisa memulihkan penghapusan tidak sengaja.';
+  }
 
   @override
   String get deletedBillsSettingsLockedSubtitle =>
@@ -613,14 +624,22 @@ class AppL10nId extends AppL10n {
   String get deletedBillRestored => 'Bill dipulihkan.';
 
   @override
+  String get deletedBillExpiredError => 'Masa pemulihan bill ini sudah habis.';
+
+  @override
+  String deletedBillExpiresInDays(int days) {
+    return 'Sisa $days hari';
+  }
+
+  @override
   String get deleteBillAction => 'Hapus';
 
   @override
   String get deleteBillConfirmTitle => 'Hapus bill ini?';
 
   @override
-  String deleteBillConfirmBody(String title, String total) {
-    return '$title ($total) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam 30 hari.';
+  String deleteBillConfirmBody(String title, String total, int days) {
+    return '$title ($total) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam $days hari.';
   }
 
   @override
@@ -950,6 +969,45 @@ class AppL10nId extends AppL10n {
       'Tidak ada bill yang cocok dengan filter ini.';
 
   @override
+  String historyFilterEmptyQuery(String query) {
+    return 'Tidak ada hasil untuk “$query”.';
+  }
+
+  @override
+  String get historySearchHint => 'Cari judul atau item...';
+
+  @override
+  String get historyFilterCategory => 'Kategori';
+
+  @override
+  String get categoryLabel => 'Kategori';
+
+  @override
+  String get categoryMakan => 'Makan';
+
+  @override
+  String get categoryTransport => 'Transport';
+
+  @override
+  String get categoryGroceries => 'Groceries';
+
+  @override
+  String get categoryBelanja => 'Belanja';
+
+  @override
+  String get categoryLain => 'Lainnya';
+
+  @override
+  String get tagLabel => 'Tag (Plus)';
+
+  @override
+  String get tagPlusLocked =>
+      'Tag kustom adalah fitur Plus. Upgrade untuk menandai bill dengan tag sendiri (maksimal 5).';
+
+  @override
+  String get tagLimitReached => 'Maksimal 5 tag, pisahkan dengan koma.';
+
+  @override
   String historyFilterCount(int filteredCount, int totalCount) {
     return '$filteredCount dari $totalCount bill';
   }
@@ -1029,6 +1087,9 @@ class AppL10nId extends AppL10n {
 
   @override
   String get monthlyInsightTopMerchants => 'Merchant terbesar';
+
+  @override
+  String get monthlyInsightByCategory => 'Per kategori';
 
   @override
   String monthlyInsightIncrease(String percent) {

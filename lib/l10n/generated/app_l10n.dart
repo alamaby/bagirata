@@ -1094,8 +1094,20 @@ abstract class AppL10n {
   /// No description provided for @deletedBillsSettingsSubtitle.
   ///
   /// In id, this message translates to:
-  /// **'Pulihkan bill yang dihapus dalam 30 hari terakhir.'**
-  String get deletedBillsSettingsSubtitle;
+  /// **'Pulihkan bill yang dihapus dalam {days} hari terakhir.'**
+  String deletedBillsSettingsSubtitle(int days);
+
+  /// No description provided for @deletedBillsRetentionFree.
+  ///
+  /// In id, this message translates to:
+  /// **'Bill terhapus disimpan selama {days} hari.'**
+  String deletedBillsRetentionFree(int days);
+
+  /// No description provided for @deletedBillsRetentionPlus.
+  ///
+  /// In id, this message translates to:
+  /// **'Bill terhapus disimpan selama {days} hari agar pengguna Plus bisa memulihkan penghapusan tidak sengaja.'**
+  String deletedBillsRetentionPlus(int days);
 
   /// No description provided for @deletedBillsSettingsLockedSubtitle.
   ///
@@ -1145,6 +1157,18 @@ abstract class AppL10n {
   /// **'Bill dipulihkan.'**
   String get deletedBillRestored;
 
+  /// No description provided for @deletedBillExpiredError.
+  ///
+  /// In id, this message translates to:
+  /// **'Masa pemulihan bill ini sudah habis.'**
+  String get deletedBillExpiredError;
+
+  /// No description provided for @deletedBillExpiresInDays.
+  ///
+  /// In id, this message translates to:
+  /// **'Sisa {days} hari'**
+  String deletedBillExpiresInDays(int days);
+
   /// No description provided for @deleteBillAction.
   ///
   /// In id, this message translates to:
@@ -1160,8 +1184,8 @@ abstract class AppL10n {
   /// No description provided for @deleteBillConfirmBody.
   ///
   /// In id, this message translates to:
-  /// **'{title} ({total}) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam 30 hari.'**
-  String deleteBillConfirmBody(String title, String total);
+  /// **'{title} ({total}) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam {days} hari.'**
+  String deleteBillConfirmBody(String title, String total, int days);
 
   /// No description provided for @deleteBillSuccess.
   ///
@@ -1745,6 +1769,78 @@ abstract class AppL10n {
   /// **'Tidak ada bill yang cocok dengan filter ini.'**
   String get historyFilterEmpty;
 
+  /// No description provided for @historyFilterEmptyQuery.
+  ///
+  /// In id, this message translates to:
+  /// **'Tidak ada hasil untuk “{query}”.'**
+  String historyFilterEmptyQuery(String query);
+
+  /// No description provided for @historySearchHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Cari judul atau item...'**
+  String get historySearchHint;
+
+  /// No description provided for @historyFilterCategory.
+  ///
+  /// In id, this message translates to:
+  /// **'Kategori'**
+  String get historyFilterCategory;
+
+  /// No description provided for @categoryLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Kategori'**
+  String get categoryLabel;
+
+  /// No description provided for @categoryMakan.
+  ///
+  /// In id, this message translates to:
+  /// **'Makan'**
+  String get categoryMakan;
+
+  /// No description provided for @categoryTransport.
+  ///
+  /// In id, this message translates to:
+  /// **'Transport'**
+  String get categoryTransport;
+
+  /// No description provided for @categoryGroceries.
+  ///
+  /// In id, this message translates to:
+  /// **'Groceries'**
+  String get categoryGroceries;
+
+  /// No description provided for @categoryBelanja.
+  ///
+  /// In id, this message translates to:
+  /// **'Belanja'**
+  String get categoryBelanja;
+
+  /// No description provided for @categoryLain.
+  ///
+  /// In id, this message translates to:
+  /// **'Lainnya'**
+  String get categoryLain;
+
+  /// No description provided for @tagLabel.
+  ///
+  /// In id, this message translates to:
+  /// **'Tag (Plus)'**
+  String get tagLabel;
+
+  /// No description provided for @tagPlusLocked.
+  ///
+  /// In id, this message translates to:
+  /// **'Tag kustom adalah fitur Plus. Upgrade untuk menandai bill dengan tag sendiri (maksimal 5).'**
+  String get tagPlusLocked;
+
+  /// No description provided for @tagLimitReached.
+  ///
+  /// In id, this message translates to:
+  /// **'Maksimal 5 tag, pisahkan dengan koma.'**
+  String get tagLimitReached;
+
   /// No description provided for @historyFilterCount.
   ///
   /// In id, this message translates to:
@@ -1894,6 +1990,12 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'Merchant terbesar'**
   String get monthlyInsightTopMerchants;
+
+  /// No description provided for @monthlyInsightByCategory.
+  ///
+  /// In id, this message translates to:
+  /// **'Per kategori'**
+  String get monthlyInsightByCategory;
 
   /// No description provided for @monthlyInsightIncrease.
   ///

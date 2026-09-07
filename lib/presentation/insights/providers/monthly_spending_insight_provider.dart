@@ -9,7 +9,11 @@ import '../../credits/providers/ocr_credit_status_provider.dart';
 /// Query identity for the monthly insight family. [month] is used as-is but
 /// normalized to its first day before hitting the repository; [currencyCode]
 /// is the ISO code the insight is scoped to.
-typedef MonthlyInsightQuery = ({DateTime month, String currencyCode});
+typedef MonthlyInsightQuery = ({
+  DateTime month,
+  String currencyCode,
+  String? category,
+});
 
 final monthlySpendingInsightProvider = FutureProvider.family<
   MonthlySpendingInsight?,
@@ -25,6 +29,7 @@ final monthlySpendingInsightProvider = FutureProvider.family<
       .getMonthlySpendingInsight(
         month: monthStart,
         currencyCode: query.currencyCode,
+        category: query.category,
       );
   return switch (result) {
     Success(:final data) => data,

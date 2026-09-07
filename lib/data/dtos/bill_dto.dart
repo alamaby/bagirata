@@ -19,6 +19,8 @@ abstract class BillDto with _$BillDto {
     @JsonKey(name: 'is_settled') @Default(false) bool isSettled,
     @JsonKey(name: 'receipt_date') DateTime? receiptDate,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    @Default('lain') String category,
+    @JsonKey(name: 'bill_tags') @Default([]) List<String> tags,
     @JsonKey(includeFromJson: false, includeToJson: false)
     @Default([])
     List<bool> participantPaymentStatuses,
@@ -49,6 +51,8 @@ abstract class BillDto with _$BillDto {
     isSettled: b.isSettled,
     receiptDate: b.receiptDate,
     createdAt: b.createdAt,
+    category: b.category,
+    tags: b.tags,
     participantPaymentStatuses: b.participantPaymentStatuses,
   );
 
@@ -62,6 +66,8 @@ abstract class BillDto with _$BillDto {
     isSettled: isSettled,
     receiptDate: receiptDate,
     createdAt: createdAt,
+    category: category,
+    tags: tags,
     participantPaymentStatuses: participantPaymentStatuses,
   );
 }

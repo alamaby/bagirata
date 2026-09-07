@@ -153,8 +153,13 @@ class HistoryListNotifier extends _$HistoryListNotifier {
     );
     if (createdAfter == null) return;
 
+    final filter = ref.read(historyFilterProvider);
     final repo = ref.read(billRepositoryProvider);
-    final result = await repo.getHistorySummary(createdAfter: createdAfter);
+    final result = await repo.getHistorySummary(
+      createdAfter: createdAfter,
+      query: filter.effectiveQuery,
+      category: filter.category,
+    );
     if (requestId != null && requestId != _firstPageRequestId) return;
     if (result is Success<HistorySummary>) {
       _lastSummary = result.data;
@@ -207,6 +212,8 @@ class HistoryListNotifier extends _$HistoryListNotifier {
       cursorSortValue: cursor?.sortValue,
       cursorCreatedAt: cursor?.createdAt,
       cursorId: cursor?.id,
+      query: normalized.effectiveQuery,
+      category: normalized.category,
     );
 
     if (result is ResultFailure) return false;

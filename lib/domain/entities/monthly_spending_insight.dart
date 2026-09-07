@@ -11,6 +11,7 @@ class MonthlySpendingInsight {
     required this.outstandingAmount,
     required this.topMerchants,
     required this.monthlyTrend,
+    required this.byCategory,
   });
 
   final String planCode;
@@ -24,6 +25,7 @@ class MonthlySpendingInsight {
   final double outstandingAmount;
   final List<MerchantSpendingInsight> topMerchants;
   final List<MonthlySpendingTrendPoint> monthlyTrend;
+  final List<CategorySpendingInsight> byCategory;
 
   factory MonthlySpendingInsight.fromJson(Map<String, dynamic> json) {
     return MonthlySpendingInsight(
@@ -47,6 +49,10 @@ class MonthlySpendingInsight {
       monthlyTrend: _readList(
         json['monthly_trend'],
         MonthlySpendingTrendPoint.fromJson,
+      ),
+      byCategory: _readList(
+        json['by_category'],
+        CategorySpendingInsight.fromJson,
       ),
     );
   }
@@ -92,6 +98,26 @@ class MerchantSpendingInsight {
   factory MerchantSpendingInsight.fromJson(Map<String, dynamic> json) {
     return MerchantSpendingInsight(
       title: json['title']?.toString() ?? '-',
+      totalAmount: MonthlySpendingInsight._readDouble(json['total_amount']),
+      billCount: MonthlySpendingInsight._readInt(json['bill_count']),
+    );
+  }
+}
+
+class CategorySpendingInsight {
+  const CategorySpendingInsight({
+    required this.category,
+    required this.totalAmount,
+    required this.billCount,
+  });
+
+  final String category;
+  final double totalAmount;
+  final int billCount;
+
+  factory CategorySpendingInsight.fromJson(Map<String, dynamic> json) {
+    return CategorySpendingInsight(
+      category: json['category']?.toString() ?? 'lain',
       totalAmount: MonthlySpendingInsight._readDouble(json['total_amount']),
       billCount: MonthlySpendingInsight._readInt(json['bill_count']),
     );

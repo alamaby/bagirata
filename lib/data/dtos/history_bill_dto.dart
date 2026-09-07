@@ -18,6 +18,8 @@ abstract class HistoryBillDto with _$HistoryBillDto {
     @JsonKey(name: 'is_settled') @Default(false) bool isSettled,
     @JsonKey(name: 'receipt_date') DateTime? receiptDate,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    @Default('lain') String category,
+    @JsonKey(name: 'bill_tags') @Default([]) List<String> tags,
     @JsonKey(name: 'participant_count') required int participantCount,
     @JsonKey(name: 'paid_participant_count')
     required int paidParticipantCount,
@@ -47,6 +49,8 @@ extension HistoryBillDtoX on HistoryBillDto {
     isSettled: isSettled,
     receiptDate: receiptDate,
     createdAt: createdAt,
+    category: category,
+    tags: tags,
     participantCount: participantCount,
     paidParticipantCount: paidParticipantCount,
     paymentStatus: HistoryBillDto._parsePaymentStatus(paymentStatus),

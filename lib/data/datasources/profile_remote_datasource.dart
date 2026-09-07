@@ -159,6 +159,7 @@ class ProfileRemoteDataSource {
   Future<Map<String, dynamic>> getMonthlySpendingInsight({
     required DateTime month,
     required String currencyCode,
+    String? category,
   }) async {
     final uid = currentUserId;
     if (uid == null) {
@@ -171,6 +172,7 @@ class ProfileRemoteDataSource {
             'p_user_id': uid,
             'p_month': _monthParam(month),
             'p_currency_code': currencyCode,
+            if (category != null) 'p_category': category,
           },
         )
         .single();

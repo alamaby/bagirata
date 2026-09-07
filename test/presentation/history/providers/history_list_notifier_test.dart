@@ -42,6 +42,10 @@ class FakeBillRepository implements IBillRepository {
   /// Recorded `getHistorySummary` invocations.
   int summaryCalls = 0;
 
+  /// Last query/category forwarded to `getHistorySummary`.
+  String? lastSummaryQuery;
+  String? lastSummaryCategory;
+
   @override
   Future<Result<HistoryBillPage>> listHistoryBillsPage({
     required DateTime createdAfter,
@@ -52,6 +56,8 @@ class FakeBillRepository implements IBillRepository {
     String? cursorSortValue,
     DateTime? cursorCreatedAt,
     String? cursorId,
+    String? query,
+    String? category,
   }) async {
     final call = ListHistoryCall(
       createdAfter: createdAfter,
@@ -62,6 +68,8 @@ class FakeBillRepository implements IBillRepository {
       cursorSortValue: cursorSortValue,
       cursorCreatedAt: cursorCreatedAt,
       cursorId: cursorId,
+      query: query,
+      category: category,
     );
     calls.add(call);
     final gate = gateFor;
@@ -84,8 +92,12 @@ class FakeBillRepository implements IBillRepository {
   @override
   Future<Result<HistorySummary>> getHistorySummary({
     required DateTime createdAfter,
+    String? query,
+    String? category,
   }) async {
     summaryCalls++;
+    lastSummaryQuery = query;
+    lastSummaryCategory = category;
     final s = summary;
     if (s == null) {
       return const Result.success(
@@ -183,6 +195,8 @@ class ListHistoryCall {
     this.cursorSortValue,
     this.cursorCreatedAt,
     this.cursorId,
+    this.query,
+    this.category,
   });
 
   final DateTime createdAfter;
@@ -193,6 +207,8 @@ class ListHistoryCall {
   final String? cursorSortValue;
   final DateTime? cursorCreatedAt;
   final String? cursorId;
+  final String? query;
+  final String? category;
 }
 
 HistoryBill _bill({
@@ -629,6 +645,54 @@ void main() {
 
       // The stale response must not overwrite the newer state.
       expect(container.read(historyListProvider).items.single.id, 'pending');
+    });
+  });
+
+  group('HistoryListNotifier query/category forwarding', () {
+    test('query and category reach the page RPC trimmed', () async {
+      final sub = container.listen(historyListProvider, (_, _) {});
+      addTearDown(sub.close);
+      await settleFirstPage();
+      fakeRepo.calls.clear();
+
+      container.read(historyFilterProvider.notifier).apply(
+            const HistoryFilterState(query: '  Kopi  ', category: 'makan'),
+          );
+      await settleFirstPage();
+
+      expect(fakeRepo.calls.length, 1);
+      final call = fakeRepo.calls.first;
+      expect(call.query, 'Kopi');
+      expect(call.category, 'makan');
+    });
+
+    test('blank query is sent as null, never as empty string', () async {
+      final sub = container.listen(historyListProvider, (_, _) {});
+      addTearDown(sub.close);
+      await settleFirstPage();
+      fakeRepo.calls.clear();
+
+      container
+          .read(historyFilterProvider.notifier)
+          .apply(const HistoryFilterState(query: '   '));
+      await settleFirstPage();
+
+      expect(fakeRepo.calls.length, 1);
+      expect(fakeRepo.calls.first.query, isNull);
+    });
+
+    test('summary follows the active query/category', () async {
+      final sub = container.listen(historyListProvider, (_, _) {});
+      addTearDown(sub.close);
+      await settleFirstPage();
+
+      container.read(historyFilterProvider.notifier).apply(
+            const HistoryFilterState(query: 'kopi', category: 'makan'),
+          );
+      await settleFirstPage();
+
+      expect(fakeRepo.lastSummaryQuery, 'kopi');
+      expect(fakeRepo.lastSummaryCategory, 'makan');
     });
   });
 }

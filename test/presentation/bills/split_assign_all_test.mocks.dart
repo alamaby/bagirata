@@ -66,6 +66,8 @@ class MockIBillRepository extends _i1.Mock implements _i2.IBillRepository {
     String? cursorSortValue,
     DateTime? cursorCreatedAt,
     String? cursorId,
+    String? query,
+    String? category,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#listHistoryBillsPage, [], {
@@ -77,6 +79,8 @@ class MockIBillRepository extends _i1.Mock implements _i2.IBillRepository {
               #cursorSortValue: cursorSortValue,
               #cursorCreatedAt: cursorCreatedAt,
               #cursorId: cursorId,
+              #query: query,
+              #category: category,
             }),
             returnValue: _i3.Future<_i4.Result<_i7.HistoryBillPage>>.value(
               _i6.dummyValue<_i4.Result<_i7.HistoryBillPage>>(
@@ -90,6 +94,8 @@ class MockIBillRepository extends _i1.Mock implements _i2.IBillRepository {
                   #cursorSortValue: cursorSortValue,
                   #cursorCreatedAt: cursorCreatedAt,
                   #cursorId: cursorId,
+                  #query: query,
+                  #category: category,
                 }),
               ),
             ),
@@ -99,16 +105,22 @@ class MockIBillRepository extends _i1.Mock implements _i2.IBillRepository {
   @override
   _i3.Future<_i4.Result<_i8.HistorySummary>> getHistorySummary({
     required DateTime? createdAfter,
+    String? query,
+    String? category,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getHistorySummary, [], {
               #createdAfter: createdAfter,
+              #query: query,
+              #category: category,
             }),
             returnValue: _i3.Future<_i4.Result<_i8.HistorySummary>>.value(
               _i6.dummyValue<_i4.Result<_i8.HistorySummary>>(
                 this,
                 Invocation.method(#getHistorySummary, [], {
                   #createdAfter: createdAfter,
+                  #query: query,
+                  #category: category,
                 }),
               ),
             ),

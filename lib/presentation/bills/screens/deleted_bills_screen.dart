@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/billing/plus_feature_limits.dart';
 import '../../../core/error/result.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
@@ -65,20 +66,34 @@ class DeletedBillsScreen extends ConsumerWidget {
     DeletedBill bill,
   ) async {
     final l10n = AppL10n.of(context);
+    // Client-side pre-check: an already-expired row fails server-side anyway;
+    // surfacing the specific message here avoids a confusing generic error.
+    if (bill.isExpired) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.deletedBillExpiredError),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     final result = await ref
         .read(deletedBillListProvider.notifier)
         .restoreBill(bill.id);
     if (!context.mounted) return;
 
+    final message = switch (result) {
+      Success<void>() => l10n.deletedBillRestored,
+      ResultFailure(:final failure)
+          when failure.toString().contains(
+            'deleted_bill_not_found_or_expired',
+          ) =>
+        l10n.deletedBillExpiredError,
+      ResultFailure() => l10n.errorGeneric,
+    };
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result is Success<void>
-              ? l10n.deletedBillRestored
-              : l10n.errorGeneric,
-        ),
-        behavior: SnackBarBehavior.floating,
-      ),
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 }
@@ -95,6 +110,9 @@ class _DeletedBillTile extends StatelessWidget {
     final currency = CurrencyFormatter.of(bill.currencyCode);
     final deletedAt = DateFormat.yMMMd().add_Hm().format(bill.deletedAt);
     final expiresAt = DateFormat.yMMMd().format(bill.deleteExpiresAt);
+    final daysLeft = PlusFeatureLimits.trashDaysRemaining(
+      bill.deleteExpiresAt,
+    );
 
     return Card(
       child: ListTile(
@@ -103,7 +121,8 @@ class _DeletedBillTile extends StatelessWidget {
         subtitle: Text(
           '${currency.format(bill.totalAmount)}\n'
           '${l10n.deletedBillDeletedAt(deletedAt)}\n'
-          '${l10n.deletedBillExpiresAt(expiresAt)}',
+          '${l10n.deletedBillExpiresAt(expiresAt)}'
+          '${bill.isExpired ? '' : ' • ${l10n.deletedBillExpiresInDays(daysLeft)}'}',
         ),
         isThreeLine: true,
         trailing: IconButton.filledTonal(
@@ -145,7 +164,9 @@ class _LockedView extends StatelessWidget {
             SizedBox(height: 8.h),
             PlusInfoIcon(
               title: l10n.deletedBillsLockedTitle,
-              message: l10n.deletedBillsLockedSubtitle,
+              message: l10n.deletedBillsRetentionPlus(
+                PlusFeatureLimits.trashRetentionDaysPlus,
+              ),
               iconColor: scheme.primary,
             ),
             SizedBox(height: 16.h),

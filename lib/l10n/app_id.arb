@@ -247,7 +247,18 @@
   "deleteAccountInProgress": "Menghapus akun...",
   "deleteAccountSuccess": "Akun dan data tersimpan sudah dihapus.",
   "deletedBillsTitle": "Bill terhapus",
-  "deletedBillsSettingsSubtitle": "Pulihkan bill yang dihapus dalam 30 hari terakhir.",
+  "deletedBillsSettingsSubtitle": "Pulihkan bill yang dihapus dalam {days} hari terakhir.",
+  "@deletedBillsSettingsSubtitle": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "deletedBillsRetentionFree": "Bill terhapus disimpan selama {days} hari.",
+  "@deletedBillsRetentionFree": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "deletedBillsRetentionPlus": "Bill terhapus disimpan selama {days} hari agar pengguna Plus bisa memulihkan penghapusan tidak sengaja.",
+  "@deletedBillsRetentionPlus": {
+    "placeholders": { "days": { "type": "int" } }
+  },
   "deletedBillsSettingsLockedSubtitle": "Khusus Plus. Pulihkan bill yang tidak sengaja dihapus dalam 30 hari.",
   "deletedBillsLockedTitle": "Pulihkan bill terhapus dengan Plus",
   "deletedBillsLockedSubtitle": "Bill terhapus disimpan selama 30 hari agar pengguna Plus bisa memulihkan penghapusan tidak sengaja.",
@@ -262,13 +273,19 @@
   },
   "deletedBillRestoreAction": "Pulihkan",
   "deletedBillRestored": "Bill dipulihkan.",
+  "deletedBillExpiredError": "Masa pemulihan bill ini sudah habis.",
+  "deletedBillExpiresInDays": "Sisa {days} hari",
+  "@deletedBillExpiresInDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
   "deleteBillAction": "Hapus",
   "deleteBillConfirmTitle": "Hapus bill ini?",
-  "deleteBillConfirmBody": "{title} ({total}) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam 30 hari.",
+  "deleteBillConfirmBody": "{title} ({total}) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam {days} hari.",
   "@deleteBillConfirmBody": {
     "placeholders": {
       "title": { "type": "String" },
-      "total": { "type": "String" }
+      "total": { "type": "String" },
+      "days": { "type": "int" }
     }
   },
   "deleteBillSuccess": "Bill dipindahkan ke Bill terhapus.",
@@ -417,6 +434,21 @@
   "historyFilterCurrency": "Mata uang",
   "historyFilterReset": "Reset",
   "historyFilterEmpty": "Tidak ada bill yang cocok dengan filter ini.",
+  "historyFilterEmptyQuery": "Tidak ada hasil untuk “{query}”.",
+  "@historyFilterEmptyQuery": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "historySearchHint": "Cari judul atau item...",
+  "historyFilterCategory": "Kategori",
+  "categoryLabel": "Kategori",
+  "categoryMakan": "Makan",
+  "categoryTransport": "Transport",
+  "categoryGroceries": "Groceries",
+  "categoryBelanja": "Belanja",
+  "categoryLain": "Lainnya",
+  "tagLabel": "Tag (Plus)",
+  "tagPlusLocked": "Tag kustom adalah fitur Plus. Upgrade untuk menandai bill dengan tag sendiri (maksimal 5).",
+  "tagLimitReached": "Maksimal 5 tag, pisahkan dengan koma.",
   "historyFilterCount": "{filteredCount} dari {totalCount} bill",
   "@historyFilterCount": {
     "placeholders": {
@@ -454,6 +486,7 @@
   "monthlyInsightBills": "Bill",
   "monthlyInsightOutstanding": "Outstanding",
   "monthlyInsightTopMerchants": "Merchant terbesar",
+  "monthlyInsightByCategory": "Per kategori",
   "monthlyInsightIncrease": "Naik {percent}% dibanding bulan lalu",
   "@monthlyInsightIncrease": {
     "placeholders": { "percent": { "type": "String" } }

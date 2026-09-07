@@ -101,6 +101,17 @@ void main() {
       plusFeaturesEnabled: false,
     );
 
+    testWidgets('search field is always visible', (tester) async {
+      await tester.pumpWidget(
+        buildApp(creditStatus: freeStatus, listState: _nonEmptyHistoryState),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byIcon(Icons.search), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+    });
+
     testWidgets('Plus sees banner with close button when not dismissed', (
       tester,
     ) async {
@@ -551,6 +562,7 @@ void main() {
       outstandingAmount: 80001,
       topMerchants: const [],
       monthlyTrend: const [],
+      byCategory: const [],
     );
 
     Widget buildApp(MonthlySpendingInsight data) {

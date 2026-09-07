@@ -145,7 +145,10 @@ class BillRemoteDataSource {
     String? cursorSortValue,
     DateTime? cursorCreatedAt,
     String? cursorId,
+    String? query,
+    String? category,
   }) async {
+    final trimmedQuery = query?.trim();
     final rows = await _client.rpc<List<dynamic>>('list_history_bills_page', params: {
       'p_created_after': createdAfter.toUtc().toIso8601String(),
       'p_limit': limit,
@@ -156,6 +159,9 @@ class BillRemoteDataSource {
       if (cursorCreatedAt != null)
         'p_cursor_created_at': cursorCreatedAt.toUtc().toIso8601String(),
       if (cursorId != null) 'p_cursor_id': cursorId,
+      if (trimmedQuery != null && trimmedQuery.isNotEmpty)
+        'p_query': trimmedQuery,
+      if (category != null) 'p_category': category,
     });
     final rawList = rows;
     final hasMore = rawList.length > limit;
@@ -183,11 +189,17 @@ class BillRemoteDataSource {
 
   Future<HistorySummaryDto> getHistorySummary({
     required DateTime createdAfter,
+    String? query,
+    String? category,
   }) async {
+    final trimmedQuery = query?.trim();
     final json = await _client.rpc<Map<String, dynamic>>(
       'get_history_page_summary',
       params: {
         'p_created_after': createdAfter.toUtc().toIso8601String(),
+        if (trimmedQuery != null && trimmedQuery.isNotEmpty)
+          'p_query': trimmedQuery,
+        if (category != null) 'p_category': category,
       },
     );
     return HistorySummaryDto.fromJson(json);

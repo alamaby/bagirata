@@ -13,6 +13,7 @@ void main() {
     required String title,
     double amount = 10000,
     String currency = 'IDR',
+    String category = 'lain',
     List<bool> statuses = const [],
     DateTime? createdAt,
   }) =>
@@ -21,6 +22,7 @@ void main() {
         title: title,
         totalAmount: amount,
         currencyCode: currency,
+        category: category,
         participantPaymentStatuses: statuses,
         createdAt: createdAt ?? now,
       );
@@ -277,6 +279,103 @@ void main() {
         const HistoryFilterState(sort: HistorySort.amountDesc),
       );
       expect(result, HistorySort.amountDesc);
+    });
+  });
+
+  group('applyHistoryFilter category/query', () {
+    test('filters by category preset', () {
+      final bills = [
+        _bill(id: '1', title: 'A', category: 'makan'),
+        _bill(id: '2', title: 'B', category: 'transport'),
+      ];
+      final result = applyHistoryFilter(
+        bills,
+        const HistoryFilterState(category: 'makan'),
+      );
+      expect(result.map((b) => b.id), ['1']);
+    });
+
+    test('query matches title case-insensitively', () {
+      final bills = [
+        _bill(id: '1', title: 'Kopi Janji'),
+        _bill(id: '2', title: 'Bensin'),
+      ];
+      final result = applyHistoryFilter(
+        bills,
+        const HistoryFilterState(query: 'KOPI'),
+      );
+      expect(result.map((b) => b.id), ['1']);
+    });
+
+    test('blank query behaves as no filter', () {
+      final bills = [
+        _bill(id: '1', title: 'A'),
+        _bill(id: '2', title: 'B'),
+      ];
+      final result = applyHistoryFilter(
+        bills,
+        const HistoryFilterState(query: '   '),
+      );
+      expect(result.length, 2);
+    });
+
+    test('combines currency, category, status, and query', () {
+      final bills = [
+        _bill(
+          id: '1',
+          title: 'Kopi',
+          currency: 'IDR',
+          category: 'makan',
+          statuses: [true],
+        ),
+        _bill(
+          id: '2',
+          title: 'Kopi',
+          currency: 'USD',
+          category: 'makan',
+          statuses: [true],
+        ),
+        _bill(
+          id: '3',
+          title: 'Kopi',
+          currency: 'IDR',
+          category: 'makan',
+          statuses: [false],
+        ),
+      ];
+      final result = applyHistoryFilter(
+        bills,
+        const HistoryFilterState(
+          currencyCode: 'IDR',
+          category: 'makan',
+          paymentStatus: BillPaymentStatus.settled,
+          query: 'kopi',
+        ),
+      );
+      expect(result.map((b) => b.id), ['1']);
+    });
+  });
+
+  group('HistoryFilterState.effectiveQuery', () {
+    test('trims and nulls blanks', () {
+      expect(
+        const HistoryFilterState(query: '  kopi ').effectiveQuery,
+        'kopi',
+      );
+      expect(const HistoryFilterState(query: '   ').effectiveQuery, isNull);
+      expect(const HistoryFilterState().effectiveQuery, isNull);
+    });
+
+    test('query counts as an active filter', () {
+      expect(
+        const HistoryFilterState(query: 'kopi').hasActiveFilters,
+        isTrue,
+      );
+      expect(
+        const HistoryFilterState(category: 'makan').hasActiveFilters,
+        isTrue,
+      );
+      expect(const HistoryFilterState().hasActiveFilters, isFalse);
     });
   });
 }

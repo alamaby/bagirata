@@ -38,6 +38,8 @@ class BillRepositoryImpl implements IBillRepository {
     String? cursorSortValue,
     DateTime? cursorCreatedAt,
     String? cursorId,
+    String? query,
+    String? category,
   }) =>
       guardAsync(
         () async => (await _ds.listHistoryBillsPage(
@@ -49,16 +51,22 @@ class BillRepositoryImpl implements IBillRepository {
           cursorSortValue: cursorSortValue,
           cursorCreatedAt: cursorCreatedAt,
           cursorId: cursorId,
+          query: query,
+          category: category,
         )).toEntity(),
       );
 
   @override
   Future<Result<HistorySummary>> getHistorySummary({
     required DateTime createdAfter,
+    String? query,
+    String? category,
   }) =>
       guardAsync(
         () async => (await _ds.getHistorySummary(
           createdAfter: createdAfter,
+          query: query,
+          category: category,
         )).toEntity(),
       );
 

@@ -14,7 +14,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Bill {
 
- String get id; String get title; double get totalAmount; String get currencyCode; double get tax; double get service; bool get isSettled; DateTime? get receiptDate; DateTime get createdAt;/// Summary of participant payment statuses from the History list query.
+ String get id; String get title; double get totalAmount; String get currencyCode; double get tax; double get service; bool get isSettled; DateTime? get receiptDate; DateTime get createdAt;/// Bill category preset (`makan`, `transport`, `groceries`, `belanja`,
+/// `lain`). Server CHECK-enforced; unknown values never persist.
+ String get category;/// Plus-only custom tags (max 5, normalized client-side). Excluded from
+/// the public share-link snapshot.
+ List<String> get tags;/// Summary of participant payment statuses from the History list query.
 /// Populated only via [BillDto.fromJsonWithParticipants]; `getBill()`
 /// and `upsertBill()` always return an empty list.
 /// A non-empty list means **all** participants are accounted for here.
@@ -32,16 +36,16 @@ $BillCopyWith<Bill> get copyWith => _$BillCopyWithImpl<Bill>(this as Bill, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Bill&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.service, service) || other.service == service)&&(identical(other.isSettled, isSettled) || other.isSettled == isSettled)&&(identical(other.receiptDate, receiptDate) || other.receiptDate == receiptDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other.participantPaymentStatuses, participantPaymentStatuses));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Bill&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.service, service) || other.service == service)&&(identical(other.isSettled, isSettled) || other.isSettled == isSettled)&&(identical(other.receiptDate, receiptDate) || other.receiptDate == receiptDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other.tags, tags)&&const DeepCollectionEquality().equals(other.participantPaymentStatuses, participantPaymentStatuses));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,totalAmount,currencyCode,tax,service,isSettled,receiptDate,createdAt,const DeepCollectionEquality().hash(participantPaymentStatuses));
+int get hashCode => Object.hash(runtimeType,id,title,totalAmount,currencyCode,tax,service,isSettled,receiptDate,createdAt,category,const DeepCollectionEquality().hash(tags),const DeepCollectionEquality().hash(participantPaymentStatuses));
 
 @override
 String toString() {
-  return 'Bill(id: $id, title: $title, totalAmount: $totalAmount, currencyCode: $currencyCode, tax: $tax, service: $service, isSettled: $isSettled, receiptDate: $receiptDate, createdAt: $createdAt, participantPaymentStatuses: $participantPaymentStatuses)';
+  return 'Bill(id: $id, title: $title, totalAmount: $totalAmount, currencyCode: $currencyCode, tax: $tax, service: $service, isSettled: $isSettled, receiptDate: $receiptDate, createdAt: $createdAt, category: $category, tags: $tags, participantPaymentStatuses: $participantPaymentStatuses)';
 }
 
 
@@ -52,7 +56,7 @@ abstract mixin class $BillCopyWith<$Res>  {
   factory $BillCopyWith(Bill value, $Res Function(Bill) _then) = _$BillCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, double totalAmount, String currencyCode, double tax, double service, bool isSettled, DateTime? receiptDate, DateTime createdAt, List<bool> participantPaymentStatuses
+ String id, String title, double totalAmount, String currencyCode, double tax, double service, bool isSettled, DateTime? receiptDate, DateTime createdAt, String category, List<String> tags, List<bool> participantPaymentStatuses
 });
 
 
@@ -69,7 +73,7 @@ class _$BillCopyWithImpl<$Res>
 
 /// Create a copy of Bill
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? totalAmount = null,Object? currencyCode = null,Object? tax = null,Object? service = null,Object? isSettled = null,Object? receiptDate = freezed,Object? createdAt = null,Object? participantPaymentStatuses = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? totalAmount = null,Object? currencyCode = null,Object? tax = null,Object? service = null,Object? isSettled = null,Object? receiptDate = freezed,Object? createdAt = null,Object? category = null,Object? tags = null,Object? participantPaymentStatuses = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -80,7 +84,9 @@ as double,service: null == service ? _self.service : service // ignore: cast_nul
 as double,isSettled: null == isSettled ? _self.isSettled : isSettled // ignore: cast_nullable_to_non_nullable
 as bool,receiptDate: freezed == receiptDate ? _self.receiptDate : receiptDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,participantPaymentStatuses: null == participantPaymentStatuses ? _self.participantPaymentStatuses : participantPaymentStatuses // ignore: cast_nullable_to_non_nullable
+as DateTime,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String,tags: null == tags ? _self.tags : tags // ignore: cast_nullable_to_non_nullable
+as List<String>,participantPaymentStatuses: null == participantPaymentStatuses ? _self.participantPaymentStatuses : participantPaymentStatuses // ignore: cast_nullable_to_non_nullable
 as List<bool>,
   ));
 }
@@ -166,10 +172,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  double totalAmount,  String currencyCode,  double tax,  double service,  bool isSettled,  DateTime? receiptDate,  DateTime createdAt,  List<bool> participantPaymentStatuses)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  double totalAmount,  String currencyCode,  double tax,  double service,  bool isSettled,  DateTime? receiptDate,  DateTime createdAt,  String category,  List<String> tags,  List<bool> participantPaymentStatuses)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Bill() when $default != null:
-return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.tax,_that.service,_that.isSettled,_that.receiptDate,_that.createdAt,_that.participantPaymentStatuses);case _:
+return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.tax,_that.service,_that.isSettled,_that.receiptDate,_that.createdAt,_that.category,_that.tags,_that.participantPaymentStatuses);case _:
   return orElse();
 
 }
@@ -187,10 +193,10 @@ return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  double totalAmount,  String currencyCode,  double tax,  double service,  bool isSettled,  DateTime? receiptDate,  DateTime createdAt,  List<bool> participantPaymentStatuses)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  double totalAmount,  String currencyCode,  double tax,  double service,  bool isSettled,  DateTime? receiptDate,  DateTime createdAt,  String category,  List<String> tags,  List<bool> participantPaymentStatuses)  $default,) {final _that = this;
 switch (_that) {
 case _Bill():
-return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.tax,_that.service,_that.isSettled,_that.receiptDate,_that.createdAt,_that.participantPaymentStatuses);case _:
+return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.tax,_that.service,_that.isSettled,_that.receiptDate,_that.createdAt,_that.category,_that.tags,_that.participantPaymentStatuses);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +213,10 @@ return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  double totalAmount,  String currencyCode,  double tax,  double service,  bool isSettled,  DateTime? receiptDate,  DateTime createdAt,  List<bool> participantPaymentStatuses)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  double totalAmount,  String currencyCode,  double tax,  double service,  bool isSettled,  DateTime? receiptDate,  DateTime createdAt,  String category,  List<String> tags,  List<bool> participantPaymentStatuses)?  $default,) {final _that = this;
 switch (_that) {
 case _Bill() when $default != null:
-return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.tax,_that.service,_that.isSettled,_that.receiptDate,_that.createdAt,_that.participantPaymentStatuses);case _:
+return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.tax,_that.service,_that.isSettled,_that.receiptDate,_that.createdAt,_that.category,_that.tags,_that.participantPaymentStatuses);case _:
   return null;
 
 }
@@ -222,7 +228,7 @@ return $default(_that.id,_that.title,_that.totalAmount,_that.currencyCode,_that.
 
 
 class _Bill extends Bill {
-  const _Bill({required this.id, required this.title, required this.totalAmount, this.currencyCode = 'IDR', this.tax = 0, this.service = 0, this.isSettled = false, this.receiptDate, required this.createdAt, final  List<bool> participantPaymentStatuses = const []}): _participantPaymentStatuses = participantPaymentStatuses,super._();
+  const _Bill({required this.id, required this.title, required this.totalAmount, this.currencyCode = 'IDR', this.tax = 0, this.service = 0, this.isSettled = false, this.receiptDate, required this.createdAt, this.category = 'lain', final  List<String> tags = const [], final  List<bool> participantPaymentStatuses = const []}): _tags = tags,_participantPaymentStatuses = participantPaymentStatuses,super._();
   
 
 @override final  String id;
@@ -234,6 +240,20 @@ class _Bill extends Bill {
 @override@JsonKey() final  bool isSettled;
 @override final  DateTime? receiptDate;
 @override final  DateTime createdAt;
+/// Bill category preset (`makan`, `transport`, `groceries`, `belanja`,
+/// `lain`). Server CHECK-enforced; unknown values never persist.
+@override@JsonKey() final  String category;
+/// Plus-only custom tags (max 5, normalized client-side). Excluded from
+/// the public share-link snapshot.
+ final  List<String> _tags;
+/// Plus-only custom tags (max 5, normalized client-side). Excluded from
+/// the public share-link snapshot.
+@override@JsonKey() List<String> get tags {
+  if (_tags is EqualUnmodifiableListView) return _tags;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_tags);
+}
+
 /// Summary of participant payment statuses from the History list query.
 /// Populated only via [BillDto.fromJsonWithParticipants]; `getBill()`
 /// and `upsertBill()` always return an empty list.
@@ -266,16 +286,16 @@ _$BillCopyWith<_Bill> get copyWith => __$BillCopyWithImpl<_Bill>(this, _$identit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Bill&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.service, service) || other.service == service)&&(identical(other.isSettled, isSettled) || other.isSettled == isSettled)&&(identical(other.receiptDate, receiptDate) || other.receiptDate == receiptDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&const DeepCollectionEquality().equals(other._participantPaymentStatuses, _participantPaymentStatuses));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Bill&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.totalAmount, totalAmount) || other.totalAmount == totalAmount)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.tax, tax) || other.tax == tax)&&(identical(other.service, service) || other.service == service)&&(identical(other.isSettled, isSettled) || other.isSettled == isSettled)&&(identical(other.receiptDate, receiptDate) || other.receiptDate == receiptDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.category, category) || other.category == category)&&const DeepCollectionEquality().equals(other._tags, _tags)&&const DeepCollectionEquality().equals(other._participantPaymentStatuses, _participantPaymentStatuses));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,title,totalAmount,currencyCode,tax,service,isSettled,receiptDate,createdAt,const DeepCollectionEquality().hash(_participantPaymentStatuses));
+int get hashCode => Object.hash(runtimeType,id,title,totalAmount,currencyCode,tax,service,isSettled,receiptDate,createdAt,category,const DeepCollectionEquality().hash(_tags),const DeepCollectionEquality().hash(_participantPaymentStatuses));
 
 @override
 String toString() {
-  return 'Bill(id: $id, title: $title, totalAmount: $totalAmount, currencyCode: $currencyCode, tax: $tax, service: $service, isSettled: $isSettled, receiptDate: $receiptDate, createdAt: $createdAt, participantPaymentStatuses: $participantPaymentStatuses)';
+  return 'Bill(id: $id, title: $title, totalAmount: $totalAmount, currencyCode: $currencyCode, tax: $tax, service: $service, isSettled: $isSettled, receiptDate: $receiptDate, createdAt: $createdAt, category: $category, tags: $tags, participantPaymentStatuses: $participantPaymentStatuses)';
 }
 
 
@@ -286,7 +306,7 @@ abstract mixin class _$BillCopyWith<$Res> implements $BillCopyWith<$Res> {
   factory _$BillCopyWith(_Bill value, $Res Function(_Bill) _then) = __$BillCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, double totalAmount, String currencyCode, double tax, double service, bool isSettled, DateTime? receiptDate, DateTime createdAt, List<bool> participantPaymentStatuses
+ String id, String title, double totalAmount, String currencyCode, double tax, double service, bool isSettled, DateTime? receiptDate, DateTime createdAt, String category, List<String> tags, List<bool> participantPaymentStatuses
 });
 
 
@@ -303,7 +323,7 @@ class __$BillCopyWithImpl<$Res>
 
 /// Create a copy of Bill
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? totalAmount = null,Object? currencyCode = null,Object? tax = null,Object? service = null,Object? isSettled = null,Object? receiptDate = freezed,Object? createdAt = null,Object? participantPaymentStatuses = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? totalAmount = null,Object? currencyCode = null,Object? tax = null,Object? service = null,Object? isSettled = null,Object? receiptDate = freezed,Object? createdAt = null,Object? category = null,Object? tags = null,Object? participantPaymentStatuses = null,}) {
   return _then(_Bill(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -314,7 +334,9 @@ as double,service: null == service ? _self.service : service // ignore: cast_nul
 as double,isSettled: null == isSettled ? _self.isSettled : isSettled // ignore: cast_nullable_to_non_nullable
 as bool,receiptDate: freezed == receiptDate ? _self.receiptDate : receiptDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,participantPaymentStatuses: null == participantPaymentStatuses ? _self._participantPaymentStatuses : participantPaymentStatuses // ignore: cast_nullable_to_non_nullable
+as DateTime,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as String,tags: null == tags ? _self._tags : tags // ignore: cast_nullable_to_non_nullable
+as List<String>,participantPaymentStatuses: null == participantPaymentStatuses ? _self._participantPaymentStatuses : participantPaymentStatuses // ignore: cast_nullable_to_non_nullable
 as List<bool>,
   ));
 }

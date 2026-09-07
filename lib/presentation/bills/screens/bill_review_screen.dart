@@ -16,6 +16,8 @@ import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
+import '../../history/utils/bill_category.dart';
+import '../../history/utils/bill_category_labels.dart';
 import '../../settings/widgets/currency_picker_sheet.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../../shared/widgets/plus_info_icon.dart';
@@ -40,6 +42,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _taxCtrl;
   late final TextEditingController _serviceCtrl;
+  late final TextEditingController _tagsCtrl;
   final FocusNode _taxFocus = FocusNode();
   final FocusNode _serviceFocus = FocusNode();
   final Map<String, _ItemControllers> _itemCtrls = {};
@@ -58,6 +61,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
     _serviceCtrl = TextEditingController(
       text: initial.service > 0 ? _fmtNum(initial.service) : '',
     );
+    _tagsCtrl = TextEditingController(text: initial.tags.join(', '));
     _taxFocus.addListener(() => _selectAllOnFocus(_taxCtrl, _taxFocus));
     _serviceFocus.addListener(
       () => _selectAllOnFocus(_serviceCtrl, _serviceFocus),
@@ -77,6 +81,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
     _titleCtrl.dispose();
     _taxCtrl.dispose();
     _serviceCtrl.dispose();
+    _tagsCtrl.dispose();
     _taxFocus.dispose();
     _serviceFocus.dispose();
     for (final c in _itemCtrls.values) {
@@ -211,6 +216,12 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
               confidence: state.confidence,
               onTitleChanged: _notifier.setTitle,
               onCurrencyChanged: () => _onPickCurrency(state.currency),
+              category: state.category,
+              tagsCtrl: _tagsCtrl,
+              onCategoryChanged: _notifier.setCategory,
+              onTagsChanged: (v) => _notifier.setTags(
+                BillCategory.parseTagsField(v),
+              ),
             ),
             if (state.suspectThousandsBug)
               Padding(
@@ -392,6 +403,10 @@ class _Header extends StatelessWidget {
     required this.confidence,
     required this.onTitleChanged,
     required this.onCurrencyChanged,
+    required this.category,
+    required this.tagsCtrl,
+    required this.onCategoryChanged,
+    required this.onTagsChanged,
   });
 
   final TextEditingController titleCtrl;
@@ -402,6 +417,10 @@ class _Header extends StatelessWidget {
   final double confidence;
   final ValueChanged<String> onTitleChanged;
   final VoidCallback onCurrencyChanged;
+  final String category;
+  final TextEditingController tagsCtrl;
+  final ValueChanged<String> onCategoryChanged;
+  final ValueChanged<String> onTagsChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -485,6 +504,65 @@ class _Header extends StatelessWidget {
                     message: AppL10n.of(context).billReviewCurrencyPlusDetail,
                     iconColor: scheme.onSurfaceVariant,
                   ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.only(left: 32.w),
+            child: Text(
+              AppL10n.of(context).categoryLabel,
+              style: TextStyle(fontSize: 12.sp, color: scheme.outline),
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Padding(
+            padding: EdgeInsets.only(left: 32.w),
+            child: Wrap(
+              spacing: 8.w,
+              runSpacing: 6.h,
+              children: [
+                for (final preset in BillCategory.presets)
+                  ChoiceChip(
+                    label: Text(categoryLabel(preset, AppL10n.of(context))),
+                    selected: category == preset,
+                    showCheckmark: false,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (_) => onCategoryChanged(preset),
+                  ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Padding(
+            padding: EdgeInsets.only(left: 32.w),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: tagsCtrl,
+                    enabled: isPlus,
+                    onChanged: onTagsChanged,
+                    style: TextStyle(fontSize: 13.sp),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      border: const OutlineInputBorder(),
+                      labelText: AppL10n.of(context).tagLabel,
+                      helperText: isPlus
+                          ? AppL10n.of(context).tagLimitReached
+                          : null,
+                    ),
+                  ),
+                ),
+                if (!isPlus) ...[
+                  SizedBox(width: 4.w),
+                  PlusInfoIcon(
+                    title: AppL10n.of(context).tagLabel,
+                    message: AppL10n.of(context).tagPlusLocked,
+                    iconColor: scheme.onSurfaceVariant,
+                  ),
+                ],
               ],
             ),
           ),

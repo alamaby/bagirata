@@ -18,6 +18,12 @@ abstract class Bill with _$Bill {
     @Default(false) bool isSettled,
     DateTime? receiptDate,
     required DateTime createdAt,
+    /// Bill category preset (`makan`, `transport`, `groceries`, `belanja`,
+    /// `lain`). Server CHECK-enforced; unknown values never persist.
+    @Default('lain') String category,
+    /// Plus-only custom tags (max 5, normalized client-side). Excluded from
+    /// the public share-link snapshot.
+    @Default([]) List<String> tags,
     /// Summary of participant payment statuses from the History list query.
     /// Populated only via [BillDto.fromJsonWithParticipants]; `getBill()`
     /// and `upsertBill()` always return an empty list.

@@ -16,6 +16,8 @@ abstract class HistoryBill with _$HistoryBill {
     @Default(false) bool isSettled,
     DateTime? receiptDate,
     required DateTime createdAt,
+    @Default('lain') String category,
+    @Default([]) List<String> tags,
     required int participantCount,
     required int paidParticipantCount,
     required BillPaymentStatus paymentStatus,

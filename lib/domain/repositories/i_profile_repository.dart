@@ -82,6 +82,7 @@ abstract interface class IProfileRepository {
   Future<Result<MonthlySpendingInsight>> getMonthlySpendingInsight({
     required DateTime month,
     required String currencyCode,
+    String? category,
   });
 
   /// Reads the optional bank transfer destination saved on the current profile.

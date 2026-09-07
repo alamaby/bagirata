@@ -247,7 +247,18 @@
   "deleteAccountInProgress": "Deleting account...",
   "deleteAccountSuccess": "Your account and saved data have been deleted.",
   "deletedBillsTitle": "Deleted bills",
-  "deletedBillsSettingsSubtitle": "Restore bills deleted in the last 30 days.",
+  "deletedBillsSettingsSubtitle": "Restore bills deleted in the last {days} days.",
+  "@deletedBillsSettingsSubtitle": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "deletedBillsRetentionFree": "Deleted bills are kept for {days} days.",
+  "@deletedBillsRetentionFree": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "deletedBillsRetentionPlus": "Deleted bills are kept for {days} days so Plus users can recover accidental deletions.",
+  "@deletedBillsRetentionPlus": {
+    "placeholders": { "days": { "type": "int" } }
+  },
   "deletedBillsSettingsLockedSubtitle": "Plus only. Restore accidentally deleted bills within 30 days.",
   "deletedBillsLockedTitle": "Restore deleted bills with Plus",
   "deletedBillsLockedSubtitle": "Deleted bills are kept for 30 days so Plus users can recover accidental deletions.",
@@ -262,13 +273,19 @@
   },
   "deletedBillRestoreAction": "Restore",
   "deletedBillRestored": "Bill restored.",
+  "deletedBillExpiredError": "This bill can no longer be restored.",
+  "deletedBillExpiresInDays": "{days} days left",
+  "@deletedBillExpiresInDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
   "deleteBillAction": "Delete",
   "deleteBillConfirmTitle": "Delete this bill?",
-  "deleteBillConfirmBody": "{title} ({total}) will move to Deleted bills. Plus users can restore it within 30 days.",
+  "deleteBillConfirmBody": "{title} ({total}) will move to Deleted bills. Plus users can restore it within {days} days.",
   "@deleteBillConfirmBody": {
     "placeholders": {
       "title": { "type": "String" },
-      "total": { "type": "String" }
+      "total": { "type": "String" },
+      "days": { "type": "int" }
     }
   },
   "deleteBillSuccess": "Bill moved to Deleted bills.",
@@ -417,6 +434,21 @@
   "historyFilterCurrency": "Currency",
   "historyFilterReset": "Reset",
   "historyFilterEmpty": "No bills match these filters.",
+  "historyFilterEmptyQuery": "No results for “{query}”.",
+  "@historyFilterEmptyQuery": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+  "historySearchHint": "Search titles or items...",
+  "historyFilterCategory": "Category",
+  "categoryLabel": "Category",
+  "categoryMakan": "Food",
+  "categoryTransport": "Transport",
+  "categoryGroceries": "Groceries",
+  "categoryBelanja": "Shopping",
+  "categoryLain": "Other",
+  "tagLabel": "Tags (Plus)",
+  "tagPlusLocked": "Custom tags are a Plus feature. Upgrade to label bills with your own tags (max 5).",
+  "tagLimitReached": "Max 5 tags, separated by commas.",
   "historyFilterCount": "{filteredCount} of {totalCount} bills",
   "@historyFilterCount": {
     "placeholders": {
@@ -454,6 +486,7 @@
   "monthlyInsightBills": "Bills",
   "monthlyInsightOutstanding": "Outstanding",
   "monthlyInsightTopMerchants": "Top merchants",
+  "monthlyInsightByCategory": "By category",
   "monthlyInsightIncrease": "Up {percent}% vs last month",
   "@monthlyInsightIncrease": {
     "placeholders": { "percent": { "type": "String" } }

@@ -19,6 +19,11 @@ class HistoryFilterNotifier extends _$HistoryFilterNotifier {
   void setCurrencyCode(String? code) =>
       state = state.copyWith(currencyCode: code);
 
+  void setCategory(String? category) =>
+      state = state.copyWith(category: category);
+
+  void setQuery(String? query) => state = state.copyWith(query: query);
+
   void apply(HistoryFilterState filter) => state = filter;
 
   void reset() => state = const HistoryFilterState();

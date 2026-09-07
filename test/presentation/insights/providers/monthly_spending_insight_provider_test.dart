@@ -17,16 +17,19 @@ class _FakeProfileRepository implements IProfileRepository {
   int insightCalls = 0;
   DateTime? lastMonth;
   String? lastCurrency;
+  String? lastCategory;
   MonthlySpendingInsight? result;
 
   @override
   Future<Result<MonthlySpendingInsight>> getMonthlySpendingInsight({
     required DateTime month,
     required String currencyCode,
+    String? category,
   }) async {
     insightCalls++;
     lastMonth = month;
     lastCurrency = currencyCode;
+    lastCategory = category;
     return Result.success(
       result ??
           MonthlySpendingInsight(
@@ -41,6 +44,7 @@ class _FakeProfileRepository implements IProfileRepository {
             outstandingAmount: 30,
             topMerchants: const [],
             monthlyTrend: const [],
+            byCategory: const [],
           ),
     );
   }
@@ -181,7 +185,7 @@ void main() {
 
     final sub = container.listen(
       monthlySpendingInsightProvider(
-        (month: DateTime(2026, 8, 15), currencyCode: 'IDR'),
+        (month: DateTime(2026, 8, 15), currencyCode: 'IDR', category: null),
       ),
       (_, _) {},
     );
@@ -214,7 +218,7 @@ void main() {
 
     final sub = container.listen(
       monthlySpendingInsightProvider(
-        (month: DateTime(2026, 8), currencyCode: 'USD'),
+        (month: DateTime(2026, 8), currencyCode: 'USD', category: null),
       ),
       (_, _) {},
     );
@@ -244,13 +248,13 @@ void main() {
 
     final augIdr = container.listen(
       monthlySpendingInsightProvider(
-        (month: DateTime(2026, 8), currencyCode: 'IDR'),
+        (month: DateTime(2026, 8), currencyCode: 'IDR', category: null),
       ),
       (_, _) {},
     );
     final julUsd = container.listen(
       monthlySpendingInsightProvider(
-        (month: DateTime(2026, 7), currencyCode: 'USD'),
+        (month: DateTime(2026, 7), currencyCode: 'USD', category: null),
       ),
       (_, _) {},
     );
@@ -262,4 +266,38 @@ void main() {
     expect(fakeRepo.lastMonth, DateTime(2026, 7));
     expect(fakeRepo.lastCurrency, 'USD');
   });
+
+  test('category filter is forwarded to the repository', () async {
+    container = ProviderContainer(
+      overrides: [
+        authStateProvider.overrideWith(
+          (ref) async* {
+            yield const AuthSnapshot(
+              userId: 'user-1',
+              isAnonymous: false,
+              emailConfirmed: true,
+            );
+          },
+        ),
+        ocrCreditStatusProvider.overrideWith(
+          (ref) async => _plusStatus,
+        ),
+        profileRepositoryProvider.overrideWithValue(fakeRepo),
+      ],
+    );
+
+    final sub = container.listen(
+      monthlySpendingInsightProvider(
+        (month: DateTime(2026, 8), currencyCode: 'IDR', category: 'makan'),
+      ),
+      (_, _) {},
+    );
+    addTearDown(sub.close);
+    await settle();
+
+    expect(fakeRepo.insightCalls, greaterThanOrEqualTo(1));
+    expect(fakeRepo.lastCategory, 'makan');
+    expect(sub.read().value?.byCategory, isEmpty);
+  });
 }
+

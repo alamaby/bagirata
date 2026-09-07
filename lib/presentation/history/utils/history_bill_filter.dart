@@ -22,6 +22,16 @@ List<Bill> applyHistoryFilter(
     result = result.where((b) => b.currencyCode == filter.currencyCode).toList(growable: false);
   }
 
+  if (filter.category != null) {
+    result = result.where((b) => b.category == filter.category).toList(growable: false);
+  }
+
+  final q = filter.effectiveQuery;
+  if (q != null) {
+    final needle = q.toLowerCase();
+    result = result.where((b) => b.title.toLowerCase().contains(needle)).toList(growable: false);
+  }
+
   final sort = effectiveHistorySort(result, filter);
   result = result.toList(growable: false)..sort((a, b) => _compare(a, b, sort));
   return result;

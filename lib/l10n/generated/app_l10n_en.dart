@@ -580,8 +580,19 @@ class AppL10nEn extends AppL10n {
   String get deletedBillsTitle => 'Deleted bills';
 
   @override
-  String get deletedBillsSettingsSubtitle =>
-      'Restore bills deleted in the last 30 days.';
+  String deletedBillsSettingsSubtitle(int days) {
+    return 'Restore bills deleted in the last $days days.';
+  }
+
+  @override
+  String deletedBillsRetentionFree(int days) {
+    return 'Deleted bills are kept for $days days.';
+  }
+
+  @override
+  String deletedBillsRetentionPlus(int days) {
+    return 'Deleted bills are kept for $days days so Plus users can recover accidental deletions.';
+  }
 
   @override
   String get deletedBillsSettingsLockedSubtitle =>
@@ -614,14 +625,22 @@ class AppL10nEn extends AppL10n {
   String get deletedBillRestored => 'Bill restored.';
 
   @override
+  String get deletedBillExpiredError => 'This bill can no longer be restored.';
+
+  @override
+  String deletedBillExpiresInDays(int days) {
+    return '$days days left';
+  }
+
+  @override
   String get deleteBillAction => 'Delete';
 
   @override
   String get deleteBillConfirmTitle => 'Delete this bill?';
 
   @override
-  String deleteBillConfirmBody(String title, String total) {
-    return '$title ($total) will move to Deleted bills. Plus users can restore it within 30 days.';
+  String deleteBillConfirmBody(String title, String total, int days) {
+    return '$title ($total) will move to Deleted bills. Plus users can restore it within $days days.';
   }
 
   @override
@@ -950,6 +969,45 @@ class AppL10nEn extends AppL10n {
   String get historyFilterEmpty => 'No bills match these filters.';
 
   @override
+  String historyFilterEmptyQuery(String query) {
+    return 'No results for “$query”.';
+  }
+
+  @override
+  String get historySearchHint => 'Search titles or items...';
+
+  @override
+  String get historyFilterCategory => 'Category';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get categoryMakan => 'Food';
+
+  @override
+  String get categoryTransport => 'Transport';
+
+  @override
+  String get categoryGroceries => 'Groceries';
+
+  @override
+  String get categoryBelanja => 'Shopping';
+
+  @override
+  String get categoryLain => 'Other';
+
+  @override
+  String get tagLabel => 'Tags (Plus)';
+
+  @override
+  String get tagPlusLocked =>
+      'Custom tags are a Plus feature. Upgrade to label bills with your own tags (max 5).';
+
+  @override
+  String get tagLimitReached => 'Max 5 tags, separated by commas.';
+
+  @override
   String historyFilterCount(int filteredCount, int totalCount) {
     return '$filteredCount of $totalCount bills';
   }
@@ -1029,6 +1087,9 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get monthlyInsightTopMerchants => 'Top merchants';
+
+  @override
+  String get monthlyInsightByCategory => 'By category';
 
   @override
   String monthlyInsightIncrease(String percent) {

@@ -19,6 +19,12 @@ _HistoryBillDto _$HistoryBillDtoFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['receipt_date'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
+      category: json['category'] as String? ?? 'lain',
+      tags:
+          (json['bill_tags'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       participantCount: (json['participant_count'] as num).toInt(),
       paidParticipantCount: (json['paid_participant_count'] as num).toInt(),
       paymentStatus: json['payment_status'] as String,
@@ -35,6 +41,8 @@ Map<String, dynamic> _$HistoryBillDtoToJson(_HistoryBillDto instance) =>
       'is_settled': instance.isSettled,
       'receipt_date': ?instance.receiptDate?.toIso8601String(),
       'created_at': instance.createdAt.toIso8601String(),
+      'category': instance.category,
+      'bill_tags': instance.tags,
       'participant_count': instance.participantCount,
       'paid_participant_count': instance.paidParticipantCount,
       'payment_status': instance.paymentStatus,

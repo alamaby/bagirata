@@ -24,6 +24,8 @@ import '../../insights/providers/monthly_spending_insight_provider.dart';
 import '../../settings/providers/preferences_providers.dart';
 import '../../shared/widgets/plus_info_icon.dart';
 import '../providers/history_filter_notifier.dart';
+import '../utils/bill_category.dart';
+import '../utils/bill_category_labels.dart';
 import '../providers/history_list_notifier.dart';
 import '../providers/history_plus_banner_notifier.dart';
 
@@ -36,6 +38,9 @@ class HistoryScreen extends ConsumerStatefulWidget {
 
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   final _scrollController = ScrollController();
+  final _searchCtrl = TextEditingController();
+  final _searchFocus = FocusNode();
+  Timer? _searchDebounce;
 
   /// Currently selected Monthly Insight month (first day of the month).
   DateTime _selectedInsightMonth = DateTime(
@@ -57,7 +62,19 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchDebounce?.cancel();
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
     super.dispose();
+  }
+
+  /// 400ms-debounced search: typing only rebuilds the query state, the
+  /// server round-trip (and cursor reset) happens once the user pauses.
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      ref.read(historyFilterProvider.notifier).setQuery(value);
+    });
   }
 
   /// Resolves the effective insight currency. Keeps the user's choice while it
@@ -153,9 +170,19 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
     final monthlyInsight = ref.watch(
       monthlySpendingInsightProvider(
-        (month: _selectedInsightMonth, currencyCode: selectedCurrency),
+        (
+          month: _selectedInsightMonth,
+          currencyCode: selectedCurrency,
+          category: null,
+        ),
       ),
     );
+
+    // Keep the search box in sync with external filter changes (e.g. reset)
+    // without fighting keystrokes: only sync while unfocused.
+    if (!_searchFocus.hasFocus && _searchCtrl.text != (filter.query ?? '')) {
+      _searchCtrl.text = filter.query ?? '';
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -197,6 +224,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   ),
                 ],
               ),
+              SliverToBoxAdapter(
+                child: _SearchField(
+                  controller: _searchCtrl,
+                  focusNode: _searchFocus,
+                  onChanged: _onSearchChanged,
+                  onClear: () {
+                    _searchDebounce?.cancel();
+                    _searchCtrl.clear();
+                    ref.read(historyFilterProvider.notifier).setQuery(null);
+                  },
+                ),
+              ),
               if (summary != null)
                 SliverToBoxAdapter(
                   child: _SummaryCards(
@@ -222,6 +261,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           .read(historyFilterProvider.notifier)
                           .apply(normalized);
                     },
+                    onRemoveCategory: () => ref
+                        .read(historyFilterProvider.notifier)
+                        .setCategory(null),
+                    onRemoveQuery: () => ref
+                        .read(historyFilterProvider.notifier)
+                        .setQuery(null),
                     onReset: () =>
                         ref.read(historyFilterProvider.notifier).reset(),
                   ),
@@ -307,6 +352,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: _FilteredEmptyState(
+                    query: filter.effectiveQuery,
                     onReset: () =>
                         ref.read(historyFilterProvider.notifier).reset(),
                   ),
@@ -328,9 +374,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       ).format(bill.createdAt);
                       return Card(
                         child: ListTile(
+                          isThreeLine: true,
                           title: Text(bill.title),
                           subtitle: Text(
-                            '${currency.format(bill.totalAmount)}  •  ${_paymentStatusLabel(l10n, bill.paymentStatus)}  •  $createdLabel',
+                            '${currency.format(bill.totalAmount)}  •  ${_paymentStatusLabel(l10n, bill.paymentStatus)}  •  $createdLabel\n${categoryLabel(bill.category, l10n)}',
                           ),
                           trailing: IconButton(
                             tooltip: l10n.deleteBillAction,
@@ -400,11 +447,19 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     String formattedTotal,
   ) async {
     final l10n = AppL10n.of(context);
+    final retentionDays = PlusFeatureLimits.trashRetentionDays(
+      isPlus: switch (ref.read(ocrCreditStatusProvider)) {
+        AsyncData(:final value) => value?.isPlus ?? false,
+        _ => false,
+      },
+    );
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.deleteBillConfirmTitle),
-        content: Text(l10n.deleteBillConfirmBody('', formattedTotal)),
+        content: Text(
+          l10n.deleteBillConfirmBody('', formattedTotal, retentionDays),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -458,6 +513,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       sort: currentFilter.sort,
       paymentStatus: currentFilter.paymentStatus,
       currencyCode: currentFilter.currencyCode,
+      category: currentFilter.category,
+      query: currentFilter.query,
     );
 
     showModalBottomSheet<void>(
@@ -520,12 +577,60 @@ class _FilteredCountLabel extends StatelessWidget {
   }
 }
 
+class _SearchField extends StatelessWidget {
+  const _SearchField({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
+      child: ValueListenableBuilder<TextEditingValue>(
+        valueListenable: controller,
+        builder: (context, value, _) => TextField(
+          controller: controller,
+          focusNode: focusNode,
+          onChanged: onChanged,
+          textInputAction: TextInputAction.search,
+          decoration: InputDecoration(
+            isDense: true,
+            prefixIcon: const Icon(Icons.search),
+            hintText: l10n.historySearchHint,
+            border: const OutlineInputBorder(),
+            suffixIcon: value.text.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).deleteButtonTooltip,
+                    icon: const Icon(Icons.clear),
+                    onPressed: onClear,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ActiveFilterChips extends StatelessWidget {
   const _ActiveFilterChips({
     required this.filter,
     required this.currencies,
     required this.onRemoveStatus,
     required this.onRemoveCurrency,
+    required this.onRemoveCategory,
+    required this.onRemoveQuery,
     required this.onReset,
   });
 
@@ -533,6 +638,8 @@ class _ActiveFilterChips extends StatelessWidget {
   final List<String> currencies;
   final VoidCallback onRemoveStatus;
   final VoidCallback onRemoveCurrency;
+  final VoidCallback onRemoveCategory;
+  final VoidCallback onRemoveQuery;
   final VoidCallback onReset;
 
   @override
@@ -554,6 +661,20 @@ class _ActiveFilterChips extends StatelessWidget {
       chips.add(
         _FilterChip(label: filter.currencyCode!, onRemoved: onRemoveCurrency),
       );
+    }
+
+    if (filter.category != null) {
+      chips.add(
+        _FilterChip(
+          label: categoryLabel(filter.category!, l10n),
+          onRemoved: onRemoveCategory,
+        ),
+      );
+    }
+
+    final q = filter.effectiveQuery;
+    if (q != null) {
+      chips.add(_FilterChip(label: '“$q”', onRemoved: onRemoveQuery));
     }
 
     if (chips.isEmpty) return const SizedBox.shrink();
@@ -782,6 +903,31 @@ class _FilterSheetState extends State<_FilterSheet> {
                         selected: _draft.paymentStatus == s,
                         onSelected: () => setState(
                           () => _draft = _draft.copyWith(paymentStatus: s),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                _SectionLabel(l10n.historyFilterCategory),
+                SizedBox(height: 8.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 8.h,
+                  children: [
+                    _StatusChoiceChip(
+                      label: l10n.historyStatusAll,
+                      selected: _draft.category == null,
+                      onSelected: () => setState(
+                        () => _draft = _draft.copyWith(category: null),
+                      ),
+                    ),
+                    ...BillCategory.presets.map(
+                      (c) => _StatusChoiceChip(
+                        label: categoryLabel(c, l10n),
+                        selected: _draft.category == c,
+                        onSelected: () => setState(
+                          () => _draft = _draft.copyWith(category: c),
                         ),
                       ),
                     ),
@@ -1269,6 +1415,17 @@ class _MonthlyInsightCard extends StatelessWidget {
               (m) => _MerchantRow(merchant: m, currency: currency),
             ),
           ],
+          if (insight.byCategory.isNotEmpty) ...[
+            SizedBox(height: 14.h),
+            Text(
+              l10n.monthlyInsightByCategory,
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(height: 6.h),
+            ...insight.byCategory.map(
+              (c) => _CategoryRow(category: c, currency: currency),
+            ),
+          ],
         ],
       ),
     );
@@ -1417,6 +1574,41 @@ class _MerchantRow extends StatelessWidget {
           SizedBox(width: 8.w),
           Text(
             currency.format(merchant.totalAmount),
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow({required this.category, required this.currency});
+  final CategorySpendingInsight category;
+  final NumberFormat currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '${categoryLabel(category.category, AppL10n.of(context))} • ${category.billCount}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12.sp),
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            currency.format(category.totalAmount),
             style: TextStyle(
               color: scheme.onSurfaceVariant,
               fontSize: 12.sp,
@@ -2163,8 +2355,9 @@ class _EmptyState extends StatelessWidget {
 }
 
 class _FilteredEmptyState extends StatelessWidget {
-  const _FilteredEmptyState({required this.onReset});
+  const _FilteredEmptyState({required this.onReset, this.query});
   final VoidCallback onReset;
+  final String? query;
 
   @override
   Widget build(BuildContext context) {
@@ -2187,6 +2380,14 @@ class _FilteredEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14.sp, color: scheme.onSurfaceVariant),
             ),
+            if (query != null) ...[
+              SizedBox(height: 4.h),
+              Text(
+                l10n.historyFilterEmptyQuery(query!),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13.sp, color: scheme.outline),
+              ),
+            ],
             SizedBox(height: 16.h),
             FilledButton.tonal(
               onPressed: onReset,

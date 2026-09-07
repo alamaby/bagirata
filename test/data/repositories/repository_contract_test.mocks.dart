@@ -97,6 +97,8 @@ class MockBillRemoteDataSource extends _i1.Mock
     String? cursorSortValue,
     DateTime? cursorCreatedAt,
     String? cursorId,
+    String? query,
+    String? category,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#listHistoryBillsPage, [], {
@@ -108,6 +110,8 @@ class MockBillRemoteDataSource extends _i1.Mock
               #cursorSortValue: cursorSortValue,
               #cursorCreatedAt: cursorCreatedAt,
               #cursorId: cursorId,
+              #query: query,
+              #category: category,
             }),
             returnValue: _i7.Future<_i2.HistoryBillPageDto>.value(
               _FakeHistoryBillPageDto_0(
@@ -121,6 +125,8 @@ class MockBillRemoteDataSource extends _i1.Mock
                   #cursorSortValue: cursorSortValue,
                   #cursorCreatedAt: cursorCreatedAt,
                   #cursorId: cursorId,
+                  #query: query,
+                  #category: category,
                 }),
               ),
             ),
@@ -130,16 +136,22 @@ class MockBillRemoteDataSource extends _i1.Mock
   @override
   _i7.Future<_i3.HistorySummaryDto> getHistorySummary({
     required DateTime? createdAfter,
+    String? query,
+    String? category,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getHistorySummary, [], {
               #createdAfter: createdAfter,
+              #query: query,
+              #category: category,
             }),
             returnValue: _i7.Future<_i3.HistorySummaryDto>.value(
               _FakeHistorySummaryDto_1(
                 this,
                 Invocation.method(#getHistorySummary, [], {
                   #createdAfter: createdAfter,
+                  #query: query,
+                  #category: category,
                 }),
               ),
             ),
