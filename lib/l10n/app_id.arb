@@ -871,5 +871,30 @@
       "title": { "type": "String" },
       "total": { "type": "String" }
     }
+  },
+  "shareLinkRateLimited": "Terlalu banyak link dibuat hari ini. Coba lagi besok.",
+  "shareLinkWebFallback": "Belum punya aplikasinya? Unduh BagiStruk di sini: {url} — lalu ketuk link di atas lagi.",
+  "@shareLinkWebFallback": {
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  },
+  "shareLinkCountdownDays": "Berakhir dalam {count} hari",
+  "@shareLinkCountdownDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareLinkCountdownHours": "Berakhir dalam {count} jam",
+  "@shareLinkCountdownHours": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareLinkCountdownMinutes": "Berakhir dalam {count} menit",
+  "@shareLinkCountdownMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

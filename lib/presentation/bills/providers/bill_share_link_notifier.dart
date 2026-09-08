@@ -23,14 +23,20 @@ class BillShareState {
 
 /// Outcome of [BillShareLink.createAndCopy] without touching displayed data.
 class ShareLinkResult {
-  const ShareLinkResult._({this.link, this.limited = false});
+  const ShareLinkResult._({
+    this.link,
+    this.limited = false,
+    this.rateLimited = false,
+  });
 
-  const ShareLinkResult.created(this.link) : limited = false;
-  const ShareLinkResult.limited() : link = null, limited = true;
-  const ShareLinkResult.failed() : link = null, limited = false;
+  const ShareLinkResult.created(String? link) : this._(link: link);
+  const ShareLinkResult.limited() : this._(limited: true);
+  const ShareLinkResult.rateLimited() : this._(rateLimited: true);
+  const ShareLinkResult.failed() : this._();
 
   final String? link;
   final bool limited;
+  final bool rateLimited;
 }
 
 @riverpod
@@ -73,6 +79,11 @@ class BillShareLink extends _$BillShareLink {
   static bool isLimitError(Object e) =>
       e.toString().toLowerCase().contains('share_token_limit');
 
+  /// Centralized velocity match (case-insensitive; the RPC raises
+  /// `share_token_rate_limited: ...` with ERRCODE P0001).
+  static bool isRateLimited(Object e) =>
+      e.toString().toLowerCase().contains('share_token_rate_limited');
+
   Future<ShareLinkResult> createAndCopy(String billId) async {
     final token = ShareLinkToken.generate();
     final hash = ShareLinkToken.hash(token);
@@ -88,6 +99,9 @@ class BillShareLink extends _$BillShareLink {
           );
           // Preserve displayed data: a failed create must not wipe a
           // previously loaded expiry/revoke.
+          if (isRateLimited(failure)) {
+            return const ShareLinkResult.rateLimited();
+          }
           return isLimitError(failure)
               ? const ShareLinkResult.limited()
               : const ShareLinkResult.failed();
@@ -111,6 +125,7 @@ class BillShareLink extends _$BillShareLink {
       }
     } catch (e, st) {
       AppLogger.error('BillShareLink.createAndCopy failed', e, st);
+      if (isRateLimited(e)) return const ShareLinkResult.rateLimited();
       return isLimitError(e)
           ? const ShareLinkResult.limited()
           : const ShareLinkResult.failed();

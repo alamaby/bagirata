@@ -10,6 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/billing/share_link_token.dart';
+import '../../../core/config/app_constants.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
@@ -832,6 +834,15 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
     );
   }
 
+  /// Two-line share text: tappable link first, then a localized fallback
+  /// line for recipients without the app (custom-scheme links are dead
+  /// text there). See plan 2026-09-08-share-link-deferred.
+  String _shareText(AppL10n l10n, String link) =>
+      ShareLinkToken.shareText(
+        link: link,
+        fallbackLine: l10n.shareLinkWebFallback(AppConstants.websiteUrl),
+      );
+
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final result = await ref
         .read(billShareLinkFamily(widget.billId).notifier)
@@ -845,9 +856,13 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
           content: Text(l10n.shareLinkCopied),
           action: SnackBarAction(
             label: l10n.splitSummaryShare,
-            onPressed: () => Share.shareUri(Uri.parse(result.link!)),
+            onPressed: () => Share.share(_shareText(l10n, result.link!)),
           ),
         ),
+      );
+    } else if (result.rateLimited) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.shareLinkRateLimited)),
       );
     } else if (result.limited) {
       messenger.showSnackBar(
@@ -864,6 +879,99 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
         SnackBar(content: Text(l10n.shareLinkCreateFailed)),
       );
     }
+  }
+
+  /// Active-link body with skew-tolerant countdown. Server `expires_at` is
+  /// the sole source of truth: once remaining hits zero we render the
+  /// expired state (revoking a dead token would be a pointless no-op) and
+  /// offer a fresh create instead.
+  Widget _activeLinkBody(
+    BuildContext context,
+    WidgetRef ref,
+    AppL10n l10n,
+    ColorScheme scheme,
+    BillShareState? value,
+  ) {
+    final expiresAt = value!.expiresAt;
+    final remaining = ShareLinkCountdown.remaining(
+      expiresAt: expiresAt,
+      now: DateTime.now(),
+    );
+    if (remaining == Duration.zero) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.shareLinkExpired,
+            style: TextStyle(fontSize: 13.sp, color: scheme.error),
+          ),
+          SizedBox(height: 8.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _create(context, ref),
+              icon: const Icon(Icons.content_copy_outlined),
+              label: Text(l10n.shareLinkCreate),
+            ),
+          ),
+        ],
+      );
+    }
+    final countdown = remaining.inHours >= 24
+        ? l10n.shareLinkCountdownDays(remaining.inHours ~/ 24)
+        : remaining.inHours >= 1
+        ? l10n.shareLinkCountdownHours(remaining.inHours)
+        : l10n.shareLinkCountdownMinutes(
+            ShareLinkCountdown.wholeMinutes(remaining),
+          );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          countdown,
+          style: TextStyle(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            color: scheme.onSurface,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          l10n.shareLinkExpiresIn(
+            DateFormat.yMMMd(
+              AppFormat.intlLocaleOf(Localizations.localeOf(context)),
+            ).format(expiresAt.toLocal()),
+          ),
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          children: [
+            if (value.lastLink != null)
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => Share.share(
+                    _shareText(l10n, value.lastLink!),
+                  ),
+                  icon: const Icon(Icons.share_outlined),
+                  label: Text(l10n.splitSummaryShare),
+                ),
+              ),
+            if (value.lastLink != null) SizedBox(width: 8.w),
+            Expanded(
+              child: TextButton.icon(
+                onPressed: () => _revoke(context, ref, value.tokenId),
+                icon: const Icon(Icons.link_off_outlined),
+                label: Text(l10n.shareLinkRevoke),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Future<void> _revoke(
@@ -954,44 +1062,8 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
                 label: Text(l10n.shareLinkCreate),
               ),
             ),
-            AsyncData(:final value) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.shareLinkExpiresIn(
-                    DateFormat.yMMMd(
-                      AppFormat.intlLocaleOf(Localizations.localeOf(context)),
-                    ).format(value!.expiresAt.toLocal()),
-                  ),
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    if (value.lastLink != null)
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () =>
-                              Share.shareUri(Uri.parse(value.lastLink!)),
-                          icon: const Icon(Icons.share_outlined),
-                          label: Text(l10n.splitSummaryShare),
-                        ),
-                      ),
-                    if (value.lastLink != null) SizedBox(width: 8.w),
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => _revoke(context, ref, value.tokenId),
-                        icon: const Icon(Icons.link_off_outlined),
-                        label: Text(l10n.shareLinkRevoke),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            AsyncData(:final value) =>
+              _activeLinkBody(context, ref, l10n, scheme, value),
             _ => const SizedBox.shrink(),
           },
         ],

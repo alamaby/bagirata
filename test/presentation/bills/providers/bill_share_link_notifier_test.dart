@@ -151,6 +151,50 @@ void main() {
       );
       expect(BillShareLink.isLimitError(Exception('boom')), isFalse);
     });
+
+    test('rate-limit failure preserves state and is not limited', () async {
+      stubCreateSuccess();
+      await notifier().createAndCopy(billId);
+
+      when(
+        mockRepo.createShareToken(
+          billId: anyNamed('billId'),
+          tokenHash: anyNamed('tokenHash'),
+        ),
+      ).thenAnswer(
+        (_) async => const Result.failure(
+          Failure.server(
+            code: 400,
+            message: 'share_token_rate_limited: max 20 links per day',
+          ),
+        ),
+      );
+      final result = await notifier().createAndCopy(billId);
+
+      expect(result.link, isNull);
+      expect(result.rateLimited, isTrue);
+      expect(result.limited, isFalse);
+      expect(
+        container.read(billShareLinkFamily(billId)).value?.tokenId,
+        'token-id',
+      );
+    });
+
+    test('isRateLimited matches case-insensitively', () {
+      expect(
+        BillShareLink.isRateLimited(
+          const Failure.server(code: 400, message: 'SHARE_TOKEN_RATE_LIMITED'),
+        ),
+        isTrue,
+      );
+      expect(
+        BillShareLink.isRateLimited(
+          const Failure.server(code: 400, message: 'share_token_limit: x'),
+        ),
+        isFalse,
+      );
+      expect(BillShareLink.isRateLimited(Exception('boom')), isFalse);
+    });
   });
 
   group('BillShareLink.revoke', () {

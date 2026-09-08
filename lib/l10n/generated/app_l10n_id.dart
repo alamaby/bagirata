@@ -1887,4 +1887,28 @@ class AppL10nId extends AppL10n {
   String reminderNotificationBody(String title, String total) {
     return '$title ($total) masih ada yang belum bayar. Ketuk untuk menagih.';
   }
+
+  @override
+  String get shareLinkRateLimited =>
+      'Terlalu banyak link dibuat hari ini. Coba lagi besok.';
+
+  @override
+  String shareLinkWebFallback(String url) {
+    return 'Belum punya aplikasinya? Unduh BagiStruk di sini: $url — lalu ketuk link di atas lagi.';
+  }
+
+  @override
+  String shareLinkCountdownDays(int count) {
+    return 'Berakhir dalam $count hari';
+  }
+
+  @override
+  String shareLinkCountdownHours(int count) {
+    return 'Berakhir dalam $count jam';
+  }
+
+  @override
+  String shareLinkCountdownMinutes(int count) {
+    return 'Berakhir dalam $count menit';
+  }
 }

@@ -871,5 +871,30 @@
       "title": { "type": "String" },
       "total": { "type": "String" }
     }
+  },
+  "shareLinkRateLimited": "Too many links created today. Try again tomorrow.",
+  "shareLinkWebFallback": "No app yet? Get BagiStruk here: {url} — then tap the link above again.",
+  "@shareLinkWebFallback": {
+    "placeholders": {
+      "url": { "type": "String" }
+    }
+  },
+  "shareLinkCountdownDays": "Expires in {count} days",
+  "@shareLinkCountdownDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareLinkCountdownHours": "Expires in {count} hours",
+  "@shareLinkCountdownHours": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "shareLinkCountdownMinutes": "Expires in {count} minutes",
+  "@shareLinkCountdownMinutes": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
   }
 }

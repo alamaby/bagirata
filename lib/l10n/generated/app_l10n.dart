@@ -3376,6 +3376,36 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'{title} ({total}) masih ada yang belum bayar. Ketuk untuk menagih.'**
   String reminderNotificationBody(String title, String total);
+
+  /// No description provided for @shareLinkRateLimited.
+  ///
+  /// In id, this message translates to:
+  /// **'Terlalu banyak link dibuat hari ini. Coba lagi besok.'**
+  String get shareLinkRateLimited;
+
+  /// No description provided for @shareLinkWebFallback.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum punya aplikasinya? Unduh BagiStruk di sini: {url} — lalu ketuk link di atas lagi.'**
+  String shareLinkWebFallback(String url);
+
+  /// No description provided for @shareLinkCountdownDays.
+  ///
+  /// In id, this message translates to:
+  /// **'Berakhir dalam {count} hari'**
+  String shareLinkCountdownDays(int count);
+
+  /// No description provided for @shareLinkCountdownHours.
+  ///
+  /// In id, this message translates to:
+  /// **'Berakhir dalam {count} jam'**
+  String shareLinkCountdownHours(int count);
+
+  /// No description provided for @shareLinkCountdownMinutes.
+  ///
+  /// In id, this message translates to:
+  /// **'Berakhir dalam {count} menit'**
+  String shareLinkCountdownMinutes(int count);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

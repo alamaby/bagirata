@@ -1888,4 +1888,28 @@ class AppL10nEn extends AppL10n {
   String reminderNotificationBody(String title, String total) {
     return '$title ($total) still has unpaid shares. Tap to follow up.';
   }
+
+  @override
+  String get shareLinkRateLimited =>
+      'Too many links created today. Try again tomorrow.';
+
+  @override
+  String shareLinkWebFallback(String url) {
+    return 'No app yet? Get BagiStruk here: $url — then tap the link above again.';
+  }
+
+  @override
+  String shareLinkCountdownDays(int count) {
+    return 'Expires in $count days';
+  }
+
+  @override
+  String shareLinkCountdownHours(int count) {
+    return 'Expires in $count hours';
+  }
+
+  @override
+  String shareLinkCountdownMinutes(int count) {
+    return 'Expires in $count minutes';
+  }
 }
