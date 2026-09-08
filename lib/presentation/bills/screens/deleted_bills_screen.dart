@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/billing/plus_feature_limits.dart';
+import '../../../core/error/failure.dart';
 import '../../../core/error/result.dart';
+import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
 import '../../../domain/entities/deleted_bill.dart';
@@ -85,10 +87,12 @@ class DeletedBillsScreen extends ConsumerWidget {
 
     final message = switch (result) {
       Success<void>() => l10n.deletedBillRestored,
-      ResultFailure(:final failure)
-          when failure.toString().contains(
-            'deleted_bill_not_found_or_expired',
-          ) =>
+      // Typed match on the server message contract (not `toString()`, whose
+      // freezed format is not a stability guarantee).
+      ResultFailure(:final failure) when failure is ServerFailure &&
+              failure.message.contains(
+                'deleted_bill_not_found_or_expired',
+              ) =>
         l10n.deletedBillExpiredError,
       ResultFailure() => l10n.errorGeneric,
     };
@@ -108,8 +112,12 @@ class _DeletedBillTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppL10n.of(context);
     final currency = CurrencyFormatter.of(bill.currencyCode);
-    final deletedAt = DateFormat.yMMMd().add_Hm().format(bill.deletedAt);
-    final expiresAt = DateFormat.yMMMd().format(bill.deleteExpiresAt);
+    final dateFormat = AppFormat.longDate(
+      AppFormat.intlLocaleOf(Localizations.localeOf(context)),
+    );
+    final deletedAt = '${dateFormat.format(bill.deletedAt)}'
+        ' ${DateFormat.Hm(AppFormat.intlLocaleOf(Localizations.localeOf(context))).format(bill.deletedAt)}';
+    final expiresAt = dateFormat.format(bill.deleteExpiresAt);
     final daysLeft = PlusFeatureLimits.trashDaysRemaining(
       bill.deleteExpiresAt,
     );

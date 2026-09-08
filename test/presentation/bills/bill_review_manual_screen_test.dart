@@ -48,6 +48,16 @@ void main() {
       expect(find.text('Tags (Plus)'), findsOneWidget);
     });
 
+    testWidgets('tags field is locked with Plus copy in this harness', (
+      tester,
+    ) async {
+      await pumpReview(tester, OcrResult.manual());
+
+      // Plus is off in this harness — label renders in EN test locale.
+      expect(find.text('Tags (Plus)'), findsOneWidget);
+      expect(find.textContaining('Max 5 tags'), findsNothing);
+    });
+
     testWidgets('low-confidence OCR still shows the warning chip', (
       tester,
     ) async {

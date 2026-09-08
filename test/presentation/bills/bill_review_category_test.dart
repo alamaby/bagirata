@@ -114,5 +114,18 @@ void main() {
           verify(mockRepo.createBill(captureAny)).captured.single as Bill;
       expect(captured.category, 'lain');
     });
+
+    test('non-Plus field input strips tags on save', () async {
+      final n = notifier();
+      // Simulate a Free user typing into a locked field: tags must not leak.
+      n.setTagsField('kopi, kantor', isPlus: false);
+
+      final result = await n.save();
+      expect(result, isA<SaveSuccess>());
+
+      final captured =
+          verify(mockRepo.createBill(captureAny)).captured.single as Bill;
+      expect(captured.tags, isEmpty);
+    });
   });
 }

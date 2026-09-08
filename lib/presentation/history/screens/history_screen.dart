@@ -68,13 +68,31 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     super.dispose();
   }
 
-  /// 400ms-debounced search: typing only rebuilds the query state, the
-  /// server round-trip (and cursor reset) happens once the user pauses.
+  /// 400ms-debounced search: typing only updates the query state once the
+  /// user pauses (server round-trip + cursor reset happen there, not per
+  /// keystroke). Compares `effectiveQuery` so trailing-space churn
+  /// (`"kopi"` vs `"kopi "`) never fires a redundant page RPC.
   void _onSearchChanged(String value) {
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 400), () {
-      ref.read(historyFilterProvider.notifier).setQuery(value);
+      final notifier = ref.read(historyFilterProvider.notifier);
+      final next = HistoryFilterState(
+        sort: ref.read(historyFilterProvider).sort,
+        paymentStatus: ref.read(historyFilterProvider).paymentStatus,
+        currencyCode: ref.read(historyFilterProvider).currencyCode,
+        category: ref.read(historyFilterProvider).category,
+        query: value,
+      ).effectiveQuery;
+      if (next != ref.read(historyFilterProvider).effectiveQuery) {
+        notifier.setQuery(value);
+      }
     });
+  }
+
+  /// Enter/search key applies immediately instead of waiting out the debounce.
+  void _onSearchSubmitted(String value) {
+    _searchDebounce?.cancel();
+    ref.read(historyFilterProvider.notifier).setQuery(value);
   }
 
   /// Resolves the effective insight currency. Keeps the user's choice while it
@@ -229,6 +247,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   controller: _searchCtrl,
                   focusNode: _searchFocus,
                   onChanged: _onSearchChanged,
+                  onSubmitted: _onSearchSubmitted,
                   onClear: () {
                     _searchDebounce?.cancel();
                     _searchCtrl.clear();
@@ -264,11 +283,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     onRemoveCategory: () => ref
                         .read(historyFilterProvider.notifier)
                         .setCategory(null),
-                    onRemoveQuery: () => ref
-                        .read(historyFilterProvider.notifier)
-                        .setQuery(null),
-                    onReset: () =>
-                        ref.read(historyFilterProvider.notifier).reset(),
+                    onRemoveQuery: () {
+                      _searchDebounce?.cancel();
+                      _searchCtrl.clear();
+                      ref.read(historyFilterProvider.notifier).setQuery(null);
+                    },
+                    onReset: () {
+                      _searchDebounce?.cancel();
+                      _searchCtrl.clear();
+                      ref.read(historyFilterProvider.notifier).reset();
+                    },
                   ),
                 ),
               if (!isPlus && hasHistoryAccess)
@@ -320,7 +344,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 ),
               if (filter.hasActiveFilters && hasItems)
                 SliverToBoxAdapter(
-                  child: _FilteredCountLabel(filteredCount: items.length),
+                  child: _FilteredCountLabel(
+                    filteredCount: items.length,
+                    totalCount: summary?.totalBillCount ?? items.length,
+                  ),
                 ),
               if (historyState.isLoadingInitial)
                 const SliverToBoxAdapter(
@@ -559,9 +586,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 }
 
 class _FilteredCountLabel extends StatelessWidget {
-  const _FilteredCountLabel({required this.filteredCount});
+  const _FilteredCountLabel({
+    required this.filteredCount,
+    required this.totalCount,
+  });
 
   final int filteredCount;
+  final int totalCount;
 
   @override
   Widget build(BuildContext context) {
@@ -570,7 +601,7 @@ class _FilteredCountLabel extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0),
       child: Text(
-        l10n.historyFilterCount(filteredCount, 0),
+        l10n.historyFilterCount(filteredCount, totalCount),
         style: TextStyle(fontSize: 12.sp, color: scheme.onSurfaceVariant),
       ),
     );
@@ -582,12 +613,14 @@ class _SearchField extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.onChanged,
+    required this.onSubmitted,
     required this.onClear,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String> onSubmitted;
   final VoidCallback onClear;
 
   @override
@@ -601,6 +634,7 @@ class _SearchField extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           onChanged: onChanged,
+          onSubmitted: onSubmitted,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             isDense: true,

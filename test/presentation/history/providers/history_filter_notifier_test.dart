@@ -43,6 +43,16 @@ void main() {
       expect(state.hasActiveFilters, isTrue);
     });
 
+    test('setQuery/setCategory update and reflect hasActiveFilters', () {
+      container.read(historyFilterProvider.notifier).setQuery('kopi');
+      container.read(historyFilterProvider.notifier).setCategory('makan');
+      final state = container.read(historyFilterProvider);
+      expect(state.query, 'kopi');
+      expect(state.effectiveQuery, 'kopi');
+      expect(state.category, 'makan');
+      expect(state.hasActiveFilters, isTrue);
+    });
+
     test('reset returns to defaults', () {
       container
           .read(historyFilterProvider.notifier)
@@ -57,6 +67,8 @@ void main() {
       expect(state.sort, HistorySort.newest);
       expect(state.paymentStatus, isNull);
       expect(state.currencyCode, isNull);
+      expect(state.category, isNull);
+      expect(state.query, isNull);
       expect(state.hasActiveFilters, isFalse);
     });
 

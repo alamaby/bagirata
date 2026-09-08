@@ -219,9 +219,7 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
               category: state.category,
               tagsCtrl: _tagsCtrl,
               onCategoryChanged: _notifier.setCategory,
-              onTagsChanged: (v) => _notifier.setTags(
-                BillCategory.parseTagsField(v),
-              ),
+              onTagsChanged: (v) => _notifier.setTagsField(v, isPlus: isPlus),
             ),
             if (state.suspectThousandsBug)
               Padding(
@@ -540,19 +538,42 @@ class _Header extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: tagsCtrl,
-                    enabled: isPlus,
-                    onChanged: onTagsChanged,
-                    style: TextStyle(fontSize: 13.sp),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: const OutlineInputBorder(),
-                      labelText: AppL10n.of(context).tagLabel,
-                      helperText: isPlus
-                          ? AppL10n.of(context).tagLimitReached
-                          : null,
-                    ),
+                  child: Builder(
+                    builder: (context) {
+                      final rawCount = BillCategory.parseTagsField(
+                        tagsCtrl.text,
+                      ).length;
+                      final keptCount = BillCategory.normalizeTags(
+                        BillCategory.parseTagsField(tagsCtrl.text),
+                      ).length;
+                      // Overflow = raw entries beyond the kept 5 (extra items
+                      // or dupes/empties trimmed away): surface the cap error.
+                      final overflow = isPlus && rawCount > keptCount;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextField(
+                            controller: tagsCtrl,
+                            enabled: isPlus,
+                            onChanged: (v) {
+                              onTagsChanged(v);
+                              // Rebuild to refresh the n/5 counter + error.
+                              (context as Element).markNeedsBuild();
+                            },
+                            style: TextStyle(fontSize: 13.sp),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              border: const OutlineInputBorder(),
+                              labelText: AppL10n.of(context).tagLabel,
+                              helperText: isPlus ? '$keptCount/5' : null,
+                              errorText: overflow
+                                  ? AppL10n.of(context).tagLimitReached
+                                  : null,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 if (!isPlus) ...[

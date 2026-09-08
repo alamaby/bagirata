@@ -44,10 +44,38 @@ void main() {
       expect(insight.averageBillAmount, 100);
       expect(insight.monthOverMonthPercent, 50.0);
     });
+
+    test('zero-bill month parses with null MoM and empty lists', () {
+      final insight = MonthlySpendingInsight.fromJson({
+        'plan_code': 'plus',
+        'is_plus': true,
+        'month_start': '2026-09-01',
+        'total_amount': 0,
+        'bill_count': 0,
+        'average_bill_amount': 0,
+        'previous_month_total': 0,
+        'month_over_month_percent': null,
+        'outstanding_amount': 0,
+        'top_merchants': [],
+        'monthly_trend': [],
+        'by_category': [],
+      });
+      expect(insight.billCount, 0);
+      expect(insight.totalAmount, 0);
+      expect(insight.averageBillAmount, 0);
+      expect(insight.monthOverMonthPercent, isNull);
+      expect(insight.topMerchants, isEmpty);
+      expect(insight.monthlyTrend, isEmpty);
+      expect(insight.byCategory, isEmpty);
+    });
   });
 
   group('PlusFeatureLimits trash retention', () {
-    test('retention is 30 free / 90 plus', () {
+    test('retention is 30 free / 90 plus, fixed at delete time', () {
+      // Contract: expiry is computed ONCE by soft_delete_bill; a Plus→Free
+      // downgrade afterwards never shortens an existing +90d expiry, and a
+      // Free→Plus upgrade never extends an existing +30d one. Only bills
+      // deleted AFTER the plan change get the new window.
       expect(
         PlusFeatureLimits.trashRetentionDays(isPlus: false),
         PlusFeatureLimits.trashRetentionDaysFree,

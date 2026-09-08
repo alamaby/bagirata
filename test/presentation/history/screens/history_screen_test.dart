@@ -51,6 +51,9 @@ void main() {
   });
 
   group('HistoryScreen banner', () {
+    ProviderContainer containerOf(WidgetTester tester) =>
+        ProviderScope.containerOf(tester.element(find.byType(HistoryScreen)));
+
     Widget buildApp({
       required OcrCreditStatus? creditStatus,
       Locale locale = const Locale('id'),
@@ -110,6 +113,39 @@ void main() {
 
       expect(find.byIcon(Icons.search), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
+    });
+
+    testWidgets('search clear and submit flush immediately', (tester) async {
+      await tester.pumpWidget(
+        buildApp(creditStatus: freeStatus, listState: _nonEmptyHistoryState),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      await tester.enterText(find.byType(TextField), 'kopi');
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        containerOf(tester).read(historyFilterProvider).effectiveQuery,
+        'kopi',
+      );
+
+      // Submit flushes without waiting for the debounce window.
+      await tester.enterText(find.byType(TextField), 'teh');
+      await tester.testTextInput.receiveAction(TextInputAction.search);
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        containerOf(tester).read(historyFilterProvider).effectiveQuery,
+        'teh',
+      );
+
+      // Clear icon resets the query.
+      await tester.tap(find.byIcon(Icons.clear));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        containerOf(tester).read(historyFilterProvider).effectiveQuery,
+        isNull,
+      );
     });
 
     testWidgets('Plus sees banner with close button when not dismissed', (

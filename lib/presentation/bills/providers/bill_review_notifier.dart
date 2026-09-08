@@ -120,6 +120,13 @@ class BillReviewNotifier extends _$BillReviewNotifier {
       state = state.copyWith(category: BillCategory.coerce(value));
   void setTags(List<String> tags) =>
       state = state.copyWith(tags: BillCategory.normalizeTags(tags));
+  void setTagsField(String raw, {required bool isPlus}) {
+    // Non-Plus users cannot attach custom tags: strip silently so a locked
+    // field can never smuggle tags into the save payload.
+    state = state.copyWith(
+      tags: isPlus ? BillCategory.normalizeTags(BillCategory.parseTagsField(raw)) : const [],
+    );
+  }
   void setTax(double value) => state = state.copyWith(tax: value);
   void setService(double value) => state = state.copyWith(service: value);
 
