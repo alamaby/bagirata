@@ -1,7 +1,7 @@
 name: bagistruk
 description: "BagiStruk — split-bill app with multi-photo OCR via Supabase Edge Functions."
 publish_to: 'none'
-version: 0.31.2+79
+version: 0.32.0+80
 
 environment:
   sdk: ^3.11.5

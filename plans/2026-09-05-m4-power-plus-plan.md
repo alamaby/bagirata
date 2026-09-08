@@ -42,6 +42,7 @@ Kasih Plus yang benar-benar bertenaga: duplikasi bill 1-tap untuk tagihan rutin 
 - 2026-09-05 12:00:00 — Plan M4 ditulis; belum ada implementasi; deploy Edge Function menunggu operator.
 - 2026-09-05 12:30:00 — Review audit vs kode: putuskan pricing batch Plus flat-1 (batalkan 1+1/foto), perkuat F12.3/F14.5 (fallback_policy, request_id, refund, 413, mixed-currency); belum ada implementasi.
 - 2026-09-08 07:00:00 — Implementasi M4 selesai (sisi kode; migrasi + deploy Edge menunggu operator): F12 template/duplikat client+server, F14.1 Plus retry 1x server, F14.2 tombol retry Plus + status scanning Plus, F14.3 cap 10 foto client + mapping 413, F14.4 ARB ID+EN. `flutter test` 612 passed (606 lama + 3 duplicator + 3 ocr_messages); `deno test` 55 passed (9 plus_retry baru); `deno check index.ts` bersih; `flutter analyze` 0 error (warning rpc baru dihindari via konteks `Object?`; sisa 298 pre-existing M2). Fake `FakeBillRepository` di history_list_notifier_test dilengkapi 4 method template. Detail implementasi + deviasi + sisa operator lihat Notes.
+- 2026-09-08 08:00:00 — Review pre-commit (5 temuan SQL/UX diperbaiki) + commit ter-push: submodule `1e21cce` ("feat(edge,db): m4 plus retry once and bill templates"), parent `0889023` ("feat(bill,ocr): m4 one-tap duplicate, templates, plus retry and batch guards", 36 files). `PROJECT_SUMMARY.md` diff agen paralel + `.memory/` dibiarkan uncommitted. Operator masih harus: apply migrasi `20260908130000`, deploy Edge, smoke, audit `llm_logs`.
 
 ## Notes
 
