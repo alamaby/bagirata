@@ -288,6 +288,60 @@ class MockBillRemoteDataSource extends _i1.Mock
           as _i7.Future<Map<String, dynamic>?>);
 
   @override
+  _i7.Future<List<Map<String, dynamic>>> listTemplates() =>
+      (super.noSuchMethod(
+            Invocation.method(#listTemplates, []),
+            returnValue: _i7.Future<List<Map<String, dynamic>>>.value(
+              <Map<String, dynamic>>[],
+            ),
+          )
+          as _i7.Future<List<Map<String, dynamic>>>);
+
+  @override
+  _i7.Future<String> createTemplateFromBill({
+    required String? billId,
+    required String? name,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createTemplateFromBill, [], {
+              #billId: billId,
+              #name: name,
+            }),
+            returnValue: _i7.Future<String>.value(
+              _i9.dummyValue<String>(
+                this,
+                Invocation.method(#createTemplateFromBill, [], {
+                  #billId: billId,
+                  #name: name,
+                }),
+              ),
+            ),
+          )
+          as _i7.Future<String>);
+
+  @override
+  _i7.Future<String> instantiateTemplate(String? templateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#instantiateTemplate, [templateId]),
+            returnValue: _i7.Future<String>.value(
+              _i9.dummyValue<String>(
+                this,
+                Invocation.method(#instantiateTemplate, [templateId]),
+              ),
+            ),
+          )
+          as _i7.Future<String>);
+
+  @override
+  _i7.Future<void> deleteTemplate(String? templateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteTemplate, [templateId]),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
   _i7.Future<List<_i11.AssignmentDto>> listAssignments(String? billId) =>
       (super.noSuchMethod(
             Invocation.method(#listAssignments, [billId]),

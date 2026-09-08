@@ -50,7 +50,7 @@ final class BillShareLinkProvider
   }
 }
 
-String _$billShareLinkHash() => r'c43506a797f988b0a997f7807933a4ed39fcb7e6';
+String _$billShareLinkHash() => r'7ec22e732fa7b004280a0d8d144f872471d25e6e';
 
 final class BillShareLinkFamily extends $Family
     with

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/billing/plus_feature_limits.dart';
+import '../../../core/error/result.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
@@ -23,6 +24,8 @@ import '../../credits/providers/ocr_credit_status_provider.dart';
 import '../../insights/providers/monthly_spending_insight_provider.dart';
 import '../../settings/providers/preferences_providers.dart';
 import '../../shared/widgets/plus_info_icon.dart';
+import '../../bills/providers/bill_duplicator_provider.dart';
+import '../../bills/widgets/bill_templates_sheet.dart';
 import '../providers/history_filter_notifier.dart';
 import '../utils/bill_category.dart';
 import '../utils/bill_category_labels.dart';
@@ -41,6 +44,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   final _searchCtrl = TextEditingController();
   final _searchFocus = FocusNode();
   Timer? _searchDebounce;
+
+  /// Bill IDs with a duplicate write currently in flight. One entry per
+  /// bill disables only that row's copy button (no global lock).
+  final Set<String> _duplicatingIds = {};
 
   /// Currently selected Monthly Insight month (first day of the month).
   DateTime _selectedInsightMonth = DateTime(
@@ -215,6 +222,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 title: Text(l10n.historyTab),
                 pinned: true,
                 actions: [
+                  IconButton(
+                    tooltip: l10n.billTemplatesTooltip,
+                    icon: const Icon(Icons.bookmark_outline),
+                    onPressed: () => BillTemplatesSheet.show(context),
+                  ),
                   IconButton(
                     tooltip: l10n.manualBillAction,
                     icon: const Icon(Icons.note_add_outlined),
@@ -406,15 +418,42 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           subtitle: Text(
                             '${currency.format(bill.totalAmount)}  •  ${_paymentStatusLabel(l10n, bill.paymentStatus)}  •  $createdLabel\n${categoryLabel(bill.category, l10n)}',
                           ),
-                          trailing: IconButton(
-                            tooltip: l10n.deleteBillAction,
-                            onPressed: () => _deleteBill(
-                              context,
-                              ref,
-                              bill.id,
-                              currency.format(bill.totalAmount),
-                            ),
-                            icon: const Icon(Icons.delete_outline),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: l10n.billDuplicateTooltip,
+                                onPressed:
+                                    _duplicatingIds.contains(bill.id)
+                                    ? null
+                                    : () => _duplicateBill(
+                                        context,
+                                        ref,
+                                        bill.id,
+                                      ),
+                                icon:
+                                    _duplicatingIds.contains(bill.id)
+                                    ? SizedBox(
+                                        width: 20.w,
+                                        height: 20.w,
+                                        child:
+                                            const CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                      )
+                                    : const Icon(Icons.copy_outlined),
+                              ),
+                              IconButton(
+                                tooltip: l10n.deleteBillAction,
+                                onPressed: () => _deleteBill(
+                                  context,
+                                  ref,
+                                  bill.id,
+                                  currency.format(bill.totalAmount),
+                                ),
+                                icon: const Icon(Icons.delete_outline),
+                              ),
+                            ],
                           ),
                           onTap: () => context.pushNamed(
                             Routes.billDetailName,
@@ -466,6 +505,46 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         BillPaymentStatus.partial => l10n.historyStatusPartial,
         BillPaymentStatus.settled => l10n.historyStatusSettled,
       };
+
+  /// M4/F12 one-tap duplicate from the history row. On success the list
+  /// refreshes and the user lands on the fresh bill's detail screen;
+  /// failures surface as a SnackBar (never a silent no-op).
+  Future<void> _duplicateBill(
+    BuildContext context,
+    WidgetRef ref,
+    String billId,
+  ) async {
+    final l10n = AppL10n.of(context);
+    setState(() => _duplicatingIds.add(billId));
+    try {
+      final res = await ref.read(billDuplicatorProvider).duplicate(billId);
+      if (!context.mounted) return;
+      switch (res) {
+        case ResultFailure():
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(l10n.billDuplicateFailed)),
+            );
+        case Success(:final data):
+          ref.invalidate(historyListProvider);
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(l10n.billDuplicateSuccess)),
+            );
+          // Fire-and-forget: navigation owns its own lifecycle.
+          unawaited(
+            context.pushNamed(
+              Routes.billDetailName,
+              pathParameters: {'billId': data},
+            ),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _duplicatingIds.remove(billId));
+    }
+  }
 
   Future<void> _deleteBill(
     BuildContext context,

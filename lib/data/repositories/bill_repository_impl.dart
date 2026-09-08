@@ -2,6 +2,7 @@ import '../../core/error/exception_mapper.dart';
 import '../../core/error/result.dart';
 import '../../domain/entities/assignment.dart';
 import '../../domain/entities/bill.dart';
+import '../../domain/entities/bill_template.dart';
 import '../../domain/entities/deleted_bill.dart';
 import '../../domain/entities/history_bill_page.dart';
 import '../../domain/entities/history_summary.dart';
@@ -131,6 +132,29 @@ class BillRepositoryImpl implements IBillRepository {
         if (json == null) return null;
         return SharedBill.fromJson(json);
       });
+
+  @override
+  Future<Result<List<BillTemplate>>> listTemplates() => guardAsync(
+    () async => (await _ds.listTemplates())
+        .map(BillTemplate.fromJson)
+        .toList(growable: false),
+  );
+
+  @override
+  Future<Result<String>> createTemplateFromBill({
+    required String billId,
+    required String name,
+  }) => guardAsync(
+    () => _ds.createTemplateFromBill(billId: billId, name: name),
+  );
+
+  @override
+  Future<Result<String>> instantiateTemplate(String templateId) =>
+      guardAsync(() => _ds.instantiateTemplate(templateId));
+
+  @override
+  Future<Result<void>> deleteTemplate(String templateId) =>
+      guardAsync(() => _ds.deleteTemplate(templateId));
 
   @override
   Future<Result<List<DeletedBill>>> listDeletedBills() => guardAsync(

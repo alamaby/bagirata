@@ -59,6 +59,7 @@ class BillRemoteDataSource {
   static const _items = 'items';
   static const _participants = 'participants';
   static const _assignments = 'item_assignments';
+  static const _templates = 'bill_templates';
 
   static String _sortParam(String sort) => switch (sort) {
     'newest' => 'newest',
@@ -303,6 +304,46 @@ class BillRemoteDataSource {
     if (res is Map) return Map<String, dynamic>.from(res);
     return null;
   }
+
+  /// M4/F12 templates. List goes straight through PostgREST (RLS
+  /// owner-only); writes go through SECURITY DEFINER RPCs that enforce the
+  /// Free 5-template cap and snapshot validation server-side.
+  Future<List<Map<String, dynamic>>> listTemplates() async {
+    final rows = await _client
+        .from(_templates)
+        .select('id, name, use_count, created_at')
+        .order('created_at', ascending: false);
+    return rows.map(Map<String, dynamic>.from).toList(growable: false);
+  }
+
+  Future<String> createTemplateFromBill({
+    required String billId,
+    required String name,
+  }) async {
+    // `Object?` context gives the generic `rpc` call an inference target
+    // (silences inference_failure_on_function_invocation); `.toString()`
+    // tolerates scalar-or-singleton shapes without a hard cast.
+    final Object? res = await _client.rpc(
+      'create_template_from_bill',
+      params: {'p_bill_id': billId, 'p_name': name},
+    );
+    if (res == null) throw const FormatException('empty create response');
+    return res.toString();
+  }
+
+  Future<String> instantiateTemplate(String templateId) async {
+    final Object? res = await _client.rpc(
+      'instantiate_template',
+      params: {'p_template_id': templateId},
+    );
+    if (res == null) throw const FormatException('empty create response');
+    return res.toString();
+  }
+
+  Future<void> deleteTemplate(String templateId) => _client.rpc(
+    'delete_template',
+    params: {'p_template_id': templateId},
+  );
 
   Future<List<AssignmentDto>> listAssignments(String billId) async {
     // Assignments are joined via items.bill_id; assumes a SQL view or a

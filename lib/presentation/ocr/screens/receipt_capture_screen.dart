@@ -104,12 +104,31 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
   }
 
   Future<void> _addFromGallery() async {
-    await ref.read(scanDraftProvider.notifier).pickFromGallery();
+    final notifier = ref.read(scanDraftProvider.notifier);
+    if (notifier.isFull && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppL10n.of(context).ocrErrorTooLargeBody)),
+      );
+      return;
+    }
+    final dropped = await notifier.pickFromGallery();
+    if (dropped > 0 && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppL10n.of(context).ocrErrorTooLargeBody)),
+      );
+    }
   }
 
   Future<void> _addFromCamera() async {
     final l10n = AppL10n.of(context);
     while (true) {
+      if (ref.read(scanDraftProvider.notifier).isFull) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.ocrErrorTooLargeBody)),
+        );
+        return;
+      }
       final shot = await ref.read(scanDraftProvider.notifier).pickFromCamera();
       if (shot == null) return;
       if (!mounted) return;
@@ -207,6 +226,16 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
       final canScan = await _checkOcrCredit();
       if (!canScan) return;
       final draft = ref.read(scanDraftProvider).images;
+      // Defensive backstop: entry points already cap at
+      // [ScanDraftNotifier.maxImages], but drafts built before the cap (or a
+      // large share-in burst) must fail here with a friendly message instead
+      // of burning a credit on a guaranteed server 413.
+      if (draft.length > ScanDraftNotifier.maxImages && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).ocrErrorTooLargeBody)),
+        );
+        return;
+      }
       final bytes = await Future.wait(draft.map((f) => f.readAsBytes()));
       // Build the device fingerprint payload up front so the user pays the
       // Android plugin round-trip once per scan rather than during the
@@ -457,12 +486,29 @@ class _ReceiptCaptureScreenState extends ConsumerState<ReceiptCaptureScreen> {
             const BannerAdWidget(placement: BannerAdPlacement.scan),
             SizedBox(height: 12.h),
             if (state is OcrFailure)
-              _ErrorCard(
-                message: friendlyOcrMessage(state.failure, l10n),
-                onDismiss: () => ref.read(ocrProvider.notifier).reset(),
+              Builder(
+                builder: (_) {
+                  final message = friendlyOcrMessage(state.failure, l10n);
+                  // Dedicated in-card retry is Plus-only: Free/anon re-scan
+                  // via the main scan button (unchanged behaviour); Plus
+                  // failures may succeed on another provider after the
+                  // server-side retry, so offer an explicit one-tap retry.
+                  final showRetry =
+                      message.canRetry && (creditStatus?.isPlus ?? false);
+                  return _ErrorCard(
+                    message: message,
+                    showRetry: showRetry,
+                    onRetry: showRetry ? _process : null,
+                    onDismiss: () => ref.read(ocrProvider.notifier).reset(),
+                  );
+                },
               )
             else
-              _StatusLabel(state: state, starting: _starting),
+              _StatusLabel(
+                state: state,
+                starting: _starting,
+                isPlus: creditStatus?.isPlus ?? false,
+              ),
             if (images.isNotEmpty && creditStatus != null) ...[
               SizedBox(height: 6.h),
               _ScanCreditCostLabel(
@@ -533,9 +579,17 @@ int _creditCostForPlan({required String? planCode, required int imageCount}) {
 }
 
 class _StatusLabel extends StatelessWidget {
-  const _StatusLabel({required this.state, required this.starting});
+  const _StatusLabel({
+    required this.state,
+    required this.starting,
+    required this.isPlus,
+  });
   final OcrState state;
   final bool starting;
+
+  /// Plus scans fail over to another provider server-side; the status line
+  /// says so up front so the extra latency reads as a feature, not a hang.
+  final bool isPlus;
 
   @override
   Widget build(BuildContext context) {
@@ -546,9 +600,9 @@ class _StatusLabel extends StatelessWidget {
         ? l10n.scanStatusPreparingImages
         : switch (state) {
             OcrIdle() => l10n.scanStatusIdle,
-            OcrProcessing(:final imageCount) => l10n.scanStatusScanning(
-              imageCount,
-            ),
+            OcrProcessing(:final imageCount) => isPlus
+                ? l10n.scanStatusScanningPlus(imageCount)
+                : l10n.scanStatusScanning(imageCount),
             OcrSuccess(:final result) => l10n.scanStatusSuccess(
               result.items.length,
               result.providerUsed,
@@ -621,9 +675,18 @@ class _ScanCreditCostLabel extends StatelessWidget {
 }
 
 class _ErrorCard extends StatelessWidget {
-  const _ErrorCard({required this.message, required this.onDismiss});
+  const _ErrorCard({
+    required this.message,
+    required this.showRetry,
+    required this.onRetry,
+    required this.onDismiss,
+  });
 
   final OcrMessage message;
+
+  /// Plus-only one-tap retry (F14.2). Null when hidden.
+  final bool showRetry;
+  final VoidCallback? onRetry;
   final VoidCallback onDismiss;
 
   @override
@@ -673,6 +736,14 @@ class _ErrorCard extends StatelessWidget {
                     color: scheme.onErrorContainer.withValues(alpha: 0.85),
                   ),
                 ),
+                if (showRetry) ...[
+                  SizedBox(height: 8.h),
+                  FilledButton.tonalIcon(
+                    onPressed: onRetry,
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: Text(AppL10n.of(context).retry),
+                  ),
+                ],
               ],
             ),
           ),

@@ -8,6 +8,7 @@ import 'dart:async' as _i3;
 import 'package:bagistruk/core/error/result.dart' as _i4;
 import 'package:bagistruk/domain/entities/assignment.dart' as _i12;
 import 'package:bagistruk/domain/entities/bill.dart' as _i5;
+import 'package:bagistruk/domain/entities/bill_template.dart' as _i14;
 import 'package:bagistruk/domain/entities/deleted_bill.dart' as _i9;
 import 'package:bagistruk/domain/entities/history_bill_page.dart' as _i7;
 import 'package:bagistruk/domain/entities/history_summary.dart' as _i8;
@@ -367,4 +368,65 @@ class MockIBillRepository extends _i1.Mock implements _i2.IBillRepository {
             ),
           )
           as _i3.Future<_i4.Result<_i13.SharedBill?>>);
+
+  @override
+  _i3.Future<_i4.Result<List<_i14.BillTemplate>>> listTemplates() =>
+      (super.noSuchMethod(
+            Invocation.method(#listTemplates, []),
+            returnValue: _i3.Future<_i4.Result<List<_i14.BillTemplate>>>.value(
+              _i6.dummyValue<_i4.Result<List<_i14.BillTemplate>>>(
+                this,
+                Invocation.method(#listTemplates, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<List<_i14.BillTemplate>>>);
+
+  @override
+  _i3.Future<_i4.Result<String>> createTemplateFromBill({
+    required String? billId,
+    required String? name,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createTemplateFromBill, [], {
+              #billId: billId,
+              #name: name,
+            }),
+            returnValue: _i3.Future<_i4.Result<String>>.value(
+              _i6.dummyValue<_i4.Result<String>>(
+                this,
+                Invocation.method(#createTemplateFromBill, [], {
+                  #billId: billId,
+                  #name: name,
+                }),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<String>>);
+
+  @override
+  _i3.Future<_i4.Result<String>> instantiateTemplate(String? templateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#instantiateTemplate, [templateId]),
+            returnValue: _i3.Future<_i4.Result<String>>.value(
+              _i6.dummyValue<_i4.Result<String>>(
+                this,
+                Invocation.method(#instantiateTemplate, [templateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<String>>);
+
+  @override
+  _i3.Future<_i4.Result<void>> deleteTemplate(String? templateId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteTemplate, [templateId]),
+            returnValue: _i3.Future<_i4.Result<void>>.value(
+              _i6.dummyValue<_i4.Result<void>>(
+                this,
+                Invocation.method(#deleteTemplate, [templateId]),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.Result<void>>);
 }

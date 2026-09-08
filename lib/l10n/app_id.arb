@@ -1,25 +1,19 @@
 {
   "@@locale": "id",
-
   "registerMarketingOptIn": "Saya ingin menerima email promosi, berita fitur, dan tips dari BagiStruk.",
-
   "postLoginWelcomeTitle": "Selamat datang di BagiStruk!",
   "postLoginWelcomeBody": "Beri tahu kami apakah Anda ingin menerima email promosi, berita fitur, dan tips dari kami. Anda bisa mengubah preferensi ini kapan saja dari Settings.",
   "postLoginWelcomeOptIn": "Kirim saya email promosi, berita fitur, dan tips.",
   "postLoginWelcomeContinue": "Lanjutkan",
   "postLoginWelcomeErrorSave": "Gagal menyimpan. Coba lagi.",
-
   "registerErrorSaveProfile": "Akun Anda berhasil dibuat, tetapi kami tidak dapat menyimpan preferensi Anda. Coba lagi dari Settings setelah verifikasi email.",
-
   "settingsMarketingOptIn": "Email promosi",
   "settingsMarketingOptInSubtitle": "Tips, info fitur, dan penawaran dari BagiStruk.",
   "settingsMarketingOptInWebHint": "Anda juga bisa mengelola preferensi ini dari situs web BagiStruk.",
-
   "settingsTitle": "Profil & Pengaturan",
   "settingsTab": "Pengaturan",
   "scanTab": "Pindai",
   "historyTab": "Riwayat",
-
   "scanScreenTitle": "Pindai Struk",
   "scanAddPhotos": "Tambah Foto",
   "scanAction": "Pindai",
@@ -32,31 +26,53 @@
   "scanCameraDone": "Selesai",
   "shareImagesAdded": "{count} foto dari bagikan ditambahkan. Memulai pindaian...",
   "@shareImagesAdded": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scanNotReceiptTitle": "Foto bukan struk",
   "scanNotReceiptHint": "Gambar yang dipilih sepertinya bukan struk. Coba foto struk yang jelas.",
   "scanPreparingSessionFailed": "Gagal siapkan sesi: {message}",
   "@scanPreparingSessionFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "scanCreditCheckFailed": "Gagal cek credit scan: {message}",
   "@scanCreditCheckFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "scanCreditCostWithBalance": "{imageCount} foto akan memakai {creditCost} credit. Sisa: {balance}.",
   "@scanCreditCostWithBalance": {
     "placeholders": {
-      "imageCount": { "type": "int" },
-      "creditCost": { "type": "int" },
-      "balance": { "type": "int" }
+      "imageCount": {
+        "type": "int"
+      },
+      "creditCost": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "int"
+      }
     }
   },
   "scanCreditRequired": "Scan ini butuh {requiredCredits} credit. Sisa credit kamu: {balance}.",
   "@scanCreditRequired": {
     "placeholders": {
-      "requiredCredits": { "type": "int" },
-      "balance": { "type": "int" }
+      "requiredCredits": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "int"
+      }
     }
   },
   "scanNoCreditAnonymousTitle": "Batas scan gratis tercapai",
@@ -64,11 +80,19 @@
   "scanNoCreditAnonymousBody": "Kamu sudah memakai 5 credit scan sebagai pengguna anonim. Daftar akun untuk mendapat 20 credit gratis setiap bulan.",
   "scanNoCreditPlusBody": "Kamu sudah memakai {monthlyAllowance} credit Plus bulan ini. Credit akan tersedia lagi pada periode berikutnya.",
   "@scanNoCreditPlusBody": {
-    "placeholders": { "monthlyAllowance": { "type": "int" } }
+    "placeholders": {
+      "monthlyAllowance": {
+        "type": "int"
+      }
+    }
   },
   "scanNoCreditFreeBody": "Kamu sudah memakai {monthlyAllowance} credit gratis bulan ini. Upgrade ke Plus untuk 60 credit/bulan, tanpa iklan, dan fitur khusus Plus.",
   "@scanNoCreditFreeBody": {
-    "placeholders": { "monthlyAllowance": { "type": "int" } }
+    "placeholders": {
+      "monthlyAllowance": {
+        "type": "int"
+      }
+    }
   },
   "scanNoCreditLater": "Nanti",
   "scanNoCreditRegister": "Daftar",
@@ -77,13 +101,21 @@
   "scanStatusIdle": "Tambah foto lalu tap Pindai",
   "scanStatusScanning": "Memindai {imageCount} gambar…",
   "@scanStatusScanning": {
-    "placeholders": { "imageCount": { "type": "int" } }
+    "placeholders": {
+      "imageCount": {
+        "type": "int"
+      }
+    }
   },
   "scanStatusSuccess": "{itemCount} item terdeteksi via {provider}",
   "@scanStatusSuccess": {
     "placeholders": {
-      "itemCount": { "type": "int" },
-      "provider": { "type": "String" }
+      "itemCount": {
+        "type": "int"
+      },
+      "provider": {
+        "type": "String"
+      }
     }
   },
   "ocrErrorNetworkTitle": "Tidak ada koneksi",
@@ -110,12 +142,9 @@
   "ocrErrorServerBody": "Server sedang tidak stabil. Tunggu sebentar lalu coba lagi.",
   "ocrErrorGenericTitle": "Scan gagal",
   "ocrErrorGenericBody": "Tidak bisa memproses struk ini. Coba foto ulang atau gunakan gambar lain.",
-
   "retry": "Coba Lagi",
-
   "accountSection": "Akun",
   "preferencesSection": "Preferensi",
-
   "displayNameFallback": "Pengguna BagiStruk",
   "anonDisplayName": "Saya",
   "guestAccount": "Akun Tamu",
@@ -124,20 +153,34 @@
   "creditStatusRemaining": "{balance}/{monthlyAllowance} tersisa ({planCode})",
   "@creditStatusRemaining": {
     "placeholders": {
-      "balance": { "type": "int" },
-      "monthlyAllowance": { "type": "int" },
-      "planCode": { "type": "String" }
+      "balance": {
+        "type": "int"
+      },
+      "monthlyAllowance": {
+        "type": "int"
+      },
+      "planCode": {
+        "type": "String"
+      }
     }
   },
   "billingTitle": "Plus dan paket credit",
   "billingAnonSubtitle": "Daftar akun dulu untuk membeli Plus atau top-up credit.",
   "creditPlusExpiresAt": "Plus berakhir: {date}",
   "@creditPlusExpiresAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "creditTrialExpiresAt": "Masa percobaan Plus berakhir: {date}",
   "@creditTrialExpiresAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "billingPlusActive": "Plus aktif",
   "billingPlanFree": "Free",
@@ -152,13 +195,17 @@
   "billingUpgradePlusWithPrice": "Berlangganan bulanan • {price}",
   "@billingUpgradePlusWithPrice": {
     "placeholders": {
-      "price": { "type": "String" }
+      "price": {
+        "type": "String"
+      }
     }
   },
   "billingCreditPackTitle": "{credits} credit",
   "@billingCreditPackTitle": {
     "placeholders": {
-      "credits": { "type": "int" }
+      "credits": {
+        "type": "int"
+      }
     }
   },
   "billingBuyAction": "Beli",
@@ -176,7 +223,6 @@
   "billingPurchaseFailed": "Pembelian dibatalkan atau gagal.",
   "billingPurchaseSuccess": "Pembelian berhasil diproses.",
   "billingPurchaseVerifyFailed": "Pembelian belum bisa diverifikasi.",
-
   "changeName": "Ubah Nama",
   "changeNameSheetTitle": "Ubah Nama Tampilan",
   "changeNameHint": "Nama tampilan",
@@ -196,15 +242,17 @@
   "transferBankRequired": "Lengkapi field ini atau kosongkan semuanya.",
   "transferBankSaved": "Info bank transfer tersimpan.",
   "transferBankClear": "Kosongkan info bank",
-
   "resetPassword": "Reset Password",
   "resetPasswordConfirmTitle": "Kirim email reset password?",
   "resetPasswordConfirmBody": "Kami akan mengirim tautan reset password ke {email}.",
   "@resetPasswordConfirmBody": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "resetPasswordSent": "Email reset password telah dikirim.",
-
   "resetPasswordScreenTitle": "Atur Ulang Password",
   "resetPasswordScreenHeading": "Buat Password Baru",
   "resetPasswordScreenBody": "Masukkan password baru untuk akun Anda. Setelah disimpan, Anda akan kembali ke Pengaturan.",
@@ -216,20 +264,16 @@
   "resetPasswordMismatch": "Password tidak cocok",
   "resetPasswordSuccess": "Password berhasil diubah",
   "resetPasswordSessionExpired": "Sesi reset sudah berakhir. Silakan minta link baru.",
-
   "currencyLabel": "Mata Uang Default",
   "currencySearchHint": "Cari mata uang",
   "currencySearchEmpty": "Mata uang tidak ditemukan.",
   "languageLabel": "Bahasa",
   "themeLabel": "Tema Tampilan",
-
   "themeLight": "Terang",
   "themeDark": "Gelap",
   "themeSystem": "Ikuti Sistem",
-
   "languageIndonesian": "Bahasa Indonesia",
   "languageEnglish": "English",
-
   "logout": "Logout",
   "registerPermanent": "Daftar Akun Permanen",
   "confirmLogoutTitle": "Keluar dari akun?",
@@ -242,22 +286,38 @@
   "deleteAccountTypeTitle": "Ketik HAPUS untuk konfirmasi",
   "deleteAccountTypeBody": "Ketik {phrase} untuk menghapus akun secara permanen.",
   "@deleteAccountTypeBody": {
-    "placeholders": { "phrase": { "type": "String" } }
+    "placeholders": {
+      "phrase": {
+        "type": "String"
+      }
+    }
   },
   "deleteAccountInProgress": "Menghapus akun...",
   "deleteAccountSuccess": "Akun dan data tersimpan sudah dihapus.",
   "deletedBillsTitle": "Bill terhapus",
   "deletedBillsSettingsSubtitle": "Pulihkan bill yang dihapus dalam {days} hari terakhir.",
   "@deletedBillsSettingsSubtitle": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deletedBillsRetentionFree": "Bill terhapus disimpan selama {days} hari.",
   "@deletedBillsRetentionFree": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deletedBillsRetentionPlus": "Bill terhapus disimpan selama {days} hari agar pengguna Plus bisa memulihkan penghapusan tidak sengaja.",
   "@deletedBillsRetentionPlus": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deletedBillsSettingsLockedSubtitle": "Khusus Plus. Pulihkan bill yang tidak sengaja dihapus dalam 30 hari.",
   "deletedBillsLockedTitle": "Pulihkan bill terhapus dengan Plus",
@@ -265,36 +325,57 @@
   "deletedBillsEmpty": "Belum ada bill terhapus.",
   "deletedBillDeletedAt": "Dihapus {date}",
   "@deletedBillDeletedAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "deletedBillExpiresAt": "Bisa dipulihkan sampai {date}",
   "@deletedBillExpiresAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "deletedBillRestoreAction": "Pulihkan",
   "deletedBillRestored": "Bill dipulihkan.",
   "deletedBillExpiredError": "Masa pemulihan bill ini sudah habis.",
   "deletedBillExpiresInDays": "Sisa {days} hari",
   "@deletedBillExpiresInDays": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deleteBillAction": "Hapus",
   "deleteBillConfirmTitle": "Hapus bill ini?",
   "deleteBillConfirmBody": "{title} ({total}) akan dipindahkan ke Bill terhapus. Pengguna Plus bisa memulihkannya dalam {days} hari.",
   "@deleteBillConfirmBody": {
     "placeholders": {
-      "title": { "type": "String" },
-      "total": { "type": "String" },
-      "days": { "type": "int" }
+      "title": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
     }
   },
   "deleteBillSuccess": "Bill dipindahkan ke Bill terhapus.",
-
   "errorGeneric": "Terjadi kesalahan. Coba lagi.",
   "authErrorNetwork": "Tidak ada koneksi internet. Coba lagi setelah jaringan stabil.",
   "authErrorServer": "Server bermasalah: {message}. Coba lagi sebentar lagi.",
   "@authErrorServer": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "authErrorParsing": "Respons server tidak terbaca. Coba lagi.",
   "authErrorUnknown": "Terjadi kesalahan tak terduga. Coba lagi.",
@@ -309,10 +390,8 @@
   "authErrorComingSoon": "Fitur ini akan segera hadir.",
   "authErrorFallback": "Autentikasi gagal. Coba lagi.",
   "loading": "Memuat...",
-
   "noSessionMessage": "Daftar atau masuk untuk mengakses pengaturan.",
   "registerOrLogin": "Daftar / Masuk",
-
   "loginWelcomeBack": "Selamat datang kembali",
   "loginSubtitle": "Masuk untuk melanjutkan ke BagiStruk.",
   "loginSaveBanner": "Daftar untuk menyimpan riwayat tagihanmu",
@@ -324,7 +403,6 @@
   "loginOtpSending": "Mengirim kode…",
   "loginNoAccount": "Belum punya akun? ",
   "loginRegisterLink": "Daftar",
-
   "registerTitle": "Daftar",
   "registerBackToScanTooltip": "Kembali ke Scan",
   "registerSkip": "Lewati",
@@ -333,7 +411,6 @@
   "registerPasswordHint": "Minimal 6 karakter",
   "registerHaveAccount": "Sudah punya akun? ",
   "registerLoginLink": "Login",
-
   "legalAcceptanceAppBarTitle": "Persetujuan Hukum",
   "legalAcceptanceTitle": "Sebelum mulai…",
   "legalAcceptanceIntro": "Untuk menggunakan BagiStruk, mohon baca dan setujui dua dokumen di bawah ini. Kami membutuhkan persetujuan terpisah untuk Syarat Layanan dan Kebijakan Privasi.",
@@ -344,7 +421,6 @@
   "legalAcceptanceAgreeAge": "Saya berusia 18 tahun ke atas, atau lebih tua jika diwajibkan oleh hukum lokal saya.",
   "legalAcceptanceContinue": "Lanjutkan",
   "legalAcceptanceErrorSave": "Gagal menyimpan persetujuan. Coba lagi.",
-
   "verifyEmailTitle": "Verifikasi email",
   "verifyEmailBackTooltip": "Kembali",
   "verifyEmailHeading": "Cek email kamu",
@@ -355,7 +431,6 @@
   "verifyEmailResending": "Mengirim…",
   "verifyEmailResent": "Email verifikasi sudah dikirim ulang.",
   "verifyEmailUseDifferent": "Pakai email lain",
-
   "verifyOtpTitle": "Masukkan kode",
   "verifyOtpHeading": "Cek kode email",
   "verifyOtpBodyPrefix": "Kami sudah mengirim kode 8 digit ke ",
@@ -367,10 +442,13 @@
   "verifyOtpResent": "Kode baru sudah dikirim.",
   "verifyOtpResendCountdown": "Kirim ulang dalam {seconds}d",
   "@verifyOtpResendCountdown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "verifyOtpUseDifferent": "Pakai email lain",
-
   "historySignOutTooltip": "Keluar",
   "historySignedOut": "Kamu sudah keluar.",
   "historyLoadingMessage": "Memuat riwayat…",
@@ -379,8 +457,12 @@
   "historyOutstandingCarouselPage": "{current} dari {total}",
   "@historyOutstandingCarouselPage": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "historyEmptyMessage": "Belum ada bill tersimpan.\nMulai scan struk dari tab Scan.",
@@ -401,20 +483,28 @@
   },
   "historyWindowSubtitle": "Menampilkan bill dari {days} hari terakhir.",
   "@historyWindowSubtitle": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "historyUpgradeCta": "Upgrade ke Plus",
   "historyPlusBannerDismiss": "Tutup",
   "historyFreePlusBannerLabel": "Riwayat {freeDays} hari · Insight bulanan",
   "@historyFreePlusBannerLabel": {
     "placeholders": {
-      "freeDays": { "type": "int" }
+      "freeDays": {
+        "type": "int"
+      }
     }
   },
   "historyFreePlusBannerSemantics": "Riwayat {freeDays} hari dan Insight bulanan, fitur Plus. Ketuk untuk detail.",
   "@historyFreePlusBannerSemantics": {
     "placeholders": {
-      "freeDays": { "type": "int" }
+      "freeDays": {
+        "type": "int"
+      }
     }
   },
   "historyFreePlusSheetTitle": "Fitur History Plus",
@@ -422,8 +512,12 @@
   "historyFreePlusHistoryBody": "Free menampilkan {freeDays} hari terakhir. Plus menampilkan hingga {plusDays} hari.",
   "@historyFreePlusHistoryBody": {
     "placeholders": {
-      "freeDays": { "type": "int" },
-      "plusDays": { "type": "int" }
+      "freeDays": {
+        "type": "int"
+      },
+      "plusDays": {
+        "type": "int"
+      }
     }
   },
   "historyFreePlusDismissAction": "Nanti",
@@ -436,7 +530,11 @@
   "historyFilterEmpty": "Tidak ada bill yang cocok dengan filter ini.",
   "historyFilterEmptyQuery": "Tidak ada hasil untuk “{query}”.",
   "@historyFilterEmptyQuery": {
-    "placeholders": { "query": { "type": "String" } }
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
   },
   "historySearchHint": "Cari judul atau item...",
   "historyFilterCategory": "Kategori",
@@ -452,8 +550,12 @@
   "historyFilterCount": "{filteredCount} dari {totalCount} bill",
   "@historyFilterCount": {
     "placeholders": {
-      "filteredCount": { "type": "int" },
-      "totalCount": { "type": "int" }
+      "filteredCount": {
+        "type": "int"
+      },
+      "totalCount": {
+        "type": "int"
+      }
     }
   },
   "historySortNewest": "Terbaru",
@@ -472,8 +574,12 @@
   "monthlyInsightMonth": "Pengeluaran {month} {year}",
   "@monthlyInsightMonth": {
     "placeholders": {
-      "month": { "type": "String" },
-      "year": { "type": "int" }
+      "month": {
+        "type": "String"
+      },
+      "year": {
+        "type": "int"
+      }
     }
   },
   "monthlyInsightLoading": "Memuat insight bulanan...",
@@ -489,14 +595,21 @@
   "monthlyInsightByCategory": "Per kategori",
   "monthlyInsightIncrease": "Naik {percent}% dibanding bulan lalu",
   "@monthlyInsightIncrease": {
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "monthlyInsightDecrease": "Turun {percent}% dibanding bulan lalu",
   "@monthlyInsightDecrease": {
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "monthlyInsightNoChange": "Tidak berubah dibanding bulan lalu",
-
   "splitSummaryTitle": "Rincian per Orang",
   "splitSummaryNoItems": "Belum ambil item.",
   "splitSummarySubtotal": "Subtotal",
@@ -509,7 +622,11 @@
   "billReviewDeleteItemTitle": "Hapus item?",
   "billReviewDeleteItemBody": "Item \"{name}\" akan dihapus.",
   "@billReviewDeleteItemBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "billReviewMerchantHint": "Nama merchant",
   "billReviewItemNameHint": "Nama item",
@@ -522,13 +639,21 @@
   "billReviewCurrencyPlusDetail": "Mengubah currency per bill adalah fitur Plus. Pengguna Free tetap memakai mata uang default dari Pengaturan.",
   "billReviewAiLowConfidence": "AI kurang yakin ({percent}%) — periksa angka.",
   "@billReviewAiLowConfidence": {
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "billReviewMismatch": "Total {computed} berbeda dari struk ({detected}). Periksa lagi.",
   "@billReviewMismatch": {
     "placeholders": {
-      "computed": { "type": "String" },
-      "detected": { "type": "String" }
+      "computed": {
+        "type": "String"
+      },
+      "detected": {
+        "type": "String"
+      }
     }
   },
   "billReviewTitleRequired": "Judul tidak boleh kosong.",
@@ -536,11 +661,19 @@
   "billReviewInvalidItem": "Periksa nama, harga, dan qty setiap item.",
   "billReviewSaveBillFailed": "Gagal simpan bill: {message}",
   "@billReviewSaveBillFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billReviewSaveItemsFailed": "Bill tersimpan tapi item gagal: {message}",
   "@billReviewSaveItemsFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billSplitTitle": "Split bill",
   "billSplitBackTooltip": "Kembali",
@@ -553,30 +686,50 @@
   "billSplitAllAssigned": "Semua item sudah dibagi",
   "billSplitUnassigned": "Belum dibagi: {amount}",
   "@billSplitUnassigned": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "billSplitViewSummary": "Lihat Rincian",
   "billSplitStateNotReady": "State belum siap.",
   "billSplitNameRequired": "Nama tidak boleh kosong.",
   "billSplitAddPersonFailed": "Gagal tambah orang: {message}",
   "@billSplitAddPersonFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billSplitSelectPersonFirst": "Pilih dulu orang di bawah.",
   "billSplitSaveAssignmentFailed": "Gagal simpan assignment: {message}",
   "@billSplitSaveAssignmentFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billSplitRemoveParticipantTitle": "Hapus partisipan?",
   "billSplitRemoveParticipantMessage": "Semua item yang ditugaskan ke {name} juga akan dihapus.",
   "@billSplitRemoveParticipantMessage": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "billSplitRemoveParticipantConfirm": "Hapus",
   "billSplitRemoveParticipantFailed": "Gagal hapus partisipan: {message}",
   "billSplitParticipantBarHint": "Tekan lama peserta untuk menghapus",
   "@billSplitRemoveParticipantFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "participantPhoneLabel": "Nomor (opsional)",
   "participantSuggestionTitle": "Sering dipakai",
@@ -584,7 +737,6 @@
   "participantImportFailed": "Gagal membuka kontak. Coba lagi atau tambah manual.",
   "participantImportNoPhone": "(kontak ini tidak punya nomor)",
   "billDetailParticipantPhoneLabel": "No HP",
-
   "billDetailTitle": "Detail Tagihan",
   "billDetailHomeTooltip": "Beranda",
   "billDetailScanAnotherTooltip": "Scan struk lain",
@@ -594,8 +746,12 @@
   "billDetailPaidProgress": "{paidCount}/{totalCount} partisipan sudah bayar",
   "@billDetailPaidProgress": {
     "placeholders": {
-      "paidCount": { "type": "int" },
-      "totalCount": { "type": "int" }
+      "paidCount": {
+        "type": "int"
+      },
+      "totalCount": {
+        "type": "int"
+      }
     }
   },
   "billDetailSettled": "Lunas",
@@ -605,7 +761,11 @@
   "billDetailParticipantNotFound": "Partisipan tidak ditemukan.",
   "billDetailSaveStatusFailed": "Gagal simpan status: {message}",
   "@billDetailSaveStatusFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billDetailStateNotReady": "Data belum siap, coba lagi sebentar.",
   "exportPdf": "Export PDF",
@@ -616,19 +776,35 @@
   "exportFailed": "Export belum bisa dibuat. Coba lagi.",
   "exportPdfSubject": "Export {title}",
   "@exportPdfSubject": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportPdfShareText": "Export PDF untuk {title}",
   "@exportPdfShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvSubject": "Export {title}",
   "@exportCsvSubject": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvShareText": "Export CSV untuk {title}",
   "@exportCsvShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "splitSummaryCopy": "Salin",
   "splitSummaryCopied": "Disalin ke clipboard",
@@ -643,14 +819,22 @@
   "settlementMessageFor": "Untuk",
   "settlementMessageGreeting": "Halo {name}, bagianmu:",
   "@settlementMessageGreeting": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageTransferNote": "Mohon transfer jika sudah sesuai. Terima kasih.",
   "settlementMessageItems": "Item kamu",
   "settlementMessageUnnamedItem": "(tanpa nama)",
   "settlementMessageSharedWith": "dibagi {count}",
   "@settlementMessageSharedWith": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settlementMessageTotal": "Total",
   "settlementMessageStatus": "Status",
@@ -658,17 +842,22 @@
   "settlementMessageUnpaid": "belum lunas",
   "settlementMessageGrandTotal": "Total bill",
   "settlementMessageOutstanding": "Belum lunas",
-
   "settlementMessageWhatsappLink": "Chat via WhatsApp: {url}",
   "@settlementMessageWhatsappLink": {
-    "placeholders": { "url": { "type": "String" } }
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
   },
-
   "settlementPromoFooter": "Dibuat dengan BagiStruk. Coba aplikasinya di Google Play: {url}",
   "@settlementPromoFooter": {
-    "placeholders": { "url": { "type": "String" } }
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
   },
-
   "shareLinkSectionTitle": "Link berbagi",
   "shareLinkCreate": "Salin link",
   "shareLinkCopied": "Link disalin. Berlaku 7 hari.",
@@ -679,7 +868,11 @@
   "shareLinkFreeLimit": "Free hanya boleh 1 link aktif per bill. Matikan link lama atau upgrade ke Plus untuk rotate.",
   "shareLinkExpiresIn": "Berlaku sampai {date}",
   "@shareLinkExpiresIn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "shareLinkPublicTitle": "Rincian berbagi",
   "shareLinkJoinCta": "Daftar untuk membuat bill sendiri",
@@ -687,11 +880,19 @@
   "exportXlsxPlusLocked": "Export XLSX (Plus)",
   "exportXlsxSubject": "Export {title}",
   "@exportXlsxSubject": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportXlsxShareText": "Export XLSX untuk {title}",
   "@exportXlsxShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "aboutTitle": "Tentang",
   "aboutSettingsTile": "Tentang Aplikasi",
@@ -711,9 +912,7 @@
   "aboutTermsOfService": "Syarat dan Ketentuan",
   "termsOfServiceTitle": "Syarat dan Ketentuan",
   "linkUnavailable": "Tautan belum tersedia",
-
   "reviewSuspectThousandsBug": "Harga tampak memakai pemisah ribuan sebagai desimal. Mohon periksa tiap angka sebelum menyimpan.",
-
   "authFieldEmail": "Email",
   "authFieldPassword": "Password",
   "authEmailRequired": "Email wajib diisi",
@@ -724,42 +923,63 @@
   "authHidePassword": "Sembunyikan password",
   "authSignInWithGoogle": "Masuk dengan Google",
   "authGoogleSigningIn": "Sedang masuk...",
-
   "failureRetry": "Coba Lagi",
   "failurePrefixNetwork": "Jaringan: {message}",
   "@failurePrefixNetwork": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixServer": "Server ({code}): {message}",
   "@failurePrefixServer": {
     "placeholders": {
-      "code": { "type": "String" },
-      "message": { "type": "String" }
+      "code": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
     }
   },
   "failurePrefixServerNoCode": "Server: {message}",
   "@failurePrefixServerNoCode": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixParsing": "Respons tidak terbaca: {message}",
   "@failurePrefixParsing": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixAuth": "Autentikasi: {message}",
   "@failurePrefixAuth": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixUnexpected": "Tidak terduga: {error}",
   "@failurePrefixUnexpected": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "historyFilterActiveBadge": "Aktif",
   "commonPlus": "Plus",
   "billReviewQtyLabel": "Qty",
   "billReviewSubtotalLabel": "Subtotal",
   "billReviewTotalLabel": "Total",
-
   "exportLabelItems": "Item",
   "exportLabelParticipants": "Peserta",
   "exportLabelCurrency": "Mata Uang",
@@ -782,59 +1002,94 @@
   "exportLabelUnpaidStatus": "belum lunas",
   "exportCsvTopTitle": "Detail Bill: {title}",
   "@exportCsvTopTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportPdfSubjectFallback": "Export PDF {title}",
   "@exportPdfSubjectFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportPdfShareTextFallback": "Export PDF untuk {title}",
   "@exportPdfShareTextFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvSubjectFallback": "Export CSV {title}",
   "@exportCsvSubjectFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvShareTextFallback": "Export CSV untuk {title}",
   "@exportCsvShareTextFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageCompactTitle": "BagiStruk - {title}",
   "@settlementMessageCompactTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageDetailedTitle": "BagiStruk - {title}",
   "@settlementMessageDetailedTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageBasicTitle": "{title}",
   "@settlementMessageBasicTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "billDetailParticipantPhoneHint": "Telepon (opsional)",
-
   "appInitErrorTitle": "BagiStruk gagal dimulai",
   "appInitErrorRetryHint": "Cek koneksi internet, lalu buka ulang aplikasi. Kalau masih bermasalah, periksa file .env dan setting Supabase.",
   "appInitErrorEnvLoad": "Gagal muat konfigurasi (.env): {message}",
   "@appInitErrorEnvLoad": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "appInitErrorSupabase": "Gagal inisialisasi Supabase: {message}",
   "@appInitErrorSupabase": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "paywallTitle": "Simpan riwayat & lacak piutang",
   "paywallSubtitle": "Daftar atau masuk untuk menyimpan riwayat dan melacak piutangmu.",
   "paywallRegister": "Daftar",
   "paywallLogin": "Masuk",
-
   "scanEmptyHint": "Ambil foto struk belanja atau makan bareng untuk mulai berbagi adil!",
-
   "adPrivacyChoicesTitle": "Pilihan privasi iklan",
   "adPrivacyChoicesSubtitle": "Tinjau atau ubah persetujuan iklan bila diwajibkan.",
-
   "onboardingNext": "Lanjut",
   "onboardingFinish": "Mulai scan struk",
   "onboardingSkip": "Lewati",
@@ -854,9 +1109,7 @@
   "onboardingReplayFinish": "Selesai",
   "onboardingSettingsTile": "Lihat panduan aplikasi",
   "onboardingSaveError": "Gagal menyimpan. Coba lagi.",
-
   "ocrAiDisclosure": "Foto struk diproses oleh layanan AI pihak ketiga untuk ekstraksi item.",
-
   "manualBillAction": "Buat manual",
   "manualBillEmptyHint": "Tanpa foto struk — tambah item manual, gratis tanpa credit.",
   "billSplitAssignAll": "Bagi rata",
@@ -868,33 +1121,90 @@
   "reminderNotificationBody": "{title} ({total}) masih ada yang belum bayar. Ketuk untuk menagih.",
   "@reminderNotificationBody": {
     "placeholders": {
-      "title": { "type": "String" },
-      "total": { "type": "String" }
+      "title": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
     }
   },
   "shareLinkRateLimited": "Terlalu banyak link dibuat hari ini. Coba lagi besok.",
   "shareLinkWebFallback": "Belum punya aplikasinya? Unduh BagiStruk di sini: {url} — lalu ketuk link di atas lagi.",
   "@shareLinkWebFallback": {
     "placeholders": {
-      "url": { "type": "String" }
+      "url": {
+        "type": "String"
+      }
     }
   },
   "shareLinkCountdownDays": "Berakhir dalam {count} hari",
   "@shareLinkCountdownDays": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareLinkCountdownHours": "Berakhir dalam {count} jam",
   "@shareLinkCountdownHours": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareLinkCountdownMinutes": "Berakhir dalam {count} menit",
   "@shareLinkCountdownMinutes": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
-  }
+  },
+  "billDuplicate": "Duplikat",
+  "billDuplicateTooltip": "Duplikat tagihan ini",
+  "billDuplicateSuccess": "Tagihan diduplikat",
+  "billDuplicateFailed": "Duplikat gagal — coba lagi",
+  "billSaveAsTemplate": "Simpan sbg template",
+  "billTemplateNameTitle": "Nama template",
+  "billTemplateNameHint": "cth: makan siang tim",
+  "billTemplateNameEmpty": "Isi nama template dulu",
+  "billTemplateSaved": "Template tersimpan",
+  "billTemplateFailed": "Gagal menyimpan template",
+  "billTemplateLimitReached": "Batas Free: maks 5 template. Upgrade Plus untuk tanpa batas.",
+  "billTemplatesTooltip": "Template tagihan",
+  "billTemplatesTitle": "Template tagihan",
+  "billTemplatesEmpty": "Belum ada template. Simpan dari menu di detail tagihan.",
+  "billTemplateUse": "Pakai",
+  "billTemplateUsedCount": "Dipakai {count}x",
+  "@billTemplateUsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billTemplateInstantiateFailed": "Gagal membuat tagihan dari template",
+  "billTemplateDeleted": "Template dihapus",
+  "billTemplateDeleteFailed": "Gagal menghapus template",
+  "billTemplateDeleteTitle": "Hapus template?",
+  "billTemplateDeleteBody": "Template \"{name}\" akan dihapus permanen.",
+  "@billTemplateDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "scanStatusScanningPlus": "Memindai {imageCount} gambar… (Plus: gagal → otomatis coba provider lain)",
+  "@scanStatusScanningPlus": {
+    "placeholders": {
+      "imageCount": {
+        "type": "int"
+      }
+    }
+  },
+  "ocrErrorTooLargeTitle": "Foto terlalu besar",
+  "ocrErrorTooLargeBody": "Maks 10 foto / total 20MB. Hapus atau kecilkan foto lalu coba lagi."
 }

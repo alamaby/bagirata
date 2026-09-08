@@ -6,6 +6,7 @@ import 'package:bagistruk/data/providers.dart';
 import 'package:bagistruk/domain/entities/assignment.dart';
 import 'package:bagistruk/domain/entities/bill.dart';
 import 'package:bagistruk/domain/entities/bill_payment_status.dart';
+import 'package:bagistruk/domain/entities/bill_template.dart';
 import 'package:bagistruk/domain/entities/deleted_bill.dart';
 import 'package:bagistruk/domain/entities/history_bill.dart';
 import 'package:bagistruk/domain/entities/history_bill_page.dart';
@@ -182,6 +183,23 @@ class FakeBillRepository implements IBillRepository {
       throw UnimplementedError();
   @override
   Future<Result<SharedBill?>> resolveShareToken(String tokenHash) =>
+      throw UnimplementedError();
+
+  // M4/F12 template surface (unused by history-list tests).
+  @override
+  Future<Result<List<BillTemplate>>> listTemplates() async =>
+      const Result.success([]);
+  @override
+  Future<Result<String>> createTemplateFromBill({
+    required String billId,
+    required String name,
+  }) =>
+      throw UnimplementedError();
+  @override
+  Future<Result<String>> instantiateTemplate(String templateId) =>
+      throw UnimplementedError();
+  @override
+  Future<Result<void>> deleteTemplate(String templateId) =>
       throw UnimplementedError();
 }
 

@@ -1911,4 +1911,86 @@ class AppL10nId extends AppL10n {
   String shareLinkCountdownMinutes(int count) {
     return 'Berakhir dalam $count menit';
   }
+
+  @override
+  String get billDuplicate => 'Duplikat';
+
+  @override
+  String get billDuplicateTooltip => 'Duplikat tagihan ini';
+
+  @override
+  String get billDuplicateSuccess => 'Tagihan diduplikat';
+
+  @override
+  String get billDuplicateFailed => 'Duplikat gagal — coba lagi';
+
+  @override
+  String get billSaveAsTemplate => 'Simpan sbg template';
+
+  @override
+  String get billTemplateNameTitle => 'Nama template';
+
+  @override
+  String get billTemplateNameHint => 'cth: makan siang tim';
+
+  @override
+  String get billTemplateNameEmpty => 'Isi nama template dulu';
+
+  @override
+  String get billTemplateSaved => 'Template tersimpan';
+
+  @override
+  String get billTemplateFailed => 'Gagal menyimpan template';
+
+  @override
+  String get billTemplateLimitReached =>
+      'Batas Free: maks 5 template. Upgrade Plus untuk tanpa batas.';
+
+  @override
+  String get billTemplatesTooltip => 'Template tagihan';
+
+  @override
+  String get billTemplatesTitle => 'Template tagihan';
+
+  @override
+  String get billTemplatesEmpty =>
+      'Belum ada template. Simpan dari menu di detail tagihan.';
+
+  @override
+  String get billTemplateUse => 'Pakai';
+
+  @override
+  String billTemplateUsedCount(int count) {
+    return 'Dipakai ${count}x';
+  }
+
+  @override
+  String get billTemplateInstantiateFailed =>
+      'Gagal membuat tagihan dari template';
+
+  @override
+  String get billTemplateDeleted => 'Template dihapus';
+
+  @override
+  String get billTemplateDeleteFailed => 'Gagal menghapus template';
+
+  @override
+  String get billTemplateDeleteTitle => 'Hapus template?';
+
+  @override
+  String billTemplateDeleteBody(String name) {
+    return 'Template \"$name\" akan dihapus permanen.';
+  }
+
+  @override
+  String scanStatusScanningPlus(int imageCount) {
+    return 'Memindai $imageCount gambar… (Plus: gagal → otomatis coba provider lain)';
+  }
+
+  @override
+  String get ocrErrorTooLargeTitle => 'Foto terlalu besar';
+
+  @override
+  String get ocrErrorTooLargeBody =>
+      'Maks 10 foto / total 20MB. Hapus atau kecilkan foto lalu coba lagi.';
 }

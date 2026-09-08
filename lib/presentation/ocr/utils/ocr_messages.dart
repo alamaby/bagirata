@@ -89,6 +89,21 @@ OcrMessage _serverMessage(int? code, String raw, AppL10n l10n) {
       body: l10n.ocrErrorTimeoutBody,
     );
   }
+  // 413 from the pre-LLM size guard (max 10 images / 20MB total): retrying
+  // the same draft is pointless — the user must drop or shrink photos.
+  // canRetry=false hides the Plus in-card retry for this case.
+  if (code == 413 ||
+      lower.contains('too_many_images') ||
+      lower.contains('images_too_large') ||
+      lower.contains('too_large') ||
+      lower.contains('too large') ||
+      lower.contains('payload too large')) {
+    return OcrMessage(
+      title: l10n.ocrErrorTooLargeTitle,
+      body: l10n.ocrErrorTooLargeBody,
+      canRetry: false,
+    );
+  }
   if (code != null && code >= 500) {
     return OcrMessage(
       title: l10n.ocrErrorServerTitle,

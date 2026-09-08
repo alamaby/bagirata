@@ -24,18 +24,37 @@ sealed class ScanDraftState with _$ScanDraftState {
 class ScanDraftNotifier extends _$ScanDraftNotifier {
   static const _imageQuality = 90;
 
+  /// M4/F14.3 client mirror of the Edge Function `OCR_MAX_IMAGES` guard.
+  /// Enforced at every draft entry point (gallery, camera, share-in) so an
+  /// over-cap draft can never reach the network — the server 413 becomes a
+  /// defensive backstop, not the primary UX.
+  static const maxImages = 10;
+
+  /// True once the draft hit [maxImages]; pickers should refuse with a
+  /// friendly message instead of silently dropping photos.
+  bool get isFull => state.images.length >= maxImages;
+
   @override
   ScanDraftState build() => const ScanDraftState(images: []);
 
   IImagePicker get _picker => ref.read(imagePickerProvider);
 
-  Future<void> pickFromGallery() async {
+  /// Picks from gallery, keeping only what fits under [maxImages].
+  /// Returns the number of picked photos dropped by the cap (0 = all kept).
+  Future<int> pickFromGallery() async {
     final picked = await _picker.pickMultiImage(imageQuality: _imageQuality);
-    if (picked.isEmpty) return;
-    state = ScanDraftState(images: [...state.images, ...picked]);
+    if (picked.isEmpty) return 0;
+    final room = maxImages - state.images.length;
+    if (room <= 0) return picked.length;
+    final kept = picked.take(room).toList(growable: false);
+    state = ScanDraftState(images: [...state.images, ...kept]);
+    return picked.length - kept.length;
   }
 
+  /// Returns null when the user cancels OR the draft is full ([isFull]);
+  /// callers must check [isFull] first to tell the two apart.
   Future<XFile?> pickFromCamera() async {
+    if (isFull) return null;
     final shot = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: _imageQuality,
@@ -55,8 +74,13 @@ class ScanDraftNotifier extends _$ScanDraftNotifier {
     final known = state.images.map((f) => f.path).toSet();
     final fresh = files.where((f) => known.add(f.path)).toList();
     if (fresh.isEmpty) return 0;
-    state = ScanDraftState(images: [...state.images, ...fresh]);
-    return fresh.length;
+    // Same [maxImages] cap as the pickers; the `_process` guard below
+    // stays as a defensive backstop for drafts built before this cap.
+    final room = maxImages - state.images.length;
+    if (room <= 0) return 0;
+    final kept = fresh.take(room).toList(growable: false);
+    state = ScanDraftState(images: [...state.images, ...kept]);
+    return kept.length;
   }
 
   void removeAt(int index) {

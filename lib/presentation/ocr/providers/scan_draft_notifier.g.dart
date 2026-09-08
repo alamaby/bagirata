@@ -41,7 +41,7 @@ final class ScanDraftNotifierProvider
   }
 }
 
-String _$scanDraftNotifierHash() => r'50d11425185ff449c542562c825af802c6e1e876';
+String _$scanDraftNotifierHash() => r'b61480278c9d13e9a10d96fdee95e4635a7a7479';
 
 abstract class _$ScanDraftNotifier extends $Notifier<ScanDraftState> {
   ScanDraftState build();

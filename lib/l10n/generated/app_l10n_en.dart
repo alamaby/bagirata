@@ -1912,4 +1912,86 @@ class AppL10nEn extends AppL10n {
   String shareLinkCountdownMinutes(int count) {
     return 'Expires in $count minutes';
   }
+
+  @override
+  String get billDuplicate => 'Duplicate';
+
+  @override
+  String get billDuplicateTooltip => 'Duplicate this bill';
+
+  @override
+  String get billDuplicateSuccess => 'Bill duplicated';
+
+  @override
+  String get billDuplicateFailed => 'Duplicate failed — try again';
+
+  @override
+  String get billSaveAsTemplate => 'Save as template';
+
+  @override
+  String get billTemplateNameTitle => 'Template name';
+
+  @override
+  String get billTemplateNameHint => 'e.g. team lunch';
+
+  @override
+  String get billTemplateNameEmpty => 'Enter a template name first';
+
+  @override
+  String get billTemplateSaved => 'Template saved';
+
+  @override
+  String get billTemplateFailed => 'Could not save template';
+
+  @override
+  String get billTemplateLimitReached =>
+      'Free limit: max 5 templates. Go Plus for unlimited.';
+
+  @override
+  String get billTemplatesTooltip => 'Bill templates';
+
+  @override
+  String get billTemplatesTitle => 'Bill templates';
+
+  @override
+  String get billTemplatesEmpty =>
+      'No templates yet. Save one from a bill detail menu.';
+
+  @override
+  String get billTemplateUse => 'Use';
+
+  @override
+  String billTemplateUsedCount(int count) {
+    return 'Used ${count}x';
+  }
+
+  @override
+  String get billTemplateInstantiateFailed =>
+      'Could not create a bill from the template';
+
+  @override
+  String get billTemplateDeleted => 'Template deleted';
+
+  @override
+  String get billTemplateDeleteFailed => 'Could not delete template';
+
+  @override
+  String get billTemplateDeleteTitle => 'Delete template?';
+
+  @override
+  String billTemplateDeleteBody(String name) {
+    return 'Template \"$name\" will be permanently deleted.';
+  }
+
+  @override
+  String scanStatusScanningPlus(int imageCount) {
+    return 'Scanning $imageCount image(s)… (Plus: auto-retries another provider on failure)';
+  }
+
+  @override
+  String get ocrErrorTooLargeTitle => 'Photos too large';
+
+  @override
+  String get ocrErrorTooLargeBody =>
+      'Max 10 photos / 20MB total. Remove or shrink photos and try again.';
 }

@@ -3406,6 +3406,150 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'Berakhir dalam {count} menit'**
   String shareLinkCountdownMinutes(int count);
+
+  /// No description provided for @billDuplicate.
+  ///
+  /// In id, this message translates to:
+  /// **'Duplikat'**
+  String get billDuplicate;
+
+  /// No description provided for @billDuplicateTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Duplikat tagihan ini'**
+  String get billDuplicateTooltip;
+
+  /// No description provided for @billDuplicateSuccess.
+  ///
+  /// In id, this message translates to:
+  /// **'Tagihan diduplikat'**
+  String get billDuplicateSuccess;
+
+  /// No description provided for @billDuplicateFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Duplikat gagal — coba lagi'**
+  String get billDuplicateFailed;
+
+  /// No description provided for @billSaveAsTemplate.
+  ///
+  /// In id, this message translates to:
+  /// **'Simpan sbg template'**
+  String get billSaveAsTemplate;
+
+  /// No description provided for @billTemplateNameTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Nama template'**
+  String get billTemplateNameTitle;
+
+  /// No description provided for @billTemplateNameHint.
+  ///
+  /// In id, this message translates to:
+  /// **'cth: makan siang tim'**
+  String get billTemplateNameHint;
+
+  /// No description provided for @billTemplateNameEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Isi nama template dulu'**
+  String get billTemplateNameEmpty;
+
+  /// No description provided for @billTemplateSaved.
+  ///
+  /// In id, this message translates to:
+  /// **'Template tersimpan'**
+  String get billTemplateSaved;
+
+  /// No description provided for @billTemplateFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal menyimpan template'**
+  String get billTemplateFailed;
+
+  /// No description provided for @billTemplateLimitReached.
+  ///
+  /// In id, this message translates to:
+  /// **'Batas Free: maks 5 template. Upgrade Plus untuk tanpa batas.'**
+  String get billTemplateLimitReached;
+
+  /// No description provided for @billTemplatesTooltip.
+  ///
+  /// In id, this message translates to:
+  /// **'Template tagihan'**
+  String get billTemplatesTooltip;
+
+  /// No description provided for @billTemplatesTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Template tagihan'**
+  String get billTemplatesTitle;
+
+  /// No description provided for @billTemplatesEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Belum ada template. Simpan dari menu di detail tagihan.'**
+  String get billTemplatesEmpty;
+
+  /// No description provided for @billTemplateUse.
+  ///
+  /// In id, this message translates to:
+  /// **'Pakai'**
+  String get billTemplateUse;
+
+  /// No description provided for @billTemplateUsedCount.
+  ///
+  /// In id, this message translates to:
+  /// **'Dipakai {count}x'**
+  String billTemplateUsedCount(int count);
+
+  /// No description provided for @billTemplateInstantiateFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal membuat tagihan dari template'**
+  String get billTemplateInstantiateFailed;
+
+  /// No description provided for @billTemplateDeleted.
+  ///
+  /// In id, this message translates to:
+  /// **'Template dihapus'**
+  String get billTemplateDeleted;
+
+  /// No description provided for @billTemplateDeleteFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Gagal menghapus template'**
+  String get billTemplateDeleteFailed;
+
+  /// No description provided for @billTemplateDeleteTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Hapus template?'**
+  String get billTemplateDeleteTitle;
+
+  /// No description provided for @billTemplateDeleteBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Template \"{name}\" akan dihapus permanen.'**
+  String billTemplateDeleteBody(String name);
+
+  /// No description provided for @scanStatusScanningPlus.
+  ///
+  /// In id, this message translates to:
+  /// **'Memindai {imageCount} gambar… (Plus: gagal → otomatis coba provider lain)'**
+  String scanStatusScanningPlus(int imageCount);
+
+  /// No description provided for @ocrErrorTooLargeTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Foto terlalu besar'**
+  String get ocrErrorTooLargeTitle;
+
+  /// No description provided for @ocrErrorTooLargeBody.
+  ///
+  /// In id, this message translates to:
+  /// **'Maks 10 foto / total 20MB. Hapus atau kecilkan foto lalu coba lagi.'**
+  String get ocrErrorTooLargeBody;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

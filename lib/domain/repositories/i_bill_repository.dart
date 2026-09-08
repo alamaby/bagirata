@@ -1,6 +1,7 @@
 import '../../core/error/result.dart';
 import '../entities/assignment.dart';
 import '../entities/bill.dart';
+import '../entities/bill_template.dart';
 import '../entities/deleted_bill.dart';
 import '../entities/history_bill_page.dart';
 import '../entities/history_summary.dart';
@@ -61,4 +62,14 @@ abstract interface class IBillRepository {
   });
   Future<Result<void>> revokeShareToken(String tokenId);
   Future<Result<SharedBill?>> resolveShareToken(String tokenHash);
+
+  /// M4/F12 bill templates (fase 1, tanpa grup). Server enforces Free max 5
+  /// and snapshot validation; the client passes names/ids through.
+  Future<Result<List<BillTemplate>>> listTemplates();
+  Future<Result<String>> createTemplateFromBill({
+    required String billId,
+    required String name,
+  });
+  Future<Result<String>> instantiateTemplate(String templateId);
+  Future<Result<void>> deleteTemplate(String templateId);
 }

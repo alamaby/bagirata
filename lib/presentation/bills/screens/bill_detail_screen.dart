@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../core/billing/share_link_token.dart';
 import '../../../core/config/app_constants.dart';
+import '../../../core/error/result.dart';
 import '../../../core/format/app_format.dart';
 import '../../../core/format/currency_formatter.dart';
 import '../../../core/router/routes.dart';
@@ -22,6 +23,7 @@ import '../../../domain/entities/participant.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
+import '../../history/providers/history_list_notifier.dart';
 import '../../settings/providers/transfer_bank_info_provider.dart';
 import '../../shared/widgets/loading_view.dart';
 import '../../shared/widgets/plus_info_icon.dart';
@@ -30,7 +32,9 @@ import '../export/bill_pdf_exporter.dart';
 import '../export/bill_xlsx_exporter.dart';
 import '../export/export_filenames.dart';
 import '../providers/bill_detail_notifier.dart';
+import '../providers/bill_duplicator_provider.dart';
 import '../providers/bill_share_link_notifier.dart';
+import '../providers/bill_templates_notifier.dart';
 import '../providers/split_notifier.dart' show ParticipantTotal, SplitState;
 import '../utils/settlement_share_launcher.dart';
 import '../utils/settlement_message_builder.dart';
@@ -75,6 +79,7 @@ class BillDetailScreen extends ConsumerWidget {
             onPressed: () => _goHome(context, ref),
           ),
           actions: [
+            _DetailMenu(billId: billId),
             IconButton(
               icon: const Icon(Icons.document_scanner_outlined),
               tooltip: AppL10n.of(context).billDetailScanAnotherTooltip,
@@ -1069,6 +1074,171 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
         ],
       ),
     );
+  }
+}
+
+/// M4/F12 overflow menu: one-tap duplicate + save-as-template. Stateful to
+/// hold the in-flight busy flag; results surface as SnackBars and duplicate
+/// navigates to the fresh bill's detail screen.
+class _DetailMenu extends ConsumerStatefulWidget {
+  const _DetailMenu({required this.billId});
+
+  final String billId;
+
+  @override
+  ConsumerState<_DetailMenu> createState() => _DetailMenuState();
+}
+
+enum _DetailMenuAction { duplicate, saveAsTemplate }
+
+class _DetailMenuState extends ConsumerState<_DetailMenu> {
+  bool _busy = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppL10n.of(context);
+    return PopupMenuButton<_DetailMenuAction>(
+      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+      icon: _busy
+          ? SizedBox(
+              width: 20.w,
+              height: 20.w,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            )
+          : const Icon(Icons.more_vert),
+      onSelected: _busy ? null : _onSelected,
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _DetailMenuAction.duplicate,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.copy_outlined),
+            title: Text(l10n.billDuplicate),
+          ),
+        ),
+        PopupMenuItem(
+          value: _DetailMenuAction.saveAsTemplate,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.bookmark_add_outlined),
+            title: Text(l10n.billSaveAsTemplate),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onSelected(_DetailMenuAction action) async {
+    switch (action) {
+      case _DetailMenuAction.duplicate:
+        await _duplicate();
+      case _DetailMenuAction.saveAsTemplate:
+        await _saveAsTemplate();
+    }
+  }
+
+  Future<void> _duplicate() async {
+    final l10n = AppL10n.of(context);
+    setState(() => _busy = true);
+    try {
+      final res = await ref
+          .read(billDuplicatorProvider)
+          .duplicate(widget.billId);
+      if (!context.mounted) return;
+      switch (res) {
+        case ResultFailure():
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(l10n.billDuplicateFailed)),
+            );
+        case Success(:final data):
+          ref.invalidate(historyListProvider);
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(content: Text(l10n.billDuplicateSuccess)),
+            );
+          // Fire-and-forget: navigation owns its own lifecycle; awaiting
+          // it here would only delay the busy-flag reset in `finally`.
+          unawaited(
+            context.pushNamed(
+              Routes.billDetailName,
+              pathParameters: {'billId': data},
+            ),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _saveAsTemplate() async {
+    final l10n = AppL10n.of(context);
+    final controller = TextEditingController();
+    try {
+      final name = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.billTemplateNameTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 60,
+            maxLines: 1,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              hintText: l10n.billTemplateNameHint,
+            ),
+            onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(controller.text.trim()),
+              child: Text(l10n.billSaveAsTemplate),
+            ),
+          ],
+        ),
+      );
+      if (name == null || !context.mounted) return;
+      if (name.isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(l10n.billTemplateNameEmpty)),
+          );
+        return;
+      }
+      setState(() => _busy = true);
+      try {
+        final result = await ref
+            .read(billTemplatesProvider.notifier)
+            .createFromBill(billId: widget.billId, name: name);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                result.ok
+                    ? l10n.billTemplateSaved
+                    : result.limited
+                    ? l10n.billTemplateLimitReached
+                    : l10n.billTemplateFailed,
+              ),
+            ),
+          );
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    } finally {
+      controller.dispose();
+    }
   }
 }
 

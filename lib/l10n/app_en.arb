@@ -1,25 +1,19 @@
 {
   "@@locale": "en",
-
   "registerMarketingOptIn": "I want to receive promotional emails, feature updates, and tips from BagiStruk.",
-
   "postLoginWelcomeTitle": "Welcome to BagiStruk!",
   "postLoginWelcomeBody": "Let us know if you want to receive promotional emails, feature updates, and tips from us. You can change this any time from Settings.",
   "postLoginWelcomeOptIn": "Send me promotional emails, feature updates, and tips.",
   "postLoginWelcomeContinue": "Continue",
   "postLoginWelcomeErrorSave": "Failed to save. Please try again.",
-
   "registerErrorSaveProfile": "Your account was created but we could not save your preferences. Please try again from Settings after verifying your email.",
-
   "settingsMarketingOptIn": "Promotional emails",
   "settingsMarketingOptInSubtitle": "Tips, feature updates, and offers from BagiStruk.",
   "settingsMarketingOptInWebHint": "You can also manage this preference from the BagiStruk website.",
-
   "settingsTitle": "Profile & Settings",
   "settingsTab": "Settings",
   "scanTab": "Scan",
   "historyTab": "History",
-
   "scanScreenTitle": "Scan Receipt",
   "scanAddPhotos": "Add Photos",
   "scanAction": "Scan",
@@ -32,31 +26,53 @@
   "scanCameraDone": "Done",
   "shareImagesAdded": "{count} shared photo(s) added. Starting scan...",
   "@shareImagesAdded": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scanNotReceiptTitle": "Not a receipt",
   "scanNotReceiptHint": "The selected image doesn't look like a receipt. Try a clear photo of a receipt.",
   "scanPreparingSessionFailed": "Could not prepare session: {message}",
   "@scanPreparingSessionFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "scanCreditCheckFailed": "Could not check scan credits: {message}",
   "@scanCreditCheckFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "scanCreditCostWithBalance": "{imageCount} photo(s) will use {creditCost} credit(s). Balance: {balance}.",
   "@scanCreditCostWithBalance": {
     "placeholders": {
-      "imageCount": { "type": "int" },
-      "creditCost": { "type": "int" },
-      "balance": { "type": "int" }
+      "imageCount": {
+        "type": "int"
+      },
+      "creditCost": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "int"
+      }
     }
   },
   "scanCreditRequired": "This scan needs {requiredCredits} credit(s). Current balance: {balance}.",
   "@scanCreditRequired": {
     "placeholders": {
-      "requiredCredits": { "type": "int" },
-      "balance": { "type": "int" }
+      "requiredCredits": {
+        "type": "int"
+      },
+      "balance": {
+        "type": "int"
+      }
     }
   },
   "scanNoCreditAnonymousTitle": "Free scan limit reached",
@@ -64,11 +80,19 @@
   "scanNoCreditAnonymousBody": "You have used 5 scan credits as a guest. Create an account to get 20 free credits every month.",
   "scanNoCreditPlusBody": "You have used {monthlyAllowance} Plus credits this month. Credits will be available again in the next period.",
   "@scanNoCreditPlusBody": {
-    "placeholders": { "monthlyAllowance": { "type": "int" } }
+    "placeholders": {
+      "monthlyAllowance": {
+        "type": "int"
+      }
+    }
   },
   "scanNoCreditFreeBody": "You have used {monthlyAllowance} free credits this month. Upgrade to Plus for 60 credits/month, no ads, and Plus features.",
   "@scanNoCreditFreeBody": {
-    "placeholders": { "monthlyAllowance": { "type": "int" } }
+    "placeholders": {
+      "monthlyAllowance": {
+        "type": "int"
+      }
+    }
   },
   "scanNoCreditLater": "Later",
   "scanNoCreditRegister": "Sign Up",
@@ -77,13 +101,21 @@
   "scanStatusIdle": "Add photos and tap Scan",
   "scanStatusScanning": "Scanning {imageCount} image(s)…",
   "@scanStatusScanning": {
-    "placeholders": { "imageCount": { "type": "int" } }
+    "placeholders": {
+      "imageCount": {
+        "type": "int"
+      }
+    }
   },
   "scanStatusSuccess": "{itemCount} items detected via {provider}",
   "@scanStatusSuccess": {
     "placeholders": {
-      "itemCount": { "type": "int" },
-      "provider": { "type": "String" }
+      "itemCount": {
+        "type": "int"
+      },
+      "provider": {
+        "type": "String"
+      }
     }
   },
   "ocrErrorNetworkTitle": "No connection",
@@ -110,12 +142,9 @@
   "ocrErrorServerBody": "The server is unstable right now. Wait a moment, then try again.",
   "ocrErrorGenericTitle": "Scan failed",
   "ocrErrorGenericBody": "This receipt could not be processed. Try taking another photo or using a different image.",
-
   "retry": "Retry",
-
   "accountSection": "Account",
   "preferencesSection": "Preferences",
-
   "displayNameFallback": "BagiStruk User",
   "anonDisplayName": "Me",
   "guestAccount": "Guest Account",
@@ -124,20 +153,34 @@
   "creditStatusRemaining": "{balance}/{monthlyAllowance} remaining ({planCode})",
   "@creditStatusRemaining": {
     "placeholders": {
-      "balance": { "type": "int" },
-      "monthlyAllowance": { "type": "int" },
-      "planCode": { "type": "String" }
+      "balance": {
+        "type": "int"
+      },
+      "monthlyAllowance": {
+        "type": "int"
+      },
+      "planCode": {
+        "type": "String"
+      }
     }
   },
   "billingTitle": "Plus and credit packs",
   "billingAnonSubtitle": "Create an account first to buy Plus or top up credits.",
   "creditPlusExpiresAt": "Plus expires: {date}",
   "@creditPlusExpiresAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "creditTrialExpiresAt": "Plus trial expires: {date}",
   "@creditTrialExpiresAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "billingPlusActive": "Plus active",
   "billingPlanFree": "Free",
@@ -152,13 +195,17 @@
   "billingUpgradePlusWithPrice": "Subscribe monthly • {price}",
   "@billingUpgradePlusWithPrice": {
     "placeholders": {
-      "price": { "type": "String" }
+      "price": {
+        "type": "String"
+      }
     }
   },
   "billingCreditPackTitle": "{credits} credits",
   "@billingCreditPackTitle": {
     "placeholders": {
-      "credits": { "type": "int" }
+      "credits": {
+        "type": "int"
+      }
     }
   },
   "billingBuyAction": "Buy",
@@ -176,7 +223,6 @@
   "billingPurchaseFailed": "Purchase was canceled or failed.",
   "billingPurchaseSuccess": "Purchase processed successfully.",
   "billingPurchaseVerifyFailed": "Purchase could not be verified.",
-
   "changeName": "Change Name",
   "changeNameSheetTitle": "Change Display Name",
   "changeNameHint": "Display name",
@@ -196,15 +242,17 @@
   "transferBankRequired": "Fill this field or leave everything empty.",
   "transferBankSaved": "Bank transfer info saved.",
   "transferBankClear": "Clear bank info",
-
   "resetPassword": "Reset Password",
   "resetPasswordConfirmTitle": "Send password reset email?",
   "resetPasswordConfirmBody": "We will send a password reset link to {email}.",
   "@resetPasswordConfirmBody": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "resetPasswordSent": "Password reset email sent.",
-
   "resetPasswordScreenTitle": "Reset Password",
   "resetPasswordScreenHeading": "Create a New Password",
   "resetPasswordScreenBody": "Enter a new password for your account. Once saved, you will be returned to Settings.",
@@ -216,20 +264,16 @@
   "resetPasswordMismatch": "Passwords do not match",
   "resetPasswordSuccess": "Password updated successfully",
   "resetPasswordSessionExpired": "Reset session expired. Please request a new link.",
-
   "currencyLabel": "Default Currency",
   "currencySearchHint": "Search currency",
   "currencySearchEmpty": "No currency found.",
   "languageLabel": "Language",
   "themeLabel": "Theme",
-
   "themeLight": "Light",
   "themeDark": "Dark",
   "themeSystem": "Follow System",
-
   "languageIndonesian": "Bahasa Indonesia",
   "languageEnglish": "English",
-
   "logout": "Log Out",
   "registerPermanent": "Create Permanent Account",
   "confirmLogoutTitle": "Log out of your account?",
@@ -242,22 +286,38 @@
   "deleteAccountTypeTitle": "Type DELETE to confirm",
   "deleteAccountTypeBody": "Type {phrase} to permanently delete your account.",
   "@deleteAccountTypeBody": {
-    "placeholders": { "phrase": { "type": "String" } }
+    "placeholders": {
+      "phrase": {
+        "type": "String"
+      }
+    }
   },
   "deleteAccountInProgress": "Deleting account...",
   "deleteAccountSuccess": "Your account and saved data have been deleted.",
   "deletedBillsTitle": "Deleted bills",
   "deletedBillsSettingsSubtitle": "Restore bills deleted in the last {days} days.",
   "@deletedBillsSettingsSubtitle": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deletedBillsRetentionFree": "Deleted bills are kept for {days} days.",
   "@deletedBillsRetentionFree": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deletedBillsRetentionPlus": "Deleted bills are kept for {days} days so Plus users can recover accidental deletions.",
   "@deletedBillsRetentionPlus": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deletedBillsSettingsLockedSubtitle": "Plus only. Restore accidentally deleted bills within 30 days.",
   "deletedBillsLockedTitle": "Restore deleted bills with Plus",
@@ -265,36 +325,57 @@
   "deletedBillsEmpty": "No deleted bills.",
   "deletedBillDeletedAt": "Deleted {date}",
   "@deletedBillDeletedAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "deletedBillExpiresAt": "Restorable until {date}",
   "@deletedBillExpiresAt": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "deletedBillRestoreAction": "Restore",
   "deletedBillRestored": "Bill restored.",
   "deletedBillExpiredError": "This bill can no longer be restored.",
   "deletedBillExpiresInDays": "{days} days left",
   "@deletedBillExpiresInDays": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "deleteBillAction": "Delete",
   "deleteBillConfirmTitle": "Delete this bill?",
   "deleteBillConfirmBody": "{title} ({total}) will move to Deleted bills. Plus users can restore it within {days} days.",
   "@deleteBillConfirmBody": {
     "placeholders": {
-      "title": { "type": "String" },
-      "total": { "type": "String" },
-      "days": { "type": "int" }
+      "title": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
     }
   },
   "deleteBillSuccess": "Bill moved to Deleted bills.",
-
   "errorGeneric": "Something went wrong. Please try again.",
   "authErrorNetwork": "No internet connection. Try again when the network is stable.",
   "authErrorServer": "Server issue: {message}. Try again shortly.",
   "@authErrorServer": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "authErrorParsing": "The server response could not be read. Try again.",
   "authErrorUnknown": "Something unexpected happened. Try again.",
@@ -309,10 +390,8 @@
   "authErrorComingSoon": "This feature is coming soon.",
   "authErrorFallback": "Authentication failed. Try again.",
   "loading": "Loading...",
-
   "noSessionMessage": "Sign up or log in to access settings.",
   "registerOrLogin": "Sign up / Log in",
-
   "loginWelcomeBack": "Welcome back",
   "loginSubtitle": "Sign in to continue to BagiStruk.",
   "loginSaveBanner": "Sign up to save your bill history",
@@ -324,7 +403,6 @@
   "loginOtpSending": "Sending code…",
   "loginNoAccount": "Don't have an account? ",
   "loginRegisterLink": "Sign Up",
-
   "registerTitle": "Sign Up",
   "registerBackToScanTooltip": "Back to Scan",
   "registerSkip": "Skip",
@@ -333,7 +411,6 @@
   "registerPasswordHint": "At least 6 characters",
   "registerHaveAccount": "Already have an account? ",
   "registerLoginLink": "Log In",
-
   "legalAcceptanceAppBarTitle": "Legal Agreement",
   "legalAcceptanceTitle": "Before you start…",
   "legalAcceptanceIntro": "To use BagiStruk, please read and agree to the two documents below. We need separate consent for the Terms of Service and the Privacy Policy.",
@@ -344,7 +421,6 @@
   "legalAcceptanceAgreeAge": "I am 18 years of age or older, or older if required by my local law.",
   "legalAcceptanceContinue": "Continue",
   "legalAcceptanceErrorSave": "Failed to save acceptance. Please try again.",
-
   "verifyEmailTitle": "Verify email",
   "verifyEmailBackTooltip": "Back",
   "verifyEmailHeading": "Check your email",
@@ -355,7 +431,6 @@
   "verifyEmailResending": "Sending…",
   "verifyEmailResent": "Verification email has been resent.",
   "verifyEmailUseDifferent": "Use a different email",
-
   "verifyOtpTitle": "Enter code",
   "verifyOtpHeading": "Check your email code",
   "verifyOtpBodyPrefix": "We sent an 8-digit code to ",
@@ -367,10 +442,13 @@
   "verifyOtpResent": "A new code has been sent.",
   "verifyOtpResendCountdown": "Resend in {seconds}s",
   "@verifyOtpResendCountdown": {
-    "placeholders": { "seconds": { "type": "int" } }
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   },
   "verifyOtpUseDifferent": "Use a different email",
-
   "historySignOutTooltip": "Sign Out",
   "historySignedOut": "You have been signed out.",
   "historyLoadingMessage": "Loading history…",
@@ -379,8 +457,12 @@
   "historyOutstandingCarouselPage": "{current} of {total}",
   "@historyOutstandingCarouselPage": {
     "placeholders": {
-      "current": { "type": "int" },
-      "total": { "type": "int" }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "historyEmptyMessage": "No saved bills yet.\nStart scanning a receipt from the Scan tab.",
@@ -401,20 +483,28 @@
   },
   "historyWindowSubtitle": "Showing bills from the last {days} days.",
   "@historyWindowSubtitle": {
-    "placeholders": { "days": { "type": "int" } }
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   },
   "historyUpgradeCta": "Upgrade to Plus",
   "historyPlusBannerDismiss": "Dismiss",
   "historyFreePlusBannerLabel": "{freeDays}-day history · Monthly insight",
   "@historyFreePlusBannerLabel": {
     "placeholders": {
-      "freeDays": { "type": "int" }
+      "freeDays": {
+        "type": "int"
+      }
     }
   },
   "historyFreePlusBannerSemantics": "{freeDays}-day history and Monthly insight, a Plus feature. Tap for details.",
   "@historyFreePlusBannerSemantics": {
     "placeholders": {
-      "freeDays": { "type": "int" }
+      "freeDays": {
+        "type": "int"
+      }
     }
   },
   "historyFreePlusSheetTitle": "Plus history features",
@@ -422,8 +512,12 @@
   "historyFreePlusHistoryBody": "Free shows the last {freeDays} days. Plus shows up to {plusDays} days.",
   "@historyFreePlusHistoryBody": {
     "placeholders": {
-      "freeDays": { "type": "int" },
-      "plusDays": { "type": "int" }
+      "freeDays": {
+        "type": "int"
+      },
+      "plusDays": {
+        "type": "int"
+      }
     }
   },
   "historyFreePlusDismissAction": "Not now",
@@ -436,7 +530,11 @@
   "historyFilterEmpty": "No bills match these filters.",
   "historyFilterEmptyQuery": "No results for “{query}”.",
   "@historyFilterEmptyQuery": {
-    "placeholders": { "query": { "type": "String" } }
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
   },
   "historySearchHint": "Search titles or items...",
   "historyFilterCategory": "Category",
@@ -452,8 +550,12 @@
   "historyFilterCount": "{filteredCount} of {totalCount} bills",
   "@historyFilterCount": {
     "placeholders": {
-      "filteredCount": { "type": "int" },
-      "totalCount": { "type": "int" }
+      "filteredCount": {
+        "type": "int"
+      },
+      "totalCount": {
+        "type": "int"
+      }
     }
   },
   "historySortNewest": "Newest",
@@ -472,8 +574,12 @@
   "monthlyInsightMonth": "Spending in {month} {year}",
   "@monthlyInsightMonth": {
     "placeholders": {
-      "month": { "type": "String" },
-      "year": { "type": "int" }
+      "month": {
+        "type": "String"
+      },
+      "year": {
+        "type": "int"
+      }
     }
   },
   "monthlyInsightLoading": "Loading monthly insight...",
@@ -489,14 +595,21 @@
   "monthlyInsightByCategory": "By category",
   "monthlyInsightIncrease": "Up {percent}% vs last month",
   "@monthlyInsightIncrease": {
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "monthlyInsightDecrease": "Down {percent}% vs last month",
   "@monthlyInsightDecrease": {
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "monthlyInsightNoChange": "No change vs last month",
-
   "splitSummaryTitle": "Summary per Person",
   "splitSummaryNoItems": "No items selected.",
   "splitSummarySubtotal": "Subtotal",
@@ -509,7 +622,11 @@
   "billReviewDeleteItemTitle": "Delete item?",
   "billReviewDeleteItemBody": "Item \"{name}\" will be deleted.",
   "@billReviewDeleteItemBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "billReviewMerchantHint": "Merchant name",
   "billReviewItemNameHint": "Item name",
@@ -522,13 +639,21 @@
   "billReviewCurrencyPlusDetail": "Changing currency per bill is a Plus feature. Free users keep using the default currency from Settings.",
   "billReviewAiLowConfidence": "AI is less confident ({percent}%) — verify the numbers.",
   "@billReviewAiLowConfidence": {
-    "placeholders": { "percent": { "type": "String" } }
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   },
   "billReviewMismatch": "Total {computed} differs from the receipt ({detected}). Check again.",
   "@billReviewMismatch": {
     "placeholders": {
-      "computed": { "type": "String" },
-      "detected": { "type": "String" }
+      "computed": {
+        "type": "String"
+      },
+      "detected": {
+        "type": "String"
+      }
     }
   },
   "billReviewTitleRequired": "Title cannot be empty.",
@@ -536,11 +661,19 @@
   "billReviewInvalidItem": "Check the name, price, and quantity for every item.",
   "billReviewSaveBillFailed": "Could not save bill: {message}",
   "@billReviewSaveBillFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billReviewSaveItemsFailed": "Bill was saved, but items could not be saved: {message}",
   "@billReviewSaveItemsFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billSplitTitle": "Split bill",
   "billSplitBackTooltip": "Back",
@@ -553,30 +686,50 @@
   "billSplitAllAssigned": "All items have been split",
   "billSplitUnassigned": "Unassigned: {amount}",
   "@billSplitUnassigned": {
-    "placeholders": { "amount": { "type": "String" } }
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
   },
   "billSplitViewSummary": "View Summary",
   "billSplitStateNotReady": "State is not ready.",
   "billSplitNameRequired": "Name cannot be empty.",
   "billSplitAddPersonFailed": "Could not add person: {message}",
   "@billSplitAddPersonFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billSplitSelectPersonFirst": "Select a person below first.",
   "billSplitSaveAssignmentFailed": "Could not save assignment: {message}",
   "@billSplitSaveAssignmentFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billSplitRemoveParticipantTitle": "Remove participant?",
   "billSplitRemoveParticipantMessage": "All items assigned to {name} will also be removed.",
   "@billSplitRemoveParticipantMessage": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "billSplitRemoveParticipantConfirm": "Remove",
   "billSplitRemoveParticipantFailed": "Failed to remove participant: {message}",
   "billSplitParticipantBarHint": "Long-press a participant to remove",
   "@billSplitRemoveParticipantFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "participantPhoneLabel": "Phone (optional)",
   "participantSuggestionTitle": "Frequently used",
@@ -584,7 +737,6 @@
   "participantImportFailed": "Could not open contacts. Try again or add manually.",
   "participantImportNoPhone": "(this contact has no phone number)",
   "billDetailParticipantPhoneLabel": "Phone",
-
   "billDetailTitle": "Bill Details",
   "billDetailHomeTooltip": "Home",
   "billDetailScanAnotherTooltip": "Scan another receipt",
@@ -594,8 +746,12 @@
   "billDetailPaidProgress": "{paidCount}/{totalCount} participants have paid",
   "@billDetailPaidProgress": {
     "placeholders": {
-      "paidCount": { "type": "int" },
-      "totalCount": { "type": "int" }
+      "paidCount": {
+        "type": "int"
+      },
+      "totalCount": {
+        "type": "int"
+      }
     }
   },
   "billDetailSettled": "Paid",
@@ -605,7 +761,11 @@
   "billDetailParticipantNotFound": "Participant not found.",
   "billDetailSaveStatusFailed": "Could not save status: {message}",
   "@billDetailSaveStatusFailed": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "billDetailStateNotReady": "Data is not ready yet, please try again shortly.",
   "exportPdf": "Export PDF",
@@ -616,19 +776,35 @@
   "exportFailed": "Could not create the export. Please try again.",
   "exportPdfSubject": "Export {title}",
   "@exportPdfSubject": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportPdfShareText": "PDF export for {title}",
   "@exportPdfShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvSubject": "Export {title}",
   "@exportCsvSubject": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvShareText": "CSV export for {title}",
   "@exportCsvShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "splitSummaryCopy": "Copy",
   "splitSummaryCopied": "Copied to clipboard",
@@ -643,14 +819,22 @@
   "settlementMessageFor": "For",
   "settlementMessageGreeting": "Hi {name}, your share is:",
   "@settlementMessageGreeting": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageTransferNote": "Please transfer if everything looks right. Thank you.",
   "settlementMessageItems": "Your items",
   "settlementMessageUnnamedItem": "(unnamed item)",
   "settlementMessageSharedWith": "split by {count}",
   "@settlementMessageSharedWith": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "settlementMessageTotal": "Total",
   "settlementMessageStatus": "Status",
@@ -658,17 +842,22 @@
   "settlementMessageUnpaid": "unpaid",
   "settlementMessageGrandTotal": "Total bill",
   "settlementMessageOutstanding": "Outstanding",
-
   "settlementMessageWhatsappLink": "Chat via WhatsApp: {url}",
   "@settlementMessageWhatsappLink": {
-    "placeholders": { "url": { "type": "String" } }
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
   },
-
   "settlementPromoFooter": "Made with BagiStruk. Try the app on Google Play: {url}",
   "@settlementPromoFooter": {
-    "placeholders": { "url": { "type": "String" } }
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
   },
-
   "shareLinkSectionTitle": "Share link",
   "shareLinkCreate": "Copy link",
   "shareLinkCopied": "Link copied. Valid for 7 days.",
@@ -679,7 +868,11 @@
   "shareLinkFreeLimit": "Free allows 1 active link per bill. Disable the old link or upgrade to Plus to rotate.",
   "shareLinkExpiresIn": "Valid until {date}",
   "@shareLinkExpiresIn": {
-    "placeholders": { "date": { "type": "String" } }
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "shareLinkPublicTitle": "Shared details",
   "shareLinkJoinCta": "Sign up to create your own bills",
@@ -687,11 +880,19 @@
   "exportXlsxPlusLocked": "Export XLSX (Plus)",
   "exportXlsxSubject": "Export {title}",
   "@exportXlsxSubject": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportXlsxShareText": "XLSX export for {title}",
   "@exportXlsxShareText": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "aboutTitle": "About",
   "aboutSettingsTile": "About App",
@@ -711,9 +912,7 @@
   "aboutTermsOfService": "Terms of Service",
   "termsOfServiceTitle": "Terms of Service",
   "linkUnavailable": "Link is not available yet",
-
   "reviewSuspectThousandsBug": "Prices look like the thousand separator may have been read as a decimal. Please verify each amount before saving.",
-
   "authFieldEmail": "Email",
   "authFieldPassword": "Password",
   "authEmailRequired": "Email is required",
@@ -724,42 +923,63 @@
   "authHidePassword": "Hide password",
   "authSignInWithGoogle": "Sign in with Google",
   "authGoogleSigningIn": "Signing in...",
-
   "failureRetry": "Retry",
   "failurePrefixNetwork": "Network: {message}",
   "@failurePrefixNetwork": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixServer": "Server ({code}): {message}",
   "@failurePrefixServer": {
     "placeholders": {
-      "code": { "type": "String" },
-      "message": { "type": "String" }
+      "code": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
     }
   },
   "failurePrefixServerNoCode": "Server: {message}",
   "@failurePrefixServerNoCode": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixParsing": "Could not parse response: {message}",
   "@failurePrefixParsing": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixAuth": "Auth: {message}",
   "@failurePrefixAuth": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "failurePrefixUnexpected": "Unexpected: {error}",
   "@failurePrefixUnexpected": {
-    "placeholders": { "error": { "type": "String" } }
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
-
   "historyFilterActiveBadge": "Active",
   "commonPlus": "Plus",
   "billReviewQtyLabel": "Qty",
   "billReviewSubtotalLabel": "Subtotal",
   "billReviewTotalLabel": "Total",
-
   "exportLabelItems": "Items",
   "exportLabelParticipants": "Participants",
   "exportLabelCurrency": "Currency",
@@ -782,59 +1002,94 @@
   "exportLabelUnpaidStatus": "unpaid",
   "exportCsvTopTitle": "Bill Detail: {title}",
   "@exportCsvTopTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportPdfSubjectFallback": "PDF export {title}",
   "@exportPdfSubjectFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportPdfShareTextFallback": "PDF export for {title}",
   "@exportPdfShareTextFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvSubjectFallback": "CSV export {title}",
   "@exportCsvSubjectFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "exportCsvShareTextFallback": "CSV export for {title}",
   "@exportCsvShareTextFallback": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageCompactTitle": "BagiStruk - {title}",
   "@settlementMessageCompactTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageDetailedTitle": "BagiStruk - {title}",
   "@settlementMessageDetailedTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "settlementMessageBasicTitle": "{title}",
   "@settlementMessageBasicTitle": {
-    "placeholders": { "title": { "type": "String" } }
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   },
   "billDetailParticipantPhoneHint": "Phone (optional)",
-
   "appInitErrorTitle": "BagiStruk failed to start",
   "appInitErrorRetryHint": "Check your internet connection, then reopen the app. If the issue persists, check the .env file and Supabase settings.",
   "appInitErrorEnvLoad": "Failed to load configuration (.env): {message}",
   "@appInitErrorEnvLoad": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
   "appInitErrorSupabase": "Failed to initialize Supabase: {message}",
   "@appInitErrorSupabase": {
-    "placeholders": { "message": { "type": "String" } }
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
   },
-
   "paywallTitle": "Save history & track debts",
   "paywallSubtitle": "Sign up or log in to save your history and track money you’re owed.",
   "paywallRegister": "Sign Up",
   "paywallLogin": "Sign In",
-
   "scanEmptyHint": "Take a photo of a shopping or dining receipt to start splitting fairly!",
-
   "adPrivacyChoicesTitle": "Ad privacy choices",
   "adPrivacyChoicesSubtitle": "Review or change ad consent where required.",
-
   "onboardingNext": "Next",
   "onboardingFinish": "Start scanning",
   "onboardingSkip": "Skip",
@@ -854,9 +1109,7 @@
   "onboardingReplayFinish": "Done",
   "onboardingSettingsTile": "View app guide",
   "onboardingSaveError": "Could not save. Please try again.",
-
   "ocrAiDisclosure": "Receipt photos are processed by third-party AI services for item extraction.",
-
   "manualBillAction": "New manual",
   "manualBillEmptyHint": "No receipt photo — add items manually, free with no credit.",
   "billSplitAssignAll": "Split equally",
@@ -868,33 +1121,90 @@
   "reminderNotificationBody": "{title} ({total}) still has unpaid shares. Tap to follow up.",
   "@reminderNotificationBody": {
     "placeholders": {
-      "title": { "type": "String" },
-      "total": { "type": "String" }
+      "title": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
     }
   },
   "shareLinkRateLimited": "Too many links created today. Try again tomorrow.",
   "shareLinkWebFallback": "No app yet? Get BagiStruk here: {url} — then tap the link above again.",
   "@shareLinkWebFallback": {
     "placeholders": {
-      "url": { "type": "String" }
+      "url": {
+        "type": "String"
+      }
     }
   },
   "shareLinkCountdownDays": "Expires in {count} days",
   "@shareLinkCountdownDays": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareLinkCountdownHours": "Expires in {count} hours",
   "@shareLinkCountdownHours": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
   },
   "shareLinkCountdownMinutes": "Expires in {count} minutes",
   "@shareLinkCountdownMinutes": {
     "placeholders": {
-      "count": { "type": "int" }
+      "count": {
+        "type": "int"
+      }
     }
-  }
+  },
+  "billDuplicate": "Duplicate",
+  "billDuplicateTooltip": "Duplicate this bill",
+  "billDuplicateSuccess": "Bill duplicated",
+  "billDuplicateFailed": "Duplicate failed — try again",
+  "billSaveAsTemplate": "Save as template",
+  "billTemplateNameTitle": "Template name",
+  "billTemplateNameHint": "e.g. team lunch",
+  "billTemplateNameEmpty": "Enter a template name first",
+  "billTemplateSaved": "Template saved",
+  "billTemplateFailed": "Could not save template",
+  "billTemplateLimitReached": "Free limit: max 5 templates. Go Plus for unlimited.",
+  "billTemplatesTooltip": "Bill templates",
+  "billTemplatesTitle": "Bill templates",
+  "billTemplatesEmpty": "No templates yet. Save one from a bill detail menu.",
+  "billTemplateUse": "Use",
+  "billTemplateUsedCount": "Used {count}x",
+  "@billTemplateUsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billTemplateInstantiateFailed": "Could not create a bill from the template",
+  "billTemplateDeleted": "Template deleted",
+  "billTemplateDeleteFailed": "Could not delete template",
+  "billTemplateDeleteTitle": "Delete template?",
+  "billTemplateDeleteBody": "Template \"{name}\" will be permanently deleted.",
+  "@billTemplateDeleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "scanStatusScanningPlus": "Scanning {imageCount} image(s)… (Plus: auto-retries another provider on failure)",
+  "@scanStatusScanningPlus": {
+    "placeholders": {
+      "imageCount": {
+        "type": "int"
+      }
+    }
+  },
+  "ocrErrorTooLargeTitle": "Photos too large",
+  "ocrErrorTooLargeBody": "Max 10 photos / 20MB total. Remove or shrink photos and try again."
 }
