@@ -295,7 +295,8 @@ class BillRemoteDataSource {
   /// Public resolve (no login required). Returns null when the token is
   /// invalid, expired, revoked, or the bill was deleted.
   Future<Map<String, dynamic>?> resolveShareToken(String tokenHash) async {
-    final res = await _client.rpc(
+    // ignore: inference_failure_on_function_invocation
+    final dynamic res = await _client.rpc(
       'resolve_share_token',
       params: {'p_token_hash': tokenHash},
     );
