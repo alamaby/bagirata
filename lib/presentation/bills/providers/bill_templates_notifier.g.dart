@@ -45,7 +45,7 @@ final class BillTemplatesProvider
   BillTemplates create() => BillTemplates();
 }
 
-String _$billTemplatesHash() => r'cb3a3be33733ca380b5262ce92327b54102aa88d';
+String _$billTemplatesHash() => r'802270af03e292fc5df38e67cb4a6042dfaf5515';
 
 /// M4/F12 template list + mutations. List loads on build (PostgREST SELECT,
 /// RLS owner-only); create/instantiate/delete go through the
