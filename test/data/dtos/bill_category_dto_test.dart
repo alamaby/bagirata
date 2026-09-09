@@ -86,9 +86,9 @@ void main() {
           'created_at': '2026-09-01T00:00:00.000Z',
           'category': 'groceries',
         },
-        'items': [],
-        'participants': [],
-        'assignments': [],
+        'items': <Map<String, dynamic>>[],
+        'participants': <Map<String, dynamic>>[],
+        'assignments': <Map<String, dynamic>>[],
         'expires_at': '2026-09-09T00:00:00.000Z',
       });
       expect(shared.bill.category, 'groceries');

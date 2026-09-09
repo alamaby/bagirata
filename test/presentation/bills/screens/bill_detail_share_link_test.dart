@@ -6,7 +6,6 @@ import 'package:bagistruk/presentation/bills/providers/bill_share_link_notifier.
     show BillShareLink, BillShareState, billShareLinkFamily;
 import 'package:bagistruk/presentation/bills/screens/bill_detail_screen.dart';
 import 'package:bagistruk/presentation/credits/providers/ocr_credit_status_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -54,9 +54,9 @@ void main() {
     test('tolerates missing optionals and empty lists', () {
       final shared = SharedBill.fromJson({
         'bill': {'id': 'b', 'created_at': '2026-09-02T00:00:00.000Z'},
-        'items': [],
-        'participants': [],
-        'assignments': [],
+        'items': <Map<String, dynamic>>[],
+        'participants': <Map<String, dynamic>>[],
+        'assignments': <Map<String, dynamic>>[],
         'expires_at': '2026-09-09T00:00:00.000Z',
       });
 

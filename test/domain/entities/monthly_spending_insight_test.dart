@@ -14,8 +14,8 @@ void main() {
       'previous_month_total': 200,
       'month_over_month_percent': 50.0,
       'outstanding_amount': 0,
-      'top_merchants': [],
-      'monthly_trend': [],
+      'top_merchants': <Map<String, dynamic>>[],
+      'monthly_trend': <Map<String, dynamic>>[],
       if (byCategory != null) 'by_category': byCategory,
     };
 
@@ -56,9 +56,9 @@ void main() {
         'previous_month_total': 0,
         'month_over_month_percent': null,
         'outstanding_amount': 0,
-        'top_merchants': [],
-        'monthly_trend': [],
-        'by_category': [],
+        'top_merchants': <Map<String, dynamic>>[],
+        'monthly_trend': <Map<String, dynamic>>[],
+        'by_category': <Map<String, dynamic>>[],
       });
       expect(insight.billCount, 0);
       expect(insight.totalAmount, 0);

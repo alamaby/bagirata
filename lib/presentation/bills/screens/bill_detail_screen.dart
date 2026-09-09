@@ -1069,7 +1069,6 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
             ),
             AsyncData(:final value) =>
               _activeLinkBody(context, ref, l10n, scheme, value),
-            _ => const SizedBox.shrink(),
           },
         ],
       ),

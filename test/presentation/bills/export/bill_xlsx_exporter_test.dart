@@ -53,6 +53,7 @@ BillDetailState _state({
   );
 }
 
+// ignore: unused_element — kept for future cell-value assertions
 dynamic _cellValue(Sheet sheet, String ref) =>
     // ignore: avoid_dynamic_calls
     sheet.cell(CellIndex.indexByString(ref)).value;

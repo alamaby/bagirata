@@ -41,7 +41,6 @@ class SharedBillScreen extends ConsumerWidget {
             value == null
                 ? _ExpiredView(l10n: l10n)
                 : _SharedBillView(shared: value),
-          _ => _ExpiredView(l10n: l10n),
         },
       ),
     );
