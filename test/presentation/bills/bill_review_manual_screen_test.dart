@@ -1,5 +1,6 @@
 import 'package:bagistruk/domain/entities/ocr_result.dart';
 import 'package:bagistruk/presentation/bills/screens/bill_review_screen.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -70,6 +71,48 @@ void main() {
 
       expect(find.textContaining('confident'), findsOneWidget);
       expect(find.textContaining('No receipt photo'), findsNothing);
+    });
+
+    testWidgets('manual form has its own title, not Review bill', (
+      tester,
+    ) async {
+      await pumpReview(tester, OcrResult.manual());
+
+      expect(find.text('New manual bill'), findsOneWidget);
+      expect(find.text('Review bill'), findsNothing);
+    });
+
+    testWidgets('ocr review keeps the Review bill title', (tester) async {
+      const ocr = OcrResult(
+        items: [OcrLineItem(name: 'Kopi', price: 15000, qty: 1)],
+        confidence: 0.9,
+        providerUsed: 'gemini',
+      );
+      await pumpReview(tester, ocr);
+
+      expect(find.text('Review bill'), findsOneWidget);
+      expect(find.text('New manual bill'), findsNothing);
+    });
+
+    testWidgets('adding an item focuses its name field and shows swipe hint', (
+      tester,
+    ) async {
+      await pumpReview(tester, OcrResult.manual());
+      expect(
+        find.text('Swipe an item left to delete it.'),
+        findsNothing,
+      );
+
+      await tester.tap(find.text('Add item'));
+      await tester.pumpAndSettle();
+
+      // The fresh row's name field grabs focus for immediate typing.
+      expect(FocusManager.instance.primaryFocus, isNotNull);
+      // With items present, the manual form hints at swipe-to-delete.
+      expect(
+        find.text('Swipe an item left to delete it.'),
+        findsOneWidget,
+      );
     });
   });
 }

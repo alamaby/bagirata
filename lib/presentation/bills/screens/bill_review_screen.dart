@@ -16,6 +16,7 @@ import '../../../data/services/settlement_reminder_service.dart';
 import '../../../domain/entities/ocr_result.dart';
 import '../../../l10n/generated/app_l10n.dart';
 import '../../credits/providers/ocr_credit_status_provider.dart';
+import '../../history/providers/history_list_notifier.dart';
 import '../../history/utils/bill_category.dart';
 import '../../history/utils/bill_category_labels.dart';
 import '../../settings/widgets/currency_picker_sheet.dart';
@@ -46,6 +47,10 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
   final FocusNode _taxFocus = FocusNode();
   final FocusNode _serviceFocus = FocusNode();
   final Map<String, _ItemControllers> _itemCtrls = {};
+
+  /// Local id of the item added most recently via "Tambah item", awaiting a
+  /// post-frame focus on its name field. Consumed once in [build].
+  String? _pendingNameFocusId;
 
   BillReviewNotifier get _notifier =>
       ref.read(billReviewFamily(widget.ocr).notifier);
@@ -119,6 +124,10 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
         ).showSnackBar(SnackBar(content: Text(_saveErrorMessage(result))));
       case SaveSuccess(:final billId, :final createdAt):
         _scheduleSettlementReminder(billId, createdAt);
+        // The history tab may already hold a cached first page (or be
+        // showing a stale summary): force a refetch so the new bill appears
+        // without the user pulling to refresh.
+        ref.invalidate(historyListProvider);
         context.pushNamed(
           Routes.billSplitName,
           pathParameters: {'billId': billId},
@@ -182,6 +191,18 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
     final state = ref.watch(billReviewFamily(widget.ocr));
     _syncItemControllers(state);
 
+    // Focus the name field of a freshly added item (post-frame, once).
+    final pendingFocusId = _pendingNameFocusId;
+    if (pendingFocusId != null) {
+      _pendingNameFocusId = null;
+      final ctrls = _itemCtrls[pendingFocusId];
+      if (ctrls != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) ctrls.nameFocus.requestFocus();
+        });
+      }
+    }
+
     final currency = CurrencyFormatter.of(state.currency);
     final isPlus = switch (ref.watch(ocrCreditStatusProvider)) {
       AsyncData(:final value) => value?.isPlus ?? false,
@@ -202,7 +223,11 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
     final l10n = AppL10n.of(context);
 
     return AppScaffold(
-      title: l10n.billReviewTitle,
+      // Manual bills are created from scratch, not verified from a scan —
+      // give the form its own title so it can't be confused with OCR review.
+      title: widget.ocr.isManual
+          ? l10n.billManualTitle
+          : l10n.billReviewTitle,
       body: AbsorbPointer(
         absorbing: state.saving,
         child: Column(
@@ -235,19 +260,45 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
                   currency: currency,
                 ),
               ),
-            if (widget.ocr.isManual && state.items.isEmpty)
+            if (widget.ocr.isManual)
               Padding(
                 padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 4.h),
-                child: Text(
-                  l10n.manualBillEmptyHint,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                child: state.items.isEmpty
+                    ? Text(
+                        l10n.manualBillEmptyHint,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.swipe_left_outlined,
+                            size: 15.r,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          SizedBox(width: 6.w),
+                          Flexible(
+                            child: Text(
+                              l10n.billReviewSwipeHint,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             Expanded(
               child: ListView.builder(
@@ -258,7 +309,23 @@ class _BillReviewScreenState extends ConsumerState<BillReviewScreen> {
                     return Padding(
                       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 8.h),
                       child: OutlinedButton.icon(
-                        onPressed: _notifier.addItem,
+                        // Jump straight into the new row's name field: the
+                        // first thing a manual entry needs is the item name.
+                        onPressed: () {
+                          final before = state.items
+                              .map((e) => e.localId)
+                              .toSet();
+                          _notifier.addItem();
+                          for (final it
+                              in ref
+                                  .read(billReviewFamily(widget.ocr))
+                                  .items) {
+                            if (!before.contains(it.localId)) {
+                              _pendingNameFocusId = it.localId;
+                              break;
+                            }
+                          }
+                        },
                         icon: const Icon(Icons.add),
                         label: Text(l10n.billReviewAddItem),
                         style: OutlinedButton.styleFrom(
@@ -360,6 +427,7 @@ class _ItemControllers {
     required this.price,
     required this.qty,
   }) {
+    nameFocus.addListener(() => _selectAll(name, nameFocus));
     priceFocus.addListener(() => _selectAll(price, priceFocus));
     qtyFocus.addListener(() => _selectAll(qty, qtyFocus));
   }
@@ -373,6 +441,7 @@ class _ItemControllers {
   final TextEditingController name;
   final TextEditingController price;
   final TextEditingController qty;
+  final FocusNode nameFocus = FocusNode();
   final FocusNode priceFocus = FocusNode();
   final FocusNode qtyFocus = FocusNode();
 
@@ -386,6 +455,7 @@ class _ItemControllers {
     name.dispose();
     price.dispose();
     qty.dispose();
+    nameFocus.dispose();
     priceFocus.dispose();
     qtyFocus.dispose();
   }
@@ -656,6 +726,7 @@ class _ItemCard extends StatelessWidget {
           children: [
             TextField(
               controller: controllers.name,
+              focusNode: controllers.nameFocus,
               onChanged: onNameChanged,
               style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
               decoration: InputDecoration(

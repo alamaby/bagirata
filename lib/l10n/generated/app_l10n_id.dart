@@ -285,6 +285,11 @@ class AppL10nId extends AppL10n {
   }
 
   @override
+  String creditStatusResetDate(String date) {
+    return 'Reset $date';
+  }
+
+  @override
   String get billingTitle => 'Plus dan paket credit';
 
   @override
@@ -1129,6 +1134,9 @@ class AppL10nId extends AppL10n {
   String get billReviewTitle => 'Review bill';
 
   @override
+  String get billManualTitle => 'Buat bill manual';
+
+  @override
   String get billReviewAddItem => 'Tambah item';
 
   @override
@@ -1863,6 +1871,27 @@ class AppL10nId extends AppL10n {
   @override
   String get manualBillEmptyHint =>
       'Tanpa foto struk — tambah item manual, gratis tanpa credit.';
+
+  @override
+  String get billReviewSwipeHint => 'Geser item ke kiri untuk menghapusnya.';
+
+  @override
+  String get billRename => 'Ubah nama';
+
+  @override
+  String get billRenameTitle => 'Ubah nama bill';
+
+  @override
+  String get billRenameHint => 'cth: Bukber September';
+
+  @override
+  String get billRenameEmpty => 'Isi nama bill dulu';
+
+  @override
+  String get billRenameSuccess => 'Nama bill diubah';
+
+  @override
+  String get billRenameFailed => 'Ubah nama gagal — coba lagi';
 
   @override
   String get billSplitAssignAll => 'Bagi rata';

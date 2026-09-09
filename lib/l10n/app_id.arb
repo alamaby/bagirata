@@ -164,6 +164,14 @@
       }
     }
   },
+  "creditStatusResetDate": "Reset {date}",
+  "@creditStatusResetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "billingTitle": "Plus dan paket credit",
   "billingAnonSubtitle": "Daftar akun dulu untuk membeli Plus atau top-up credit.",
   "creditPlusExpiresAt": "Plus berakhir: {date}",
@@ -618,6 +626,7 @@
   "splitSummaryShare": "Bagikan",
   "participantShareAgain": "Bagikan ulang",
   "billReviewTitle": "Review bill",
+  "billManualTitle": "Buat bill manual",
   "billReviewAddItem": "Tambah item",
   "billReviewDeleteItemTitle": "Hapus item?",
   "billReviewDeleteItemBody": "Item \"{name}\" akan dihapus.",
@@ -1112,6 +1121,13 @@
   "ocrAiDisclosure": "Foto struk diproses oleh layanan AI pihak ketiga untuk ekstraksi item.",
   "manualBillAction": "Buat manual",
   "manualBillEmptyHint": "Tanpa foto struk — tambah item manual, gratis tanpa credit.",
+  "billReviewSwipeHint": "Geser item ke kiri untuk menghapusnya.",
+  "billRename": "Ubah nama",
+  "billRenameTitle": "Ubah nama bill",
+  "billRenameHint": "cth: Bukber September",
+  "billRenameEmpty": "Isi nama bill dulu",
+  "billRenameSuccess": "Nama bill diubah",
+  "billRenameFailed": "Ubah nama gagal — coba lagi",
   "billSplitAssignAll": "Bagi rata",
   "billSplitDuplicateName": "Nama sudah ada di bill ini.",
   "billSplitOverwriteContactTitle": "Ganti dengan kontak?",

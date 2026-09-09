@@ -34,6 +34,11 @@ void main() {
 
   setUp(() {
     mockRepo = MockIBillRepository();
+    // Session guard runs before every share-link RPC — default to signed in;
+    // individual tests override this stub for the failure path.
+    when(
+      mockRepo.ensureSignedIn(),
+    ).thenAnswer((_) async => const Result.success(null));
     container = ProviderContainer(
       overrides: [billRepositoryProvider.overrideWithValue(mockRepo)],
     );
@@ -194,6 +199,38 @@ void main() {
         isFalse,
       );
       expect(BillShareLink.isRateLimited(Exception('boom')), isFalse);
+    });
+
+    test('ensures a session before the first RPC', () async {
+      stubCreateSuccess();
+
+      await notifier().createAndCopy(billId);
+
+      verify(mockRepo.ensureSignedIn()).called(1);
+      verify(
+        mockRepo.createShareToken(
+          billId: anyNamed('billId'),
+          tokenHash: anyNamed('tokenHash'),
+        ),
+      ).called(1);
+    });
+
+    test('sign-in failure surfaces generic failure without RPC', () async {
+      when(mockRepo.ensureSignedIn()).thenAnswer(
+        (_) async => const Result.failure(Failure.auth('no session')),
+      );
+
+      final result = await notifier().createAndCopy(billId);
+
+      expect(result.link, isNull);
+      expect(result.limited, isFalse);
+      expect(result.rateLimited, isFalse);
+      verifyNever(
+        mockRepo.createShareToken(
+          billId: anyNamed('billId'),
+          tokenHash: anyNamed('tokenHash'),
+        ),
+      );
     });
   });
 

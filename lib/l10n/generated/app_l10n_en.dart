@@ -286,6 +286,11 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String creditStatusResetDate(String date) {
+    return 'Resets $date';
+  }
+
+  @override
   String get billingTitle => 'Plus and credit packs';
 
   @override
@@ -1129,6 +1134,9 @@ class AppL10nEn extends AppL10n {
   String get billReviewTitle => 'Review bill';
 
   @override
+  String get billManualTitle => 'New manual bill';
+
+  @override
   String get billReviewAddItem => 'Add item';
 
   @override
@@ -1864,6 +1872,27 @@ class AppL10nEn extends AppL10n {
   @override
   String get manualBillEmptyHint =>
       'No receipt photo — add items manually, free with no credit.';
+
+  @override
+  String get billReviewSwipeHint => 'Swipe an item left to delete it.';
+
+  @override
+  String get billRename => 'Rename';
+
+  @override
+  String get billRenameTitle => 'Rename bill';
+
+  @override
+  String get billRenameHint => 'e.g. September dinner';
+
+  @override
+  String get billRenameEmpty => 'Enter a bill name first';
+
+  @override
+  String get billRenameSuccess => 'Bill renamed';
+
+  @override
+  String get billRenameFailed => 'Rename failed — try again';
 
   @override
   String get billSplitAssignAll => 'Split equally';

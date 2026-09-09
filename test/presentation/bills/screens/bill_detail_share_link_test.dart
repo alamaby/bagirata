@@ -88,8 +88,9 @@ void main() {
 
       expect(find.text('Expires in 3 days'), findsOneWidget);
       expect(find.textContaining('Valid until'), findsOneWidget);
-      // Revoke still offered while live.
-      expect(find.text('Disable link'), findsOneWidget);
+      // Revoke still offered while live — now icon-only at the row's end.
+      expect(find.byTooltip('Disable link'), findsOneWidget);
+      expect(find.text('Disable link'), findsNothing);
     });
 
     testWidgets('hours bucket under 24h', (tester) async {

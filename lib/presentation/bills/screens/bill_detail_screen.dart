@@ -416,90 +416,88 @@ class _ExportActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final icon = isPlus ? Icons.file_download_outlined : Icons.lock_outline;
-    final lockedStyle = FilledButton.styleFrom(
-      minimumSize: Size.fromHeight(44.h),
-      padding: EdgeInsets.symmetric(horizontal: 10.w),
-      backgroundColor: scheme.surfaceContainerHigh,
-      foregroundColor: scheme.onSurfaceVariant,
-    );
 
-    final buttons = Row(
-      children: [
-        Expanded(
-          child: FilledButton.tonalIcon(
-            onPressed: onExportPdf,
-            icon: Icon(isPlus ? Icons.picture_as_pdf_outlined : icon),
-            label: _OneLineButtonLabel(
-              isPlus ? l10n.exportPdf : l10n.exportPdfPlusLocked,
-            ),
-            style: isPlus
-                ? FilledButton.styleFrom(
-                    minimumSize: Size.fromHeight(44.h),
-                    padding: EdgeInsets.symmetric(horizontal: 10.w),
-                  )
-                : lockedStyle,
+    Widget chip({
+      required String format,
+      required String tooltip,
+      required VoidCallback onTap,
+    }) {
+      // Text-only chips: "Export" + PDF/CSV/XLSX must fit one row even on
+      // narrow screens, so no per-chip icons — the lock state is conveyed
+      // by the trailing Plus badge and the "(Plus)" tooltip copy.
+      return Tooltip(
+        message: tooltip,
+        child: TextButton(
+          onPressed: onTap,
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 6.w),
+            minimumSize: Size(0, 32.h),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            visualDensity: VisualDensity.compact,
           ),
-        ),
-        SizedBox(width: 8.w),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: onExportCsv,
-            icon: Icon(icon),
-            label: _OneLineButtonLabel(
-              isPlus ? l10n.exportCsv : l10n.exportCsvPlusLocked,
-            ),
-            style: OutlinedButton.styleFrom(
-              minimumSize: Size.fromHeight(44.h),
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
+          child: Text(
+            format,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+              color: isPlus ? scheme.primary : scheme.onSurfaceVariant,
             ),
           ),
         ),
-        if (!isPlus) ...[
-          SizedBox(width: 4.w),
-          PlusInfoIcon(
-            title: l10n.exportPdfPlusLocked,
-            message: l10n.exportPlusDetail,
-            iconColor: scheme.onSurfaceVariant,
+      );
+    }
+
+    // Single compact row: "Export" + one chip per format. Locked (Free)
+    // chips route to Settings via the existing onExport* handlers.
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.file_download_outlined,
+            size: 18.r,
+            color: scheme.onSurfaceVariant,
           ),
+          SizedBox(width: 8.w),
+          Text(
+            'Export',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: scheme.onSurface,
+            ),
+          ),
+          const Spacer(),
+          chip(
+            format: 'PDF',
+            tooltip: isPlus ? l10n.exportPdf : l10n.exportPdfPlusLocked,
+            onTap: onExportPdf,
+          ),
+          chip(
+            format: 'CSV',
+            tooltip: isPlus ? l10n.exportCsv : l10n.exportCsvPlusLocked,
+            onTap: onExportCsv,
+          ),
+          chip(
+            format: 'XLSX',
+            tooltip: isPlus ? l10n.exportXlsx : l10n.exportXlsxPlusLocked,
+            onTap: onExportXlsx,
+          ),
+          if (!isPlus) ...[
+            SizedBox(width: 4.w),
+            PlusInfoIcon(
+              title: l10n.exportPdfPlusLocked,
+              message: l10n.exportPlusDetail,
+              iconColor: scheme.onSurfaceVariant,
+            ),
+          ],
         ],
-      ],
-    );
-    return Column(
-      children: [
-        buttons,
-        SizedBox(height: 8.h),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: onExportXlsx,
-            icon: Icon(
-              isPlus ? Icons.table_chart_outlined : Icons.lock_outline,
-            ),
-            label: _OneLineButtonLabel(
-              isPlus ? l10n.exportXlsx : l10n.exportXlsxPlusLocked,
-            ),
-            style: OutlinedButton.styleFrom(
-              minimumSize: Size.fromHeight(44.h),
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _OneLineButtonLabel extends StatelessWidget {
-  const _OneLineButtonLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ),
     );
   }
 }
@@ -831,6 +829,11 @@ class _ShareLinkSection extends ConsumerStatefulWidget {
 }
 
 class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
+  /// Guards the create button while an RPC is in flight. A rapid double-tap
+  /// would otherwise fire two creates — the second one bouncing off the
+  /// Free 1-active cap with a confusing limit/upgrade snackbar.
+  bool _creating = false;
+
   @override
   void initState() {
     super.initState();
@@ -849,10 +852,34 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
       );
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
-    final result = await ref
-        .read(billShareLinkFamily(widget.billId).notifier)
-        .createAndCopy(widget.billId);
-    if (!context.mounted) return;
+    if (_creating) return;
+    setState(() => _creating = true);
+    try {
+      final result = await ref
+          .read(billShareLinkFamily(widget.billId).notifier)
+          .createAndCopy(widget.billId);
+      if (!context.mounted) return;
+      await _afterCreate(context, ref, result);
+    } finally {
+      if (mounted) setState(() => _creating = false);
+    }
+  }
+
+  /// Shows the snackbar for a create outcome, then reconciles the panel
+  /// against the server: a failed/limited create must not leave a stale
+  /// "no link" button when a live link actually exists (e.g. the token was
+  /// created server-side but the response was lost, or the state predates
+  /// a link made on another device).
+  Future<void> _afterCreate(
+    BuildContext context,
+    WidgetRef ref,
+    ShareLinkResult result,
+  ) async {
+    final notifier = ref.read(billShareLinkFamily(widget.billId).notifier);
+    if (result.link == null) {
+      await notifier.load(widget.billId);
+      if (!context.mounted) return;
+    }
     final l10n = AppL10n.of(context);
     final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
     if (result.link != null) {
@@ -861,11 +888,22 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
           content: Text(l10n.shareLinkCopied),
           action: SnackBarAction(
             label: l10n.splitSummaryShare,
-            onPressed: () => Share.share(_shareText(l10n, result.link!)),
+            onPressed: () {
+              final link = ref
+                  .read(billShareLinkFamily(widget.billId))
+                  .value
+                  ?.lastLink;
+              if (link != null) Share.share(_shareText(l10n, link));
+            },
           ),
         ),
       );
-    } else if (result.rateLimited) {
+      return;
+    }
+    if (ref.read(billShareLinkFamily(widget.billId)).value != null) {
+      return; // load() found the live link — panel now shows it, no error UI.
+    }
+    if (result.rateLimited) {
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.shareLinkRateLimited)),
       );
@@ -914,7 +952,7 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => _create(context, ref),
+              onPressed: _creating ? null : () => _create(context, ref),
               icon: const Icon(Icons.content_copy_outlined),
               label: Text(l10n.shareLinkCreate),
             ),
@@ -929,51 +967,50 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
         : l10n.shareLinkCountdownMinutes(
             ShareLinkCountdown.wholeMinutes(remaining),
           );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // One compact row: countdown text on the left, icon-only actions on
+    // the right (re-share when this session holds the raw link, revoke).
+    return Row(
       children: [
-        Text(
-          countdown,
-          style: TextStyle(
-            fontSize: 13.sp,
-            fontWeight: FontWeight.w600,
-            color: scheme.onSurface,
-          ),
-        ),
-        SizedBox(height: 2.h),
-        Text(
-          l10n.shareLinkExpiresIn(
-            DateFormat.yMMMd(
-              AppFormat.intlLocaleOf(Localizations.localeOf(context)),
-            ).format(expiresAt.toLocal()),
-          ),
-          style: TextStyle(
-            fontSize: 13.sp,
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        Row(
-          children: [
-            if (value.lastLink != null)
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => Share.share(
-                    _shareText(l10n, value.lastLink!),
-                  ),
-                  icon: const Icon(Icons.share_outlined),
-                  label: Text(l10n.splitSummaryShare),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                countdown,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
                 ),
               ),
-            if (value.lastLink != null) SizedBox(width: 8.w),
-            Expanded(
-              child: TextButton.icon(
-                onPressed: () => _revoke(context, ref, value.tokenId),
-                icon: const Icon(Icons.link_off_outlined),
-                label: Text(l10n.shareLinkRevoke),
+              SizedBox(height: 2.h),
+              Text(
+                l10n.shareLinkExpiresIn(
+                  DateFormat.yMMMd(
+                    AppFormat.intlLocaleOf(Localizations.localeOf(context)),
+                  ).format(expiresAt.toLocal()),
+                ),
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+        ),
+        if (value.lastLink != null)
+          IconButton(
+            tooltip: l10n.splitSummaryShare,
+            visualDensity: VisualDensity.compact,
+            onPressed: () =>
+                Share.share(_shareText(l10n, value.lastLink!)),
+            icon: const Icon(Icons.share_outlined),
+          ),
+        IconButton(
+          tooltip: l10n.shareLinkRevoke,
+          visualDensity: VisualDensity.compact,
+          onPressed: () => _revoke(context, ref, value.tokenId),
+          icon: const Icon(Icons.link_off_outlined),
         ),
       ],
     );
@@ -1062,7 +1099,7 @@ class _ShareLinkSectionState extends ConsumerState<_ShareLinkSection> {
             AsyncData(:final value) when value == null => SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => _create(context, ref),
+                onPressed: _creating ? null : () => _create(context, ref),
                 icon: const Icon(Icons.content_copy_outlined),
                 label: Text(l10n.shareLinkCreate),
               ),
@@ -1088,7 +1125,7 @@ class _DetailMenu extends ConsumerStatefulWidget {
   ConsumerState<_DetailMenu> createState() => _DetailMenuState();
 }
 
-enum _DetailMenuAction { duplicate, saveAsTemplate }
+enum _DetailMenuAction { rename, duplicate, saveAsTemplate }
 
 class _DetailMenuState extends ConsumerState<_DetailMenu> {
   bool _busy = false;
@@ -1107,6 +1144,14 @@ class _DetailMenuState extends ConsumerState<_DetailMenu> {
           : const Icon(Icons.more_vert),
       onSelected: _busy ? null : _onSelected,
       itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _DetailMenuAction.rename,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.edit_outlined),
+            title: Text(l10n.billRename),
+          ),
+        ),
         PopupMenuItem(
           value: _DetailMenuAction.duplicate,
           child: ListTile(
@@ -1129,10 +1174,78 @@ class _DetailMenuState extends ConsumerState<_DetailMenu> {
 
   Future<void> _onSelected(_DetailMenuAction action) async {
     switch (action) {
+      case _DetailMenuAction.rename:
+        await _rename();
       case _DetailMenuAction.duplicate:
         await _duplicate();
       case _DetailMenuAction.saveAsTemplate:
         await _saveAsTemplate();
+    }
+  }
+
+  /// Rename dialog prefilled with the current title — the way to fix up a
+  /// duplicated bill's name (or any bill's). Empty input is rejected with a
+  /// validation snackbar; unchanged titles skip the network call.
+  Future<void> _rename() async {
+    final l10n = AppL10n.of(context);
+    final currentTitle =
+        ref.read(billDetailFamily(widget.billId)).value?.bill.title ?? '';
+    final controller = TextEditingController(text: currentTitle);
+    try {
+      final name = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l10n.billRenameTitle),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLength: 60,
+            maxLines: 1,
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(hintText: l10n.billRenameHint),
+            onSubmitted: (v) => Navigator.of(ctx).pop(v.trim()),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancelAction),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(ctx).pop(controller.text.trim()),
+              child: Text(l10n.billRename),
+            ),
+          ],
+        ),
+      );
+      if (name == null || !context.mounted) return;
+      if (name.isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(l10n.billRenameEmpty)));
+        return;
+      }
+      setState(() => _busy = true);
+      try {
+        final err = await ref
+            .read(billDetailFamily(widget.billId).notifier)
+            .renameBill(name);
+        if (!context.mounted) return;
+        if (err != null) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(l10n.billRenameFailed)));
+          return;
+        }
+        ref.invalidate(historyListProvider);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(l10n.billRenameSuccess)));
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    } finally {
+      controller.dispose();
     }
   }
 

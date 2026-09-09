@@ -557,6 +557,12 @@ abstract class AppL10n {
     String planCode,
   );
 
+  /// No description provided for @creditStatusResetDate.
+  ///
+  /// In id, this message translates to:
+  /// **'Reset {date}'**
+  String creditStatusResetDate(String date);
+
   /// No description provided for @billingTitle.
   ///
   /// In id, this message translates to:
@@ -2063,6 +2069,12 @@ abstract class AppL10n {
   /// **'Review bill'**
   String get billReviewTitle;
 
+  /// No description provided for @billManualTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Buat bill manual'**
+  String get billManualTitle;
+
   /// No description provided for @billReviewAddItem.
   ///
   /// In id, this message translates to:
@@ -3334,6 +3346,48 @@ abstract class AppL10n {
   /// In id, this message translates to:
   /// **'Tanpa foto struk — tambah item manual, gratis tanpa credit.'**
   String get manualBillEmptyHint;
+
+  /// No description provided for @billReviewSwipeHint.
+  ///
+  /// In id, this message translates to:
+  /// **'Geser item ke kiri untuk menghapusnya.'**
+  String get billReviewSwipeHint;
+
+  /// No description provided for @billRename.
+  ///
+  /// In id, this message translates to:
+  /// **'Ubah nama'**
+  String get billRename;
+
+  /// No description provided for @billRenameTitle.
+  ///
+  /// In id, this message translates to:
+  /// **'Ubah nama bill'**
+  String get billRenameTitle;
+
+  /// No description provided for @billRenameHint.
+  ///
+  /// In id, this message translates to:
+  /// **'cth: Bukber September'**
+  String get billRenameHint;
+
+  /// No description provided for @billRenameEmpty.
+  ///
+  /// In id, this message translates to:
+  /// **'Isi nama bill dulu'**
+  String get billRenameEmpty;
+
+  /// No description provided for @billRenameSuccess.
+  ///
+  /// In id, this message translates to:
+  /// **'Nama bill diubah'**
+  String get billRenameSuccess;
+
+  /// No description provided for @billRenameFailed.
+  ///
+  /// In id, this message translates to:
+  /// **'Ubah nama gagal — coba lagi'**
+  String get billRenameFailed;
 
   /// No description provided for @billSplitAssignAll.
   ///

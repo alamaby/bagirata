@@ -164,6 +164,14 @@
       }
     }
   },
+  "creditStatusResetDate": "Resets {date}",
+  "@creditStatusResetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "billingTitle": "Plus and credit packs",
   "billingAnonSubtitle": "Create an account first to buy Plus or top up credits.",
   "creditPlusExpiresAt": "Plus expires: {date}",
@@ -618,6 +626,7 @@
   "splitSummaryShare": "Share",
   "participantShareAgain": "Share again",
   "billReviewTitle": "Review bill",
+  "billManualTitle": "New manual bill",
   "billReviewAddItem": "Add item",
   "billReviewDeleteItemTitle": "Delete item?",
   "billReviewDeleteItemBody": "Item \"{name}\" will be deleted.",
@@ -1112,6 +1121,13 @@
   "ocrAiDisclosure": "Receipt photos are processed by third-party AI services for item extraction.",
   "manualBillAction": "New manual",
   "manualBillEmptyHint": "No receipt photo — add items manually, free with no credit.",
+  "billReviewSwipeHint": "Swipe an item left to delete it.",
+  "billRename": "Rename",
+  "billRenameTitle": "Rename bill",
+  "billRenameHint": "e.g. September dinner",
+  "billRenameEmpty": "Enter a bill name first",
+  "billRenameSuccess": "Bill renamed",
+  "billRenameFailed": "Rename failed — try again",
   "billSplitAssignAll": "Split equally",
   "billSplitDuplicateName": "This name is already on the bill.",
   "billSplitOverwriteContactTitle": "Replace with contact?",

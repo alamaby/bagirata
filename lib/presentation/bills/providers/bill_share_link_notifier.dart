@@ -89,6 +89,19 @@ class BillShareLink extends _$BillShareLink {
     final hash = ShareLinkToken.hash(token);
     try {
       final repo = ref.read(billRepositoryProvider);
+      // Cold-start guard: the first PostgREST call after launch can run
+      // without a re-attached session (RLS sees auth.uid() = NULL and
+      // rejects the RPC). Ensuring sign-in first is what makes the *first*
+      // tap succeed instead of only the retry.
+      final authRes = await repo.ensureSignedIn();
+      if (authRes is ResultFailure) {
+        AppLogger.error(
+          'BillShareLink.createAndCopy ensureSignedIn failed',
+          authRes.failure,
+          StackTrace.current,
+        );
+        return const ShareLinkResult.failed();
+      }
       final res = await repo.createShareToken(billId: billId, tokenHash: hash);
       switch (res) {
         case ResultFailure(:final failure):
@@ -135,6 +148,15 @@ class BillShareLink extends _$BillShareLink {
   Future<bool> revoke(String tokenId) async {
     try {
       final repo = ref.read(billRepositoryProvider);
+      final authRes = await repo.ensureSignedIn();
+      if (authRes is ResultFailure) {
+        AppLogger.error(
+          'BillShareLink.revoke ensureSignedIn failed',
+          authRes.failure,
+          StackTrace.current,
+        );
+        return false;
+      }
       final res = await repo.revokeShareToken(tokenId);
       if (res is ResultFailure) {
         AppLogger.error(

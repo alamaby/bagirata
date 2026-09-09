@@ -136,6 +136,34 @@ class BillDetailNotifier extends _$BillDetailNotifier {
     );
   }
 
+  /// Renames the bill (used after duplication and anywhere a title edit is
+  /// needed). Optimistic UI update with rollback on persist failure; empty
+  /// titles are rejected by the caller (dialog validation), and a no-op
+  /// rename (unchanged title) short-circuits without a network call.
+  Future<BillDetailActionError?> renameBill(String title) async {
+    final s = state.value;
+    if (s == null) {
+      return const BillDetailActionError(
+        BillDetailActionErrorKind.stateNotReady,
+      );
+    }
+    final next = title.trim();
+    if (next.isEmpty || next == s.bill.title) return null;
+
+    final updated = s.bill.copyWith(title: next);
+    state = AsyncData(s.copyWith(bill: updated));
+    final repo = ref.read(billRepositoryProvider);
+    final res = await repo.updateBill(updated);
+    if (res is ResultFailure<Bill>) {
+      state = AsyncData(s);
+      return BillDetailActionError(
+        BillDetailActionErrorKind.saveStatusFailed,
+        res.failure.toString(),
+      );
+    }
+    return null;
+  }
+
   Future<BillDetailActionError?> toggleParticipantPaymentStatus(
     String participantId,
   ) async {

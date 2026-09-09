@@ -48,6 +48,19 @@ class BillTemplates extends _$BillTemplates {
   }) async {
     try {
       final repo = ref.read(billRepositoryProvider);
+      // Cold-start guard (same class as the share-link first-tap failure):
+      // without a re-attached session the RPC raises 'authentication
+      // required', the toast says failed, and the retry then succeeds —
+      // leaving the user staring at a template that "failed" to create.
+      final authRes = await repo.ensureSignedIn();
+      if (authRes is ResultFailure) {
+        AppLogger.error(
+          'BillTemplates.createFromBill ensureSignedIn failed',
+          authRes.failure,
+          StackTrace.current,
+        );
+        return const TemplateActionResult.failed();
+      }
       final res = await repo.createTemplateFromBill(
         billId: billId,
         name: name.trim(),
@@ -78,6 +91,15 @@ class BillTemplates extends _$BillTemplates {
   Future<String?> instantiate(String templateId) async {
     try {
       final repo = ref.read(billRepositoryProvider);
+      final authRes = await repo.ensureSignedIn();
+      if (authRes is ResultFailure) {
+        AppLogger.error(
+          'BillTemplates.instantiate ensureSignedIn failed',
+          authRes.failure,
+          StackTrace.current,
+        );
+        return null;
+      }
       final res = await repo.instantiateTemplate(templateId);
       switch (res) {
         case ResultFailure(:final failure):
@@ -100,6 +122,15 @@ class BillTemplates extends _$BillTemplates {
   Future<bool> remove(String templateId) async {
     try {
       final repo = ref.read(billRepositoryProvider);
+      final authRes = await repo.ensureSignedIn();
+      if (authRes is ResultFailure) {
+        AppLogger.error(
+          'BillTemplates.remove ensureSignedIn failed',
+          authRes.failure,
+          StackTrace.current,
+        );
+        return false;
+      }
       final res = await repo.deleteTemplate(templateId);
       if (res is ResultFailure) {
         AppLogger.error(

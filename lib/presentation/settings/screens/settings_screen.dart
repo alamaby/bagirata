@@ -178,6 +178,26 @@ class _SettingsBodyState extends ConsumerState<_SettingsBody> {
                         creditStatus.planCode,
                       ),
                     ),
+                    // Monthly grants expire at current_period_end (1st of
+                    // next month; trial Plus: earlier of that or trial end).
+                    // Anonymous one-time grants have no cycle → null → hidden.
+                    if (creditStatus.currentPeriodEnd != null) ...[
+                      SizedBox(height: 2.h),
+                      Text(
+                        l10n.creditStatusResetDate(
+                          AppFormat.longDate(
+                            AppFormat.intlLocaleOf(
+                              Localizations.localeOf(context),
+                            ),
+                          ).format(
+                            creditStatus.currentPeriodEnd!.toLocal(),
+                          ),
+                        ),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                     if (creditStatus.entitlementExpiresAt != null) ...[
                       SizedBox(height: 2.h),
                       Text(
